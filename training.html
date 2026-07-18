@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training. Zazoo</title>
+<meta name="description" content="Cohort-based leadership journeys, hands-on AI workshops, and the programs coming next. Learn to lead, and to build, with an AI companion beside you.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>">
+<link rel="stylesheet" href="assets/zazoo.css">
+</head>
+<body>
+
+<nav class="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="logo" href="index.html">zazoo</a>
+    <button class="nav-toggle" aria-expanded="false" aria-label="Menu">☰</button>
+    <div class="links">
+      <a href="index.html">Platform</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="training.html" class="active">Training</a>
+      <a href="#cta" class="btn btn-sm btn-accent" style="color:#fff">Join a cohort</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="wrap" style="padding-top:56px;padding-bottom:40px">
+  <div class="split">
+    <div>
+      <span class="badge badge-sage">Training</span>
+      <h1 style="font:var(--text-display-xl);margin-top:18px;text-wrap:pretty">People as your strongest strategic asset.</h1>
+      <p style="font:var(--text-body-lg);color:var(--text-muted);max-width:500px;margin-top:16px">
+        Cohort-based journeys and hands-on studios, facilitated by seasoned professionals, with your own Zazoo beside you. Built for rapid skill acquisition and lasting behaviour change.</p>
+      <div style="display:flex;gap:12px;margin-top:28px;flex-wrap:wrap">
+        <a class="btn btn-lg btn-accent" href="#cta">Join the next cohort</a>
+        <a class="btn btn-lg btn-secondary" href="#programs">Browse programs</a>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;justify-content:center">
+      <div class="spot" style="background:var(--sage-100);padding:22px 18px 0;margin-top:32px"><div data-zazoo="pip" data-size="130"></div></div>
+      <div class="spot" style="background:var(--teal-100);padding:22px 18px 0"><div data-zazoo="odo" data-size="130" data-delay="0.6"></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:40px;padding:28px 40px">
+    <div class="grid g4" style="text-align:center;gap:24px">
+      <div><div style="font-family:var(--font-display);font-weight:800;font-size:40px;color:var(--text-heading)">6</div><div class="muted" style="font:var(--text-body-sm);margin-top:2px">month journey</div></div>
+      <div><div style="font-family:var(--font-display);font-weight:800;font-size:40px;color:var(--text-heading)">24</div><div class="muted" style="font:var(--text-body-sm);margin-top:2px">hours facilitator-led training</div></div>
+      <div><div style="font-family:var(--font-display);font-weight:800;font-size:40px;color:var(--text-heading)">30</div><div class="muted" style="font:var(--text-body-sm);margin-top:2px">hours of team coaching</div></div>
+      <div><div style="font-family:var(--font-display);font-weight:800;font-size:40px;color:var(--text-heading)">4</div><div class="muted" style="font:var(--text-body-sm);margin-top:2px">immersive simulations</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- Journey wheel -->
+<section class="section reveal" style="background:var(--linen-200)">
+  <div class="wrap">
+    <h2 style="font:var(--text-display)">The learning journey.</h2>
+    <p class="muted" style="font:var(--text-body-lg);margin-top:10px;max-width:560px">One theme a month. Each lands through a simulation, is reinforced in practice, and is coached with your real team. Select a segment to explore it.</p>
+    <div id="journey" style="display:grid;grid-template-columns:260px 1fr;gap:56px;align-items:center;margin-top:32px">
+      <svg id="wheel" viewBox="0 0 200 200" width="100%" style="overflow:visible" role="tablist" aria-label="Learning journey months"></svg>
+      <div id="wheel-detail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Program elements -->
+<section class="section section-brand reveal">
+  <div class="wrap">
+    <h2 style="font:var(--text-display)">Program elements.</h2>
+    <div class="grid g4" style="margin-top:28px">
+      <div style="background:rgba(247,243,234,.08);border:1px solid var(--teal-500);border-radius:var(--radius-lg);padding:22px 24px">
+        <div class="subtitle" style="color:var(--text-on-brand)">Immersive simulations</div>
+        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Realistic management scenarios you play through with your cohort. Safe to fail, fast to learn.</p>
+      </div>
+      <div style="background:rgba(247,243,234,.08);border:1px solid var(--teal-500);border-radius:var(--radius-lg);padding:22px 24px">
+        <div class="subtitle" style="color:var(--text-on-brand)">Behaviour reinforcements</div>
+        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Small weekly practices between sessions, nudged and tracked by your Zazoo.</p>
+      </div>
+      <div style="background:rgba(247,243,234,.08);border:1px solid var(--teal-500);border-radius:var(--radius-lg);padding:22px 24px">
+        <div class="subtitle" style="color:var(--text-on-brand)">360° surveys</div>
+        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Before and after: how your team actually experiences your leadership.</p>
+      </div>
+      <div style="background:rgba(247,243,234,.08);border:1px solid var(--teal-500);border-radius:var(--radius-lg);padding:22px 24px">
+        <div class="subtitle" style="color:var(--text-on-brand)">Team coaching</div>
+        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">From month six, seasoned coaches work with you and your real team on real work.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:24px;max-width:640px">Ideal cohort: 4+ years of professional experience with under 2 years of managerial experience, or on the cusp of a leadership role.</p>
+  </div>
+</section>
+
+<!-- Programs: current & future -->
+<section class="section reveal" id="programs">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+      <div>
+        <h2 style="font:var(--text-display)">Programs.</h2>
+        <p class="muted" style="font:var(--text-body-lg);margin-top:10px">What's running now, and what we're building next.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Program filter">
+        <button class="on" data-ptab="all" role="tab" aria-selected="true">All</button>
+        <button data-ptab="now" role="tab" aria-selected="false">Running now</button>
+        <button data-ptab="next" role="tab" aria-selected="false">Coming next</button>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:28px" id="program-grid">
+      <div class="card card-hover" data-pkind="now">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Leadership journey</div><span class="badge badge-success">Running now</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">The flagship 6-month cohort above: simulations, 360° surveys, weekly reinforcement, and team coaching.</p>
+        <span class="badge badge-neutral">6 months</span>
+      </div>
+      <div class="card card-hover" data-pkind="now">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Working with your Zazoo</div><span class="badge badge-success">Running now</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Hands-on onboarding for every employee: how to hand off work to an AI companion, review it, and build trust.</p>
+        <span class="badge badge-neutral">Half day</span>
+      </div>
+      <div class="card card-hover" data-pkind="now">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Automation studio</div><span class="badge badge-success">Running now</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Teams design their own automations with their companions and ship them the same day.</p>
+        <span class="badge badge-neutral">1 day</span>
+      </div>
+      <div class="card card-hover" data-pkind="now">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Train the trainer</div><span class="badge badge-success">Running now</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Your internal champions learn to coach teams as their Zazoos grow around them.</p>
+        <span class="badge badge-neutral">2 days</span>
+      </div>
+      <div class="card card-hover" data-pkind="next">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">AI-native manager intensive</div><span class="badge badge-coral">Coming next</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Managing a team where every person works with agents: delegation, review discipline, and judgment at scale.</p>
+        <span class="badge badge-neutral">6 weeks</span>
+      </div>
+      <div class="card card-hover" data-pkind="next">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Agent builder studio</div><span class="badge badge-coral">Coming next</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Build real agents, workflows, skills, and hooks for your own work. Leave with a running system, not slides.</p>
+        <span class="badge badge-neutral">3 days</span>
+      </div>
+      <div class="card card-hover" data-pkind="next">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">Personal AI systems</div><span class="badge badge-coral">Coming next</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">Design an AI setup that is uniquely yours: your context, your taste, your guardrails, growing with you.</p>
+        <span class="badge badge-neutral">4 weeks</span>
+      </div>
+      <div class="card card-hover" data-pkind="next">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div class="subtitle">AI readiness for leaders</div><span class="badge badge-coral">Coming next</span>
+        </div>
+        <p class="muted" style="margin-top:10px;min-height:66px">A working session for executive teams: where AI creates leverage in your organization, and what to do first.</p>
+        <span class="badge badge-neutral">1 day</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section reveal" id="cta">
+  <div class="wrap" style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:center" id="cta-grid">
+    <div class="spot" style="background:var(--heather-100);padding:20px 20px 0"><div data-zazoo="mira" data-size="120"></div></div>
+    <div>
+      <h2 style="font:var(--text-display)">The next cohort starts soon.</h2>
+      <p class="muted" style="font:var(--text-body-lg);margin-top:10px;max-width:520px">Seats are limited so every voice is heard. Bring one manager or a whole layer of your organization.</p>
+      <form data-email-capture data-subject="Zazoo training cohort" style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+        <div data-fields style="display:flex;gap:12px;flex-wrap:wrap">
+          <input type="email" required placeholder="you@company.com" aria-label="Work email"
+            style="width:260px;padding:13px 20px;border-radius:var(--radius-pill);border:1.5px solid var(--border-strong);background:var(--surface-card);color:var(--text-body);font:var(--text-body-md);outline:none">
+          <button class="btn btn-lg btn-accent" type="submit">Join the next cohort</button>
+        </div>
+        <div data-done hidden class="subtitle">✓ You're on the list. We'll be in touch.</div>
+      </form>
+      <p style="margin-top:14px"><a href="consulting.html">Or start with consulting →</a></p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap" style="padding:28px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font:var(--text-body-sm)">
+    <span class="logo">zazoo</span>
+    <span style="display:flex;gap:24px">
+      <a href="index.html">Platform</a>
+      <a href="consulting.html">Consulting</a>
+      <span>© 2026 zazoo.me</span>
+    </span>
+  </div>
+</footer>
+
+<style>
+@media (max-width:860px){
+  #journey{grid-template-columns:1fr !important}
+  #cta-grid{grid-template-columns:1fr !important}
+  #wheel{max-width:300px;margin:0 auto}
+}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeSlide 280ms var(--ease-soft)}
+@media (prefers-reduced-motion:reduce){.fade-in{animation:none}}
+</style>
+
+<script src="assets/zazoo.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // ── Journey wheel (7 segments) ──
+  var MONTHS = [
+    ['Month 0', 'A deep dive', 'We start with the truth: a 360° survey, a leadership style assessment, and an honest self assessment. Your baseline, not a guess.', ['360° survey', 'Leadership style assessment', 'Self assessment']],
+    ['Month 1', 'Decision making', 'Better calls under pressure: informed decisions, naming and overcoming bias, and creative problem solving inside the simulation.', ['Informed decisions', 'Overcoming bias', 'Innovative problem solving']],
+    ['Month 2', 'Leading', 'What people actually follow: leading with trust, aligning your team behind a vision, and delegating thoughtfully.', ['Leading with trust', 'Aligning vision', 'Thoughtful delegation']],
+    ['Month 3', 'Self-wellness', 'You can\'t pour from an empty cup: boundary setting, being dependable, and learning to ask for help.', ['Boundary setting', 'Being dependable', 'Asking for help']],
+    ['Month 4', 'Interpersonal skills', 'The human layer: acknowledging emotions, recognising effort, and everyday kindness that compounds.', ['Acknowledging emotions', 'Recognising effort', 'Being kind']],
+    ['Month 5', 'Communication', 'Say the hard things well: effective feedback, navigating conflict, and infusing energy into your team.', ['Effective feedback', 'Navigating conflict', 'Infusing energy']],
+    ['Month 6+', 'Team coaching', 'The journey lands with your real team: a closing 360° survey, prioritising, driving execution, and catalysing growth.', ['360° survey', 'Prioritising', 'Driving execution', 'Catalysing growth']]
+  ];
+  var svg = document.getElementById('wheel');
+  var detail = document.getElementById('wheel-detail');
+  var cx = 100, cy = 100, r = 72, ir = 30, n = MONTHS.length, sa = (2 * Math.PI) / n;
+  var active = 0;
+
+  function segPath(i, expanded) {
+    var s = i * sa - Math.PI / 2 + 0.04, e = i * sa - Math.PI / 2 + sa - 0.04;
+    var exp = expanded ? 7 : 0, mid = (s + e) / 2;
+    var ox = cx + exp * Math.cos(mid), oy = cy + exp * Math.sin(mid);
+    var x1 = ox + r * Math.cos(s), y1 = oy + r * Math.sin(s), x2 = ox + r * Math.cos(e), y2 = oy + r * Math.sin(e);
+    var x3 = ox + ir * Math.cos(e), y3 = oy + ir * Math.sin(e), x4 = ox + ir * Math.cos(s), y4 = oy + ir * Math.sin(s);
+    return 'M' + x1 + ',' + y1 + ' A' + r + ',' + r + ',0,0,1,' + x2 + ',' + y2 + ' L' + x3 + ',' + y3 + ' A' + ir + ',' + ir + ',0,0,0,' + x4 + ',' + y4 + ' Z';
+  }
+
+  function drawWheel() {
+    var parts = '';
+    for (var i = 0; i < n; i++) {
+      var on = i === active;
+      parts += '<path role="tab" aria-selected="' + on + '" tabindex="0" data-i="' + i + '" d="' + segPath(i, on) + '" fill="' + (on ? '#2e7278' : '#dcebe4') + '" stroke="#f7f3ea" stroke-width="2" style="transition:all 250ms;cursor:pointer' + (on ? ';filter:drop-shadow(0 3px 8px rgba(46,114,120,.35))' : '') + '"></path>';
+    }
+    parts += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (ir - 2) + '" fill="#fffdf8" stroke="#efe8d9" stroke-width="2"></circle>';
+    parts += '<text x="' + cx + '" y="' + (cy + 2) + '" text-anchor="middle" style="font-family:\'Baloo 2\',sans-serif;font-size:11px;font-weight:800;fill:#14555a">zazoo</text>';
+    for (var j = 0; j < n; j++) {
+      var ang = j * sa - Math.PI / 2 + sa / 2, lr = r + 17;
+      parts += '<text data-i="' + j + '" x="' + (cx + lr * Math.cos(ang)) + '" y="' + (cy + lr * Math.sin(ang)) + '" text-anchor="middle" dominant-baseline="middle" style="font-family:\'Nunito Sans\',sans-serif;font-size:7px;font-weight:700;cursor:pointer;fill:' + (j === active ? '#14555a' : '#8b938d') + '">' + MONTHS[j][0] + '</text>';
+    }
+    svg.innerHTML = parts;
+  }
+
+  function drawDetail() {
+    var m = MONTHS[active];
+    detail.className = 'fade-in';
+    detail.innerHTML =
+      '<span class="badge badge-brand">' + m[0] + '</span>' +
+      '<h3 style="font:var(--text-title);margin-top:12px">' + m[1] + '</h3>' +
+      '<p class="muted" style="font:var(--text-body-lg);margin-top:10px;max-width:480px">' + m[2] + '</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">' +
+      m[3].map(function (s) { return '<span style="background:var(--surface-card);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font:var(--text-body-sm)">✓ ' + s + '</span>'; }).join('') +
+      '</div>';
+    detail.offsetWidth; // restart animation
+  }
+
+  function select(i) { active = i; drawWheel(); drawDetail(); }
+  svg.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-i]');
+    if (t) select(parseInt(t.dataset.i, 10));
+  });
+  svg.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      var t = e.target.closest('[data-i]');
+      if (t) { e.preventDefault(); select(parseInt(t.dataset.i, 10)); }
+    }
+  });
+  select(0);
+
+  // ── Program filter tabs ──
+  var tabs = document.querySelectorAll('[data-ptab]');
+  var cards = document.querySelectorAll('#program-grid [data-pkind]');
+  tabs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      tabs.forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-selected', 'false'); });
+      b.classList.add('on'); b.setAttribute('aria-selected', 'true');
+      cards.forEach(function (c) {
+        var show = b.dataset.ptab === 'all' || c.dataset.pkind === b.dataset.ptab;
+        c.style.display = show ? '' : 'none';
+        if (show) { c.classList.add('fade-in'); c.offsetWidth; }
+      });
+    });
+  });
+});
+</script>
+</body>
+</html>
