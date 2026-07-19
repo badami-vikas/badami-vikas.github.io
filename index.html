@@ -4,11 +4,108 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zazoo. Everyone deserves a Zazoo.</title>
-<meta name="description" content="Zazoo is an AI companion that understands your business, coordinates work across your company, and turns decisions into action.">
+<meta name="description" content="Follow a Zazoo through its day: an AI companion that never stops working for you, governed by your rules, happiest when you succeed.">
 <meta property="og:title" content="Zazoo. Everyone deserves a Zazoo.">
-<meta property="og:description" content="AI companions that remove the friction between you and the work that matters most.">
+<meta property="og:description" content="The website isn't sections. It's a day in the life of your companion.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>">
 <link rel="stylesheet" href="assets/zazoo.css">
+<style>
+/* ── Scene 1: the living workspace ── */
+.eco{position:relative;width:min(560px,90vw);aspect-ratio:1;margin:0 auto}
+.eco-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed var(--linen-400);opacity:.6}
+.eco-ring.r2{inset:11%;border-color:var(--teal-300);opacity:.35}
+.eco-spin{position:absolute;inset:0;animation:ecospin 70s linear infinite}
+.eco-item{position:absolute;top:50%;left:50%}
+.eco-item>span{display:flex;align-items:center;gap:6px;background:var(--surface-card);border:1px solid var(--border);border-radius:999px;padding:7px 13px;font:var(--text-body-sm);box-shadow:var(--shadow-card);white-space:nowrap;animation:ecospinrev 70s linear infinite}
+@keyframes ecospin{to{transform:rotate(360deg)}}
+@keyframes ecospinrev{from{transform:translate(-50%,-50%) rotate(var(--na))}to{transform:translate(-50%,-50%) rotate(calc(var(--na) - 360deg))}}
+.eco-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.eco-aeva{position:relative;animation:ecobreathe 9s ease-in-out infinite}
+@keyframes ecobreathe{0%,86%,100%{transform:scale(1)}90%{transform:scale(1.04) rotate(-2deg)}94%{transform:scale(1)}}
+.eco-bubble{position:absolute;background:var(--surface-card);border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:9px 14px;font:var(--text-body-sm);box-shadow:var(--shadow-card);opacity:0;transition:opacity .5s var(--ease-soft);max-width:190px;z-index:2}
+.eco-bubble.show{opacity:1}
+.eco-now{font:var(--text-label);color:var(--text-muted);background:var(--surface-card);border:1px solid var(--border);border-radius:999px;padding:8px 16px;box-shadow:var(--shadow-card)}
+.eco-now b{color:var(--teal-700)}
+@media (prefers-reduced-motion:reduce){.eco-spin,.eco-item>span,.eco-aeva{animation:none}.eco-bubble{transition:none}}
+
+/* ── Scene 2: dictionary ── */
+.dict{background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:40px 44px;box-shadow:var(--shadow-card)}
+.dict .word{font-family:var(--font-display);font-weight:800;font-size:44px;color:var(--ink)}
+.dict .pron{color:var(--text-muted);font-style:italic;font-size:18px;margin-left:10px}
+.dict .pos{color:var(--accent);font-style:italic;font:600 15px/1 var(--font-body)}
+.dict dt{font:var(--text-label);color:var(--text-muted);margin-top:18px;text-transform:uppercase;letter-spacing:.04em}
+.dict dd{margin:6px 0 0;font:var(--text-body-md)}
+.fam{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:960px){.fam{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.fam{grid-template-columns:1fr}}
+.fam-card{position:relative;border:2px solid transparent;border-radius:var(--radius-lg);padding:16px 12px 12px;text-align:center;cursor:pointer;transition:all var(--duration-med) var(--ease-soft);background:var(--surface-card)}
+.fam-card .art{display:flex;justify-content:center;position:relative}
+.fam.dimmed .fam-card:not(.on){opacity:.45;filter:saturate(.6)}
+.fam.dimmed .fam-card:not(.on) .zz-bob,.fam.dimmed .fam-card:not(.on) .zz-blink{animation-play-state:paused}
+.fam-card.on{border-color:var(--teal-500);transform:translateY(-4px);box-shadow:var(--shadow-raised)}
+.fam-intro{min-height:110px;margin-top:18px;text-align:center}
+.fam-intro .say{background:var(--surface-card);border:1px solid var(--teal-300);border-radius:var(--radius-lg);padding:16px 22px;display:inline-block;max-width:560px;font:var(--text-body-md);box-shadow:var(--shadow-card)}
+
+/* ── Scene 3: castle ── */
+.castle-stage{position:relative;max-width:760px;margin:32px auto 0;overflow:hidden}
+.gate-door{transition:transform 1s var(--ease-soft);transform-origin:center}
+.robo{position:absolute;bottom:8px;left:-90px;animation:roboloop 16s ease-in-out infinite}
+@keyframes roboloop{
+  0%{left:-90px;transform:scaleX(1)} 22%{left:34%;transform:scaleX(1)}
+  30%,46%{left:36%;transform:scaleX(1)} 52%{left:36%;transform:scaleX(-1)}
+  78%{left:-90px;transform:scaleX(-1)} 100%{left:-90px;transform:scaleX(-1)}}
+.robo-say{position:absolute;bottom:120px;left:44%;background:var(--surface-card);border:1px solid var(--border);border-radius:14px;padding:8px 14px;font:var(--text-body-sm);box-shadow:var(--shadow-card);opacity:0;animation:robosay 16s ease-in-out infinite}
+@keyframes robosay{0%,28%{opacity:0}32%,48%{opacity:1}54%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.robo,.robo-say{animation:none}.robo{left:36%}.robo-say{opacity:1}}
+.mirror{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;max-width:640px;margin:28px auto 0}
+.mirror .l{text-align:right;font:var(--text-subtitle);color:var(--text-on-brand)}
+.mirror .r{text-align:left;font:var(--text-body-lg);color:var(--teal-300)}
+@media (max-width:560px){.mirror{grid-template-columns:1fr}.mirror .l,.mirror .r{text-align:center}}
+
+/* ── Scene 4: chapter books ── */
+.shelf{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.book{width:150px;height:200px;border-radius:6px 14px 14px 6px;border:none;cursor:pointer;position:relative;box-shadow:var(--shadow-card);transition:transform var(--duration-med) var(--ease-soft),box-shadow var(--duration-med) var(--ease-soft);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:19px;color:#fff}
+.book::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:5px;background:rgba(255,255,255,.35);border-radius:3px}
+.book:hover{transform:translateY(-8px) rotate(-1.5deg);box-shadow:var(--shadow-raised)}
+.book.open{transform:translateY(-8px);outline:3px solid var(--accent);outline-offset:3px}
+.book small{font:var(--text-body-sm);color:rgba(255,255,255,.8);font-family:var(--font-body)}
+.chapter{display:none;margin-top:36px}
+.chapter.open{display:block;animation:fadeSlide .35s var(--ease-soft)}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* values storybook */
+.story{background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:26px 22px;text-align:center;box-shadow:var(--shadow-card)}
+.story .pic{display:flex;justify-content:center;align-items:flex-end;min-height:120px}
+/* process footprints */
+.trail{position:relative;display:flex;justify-content:space-between;align-items:center;max-width:820px;margin:40px auto 0;flex-wrap:wrap;gap:20px}
+.paw{width:11px;height:11px;border-radius:50% 50% 50% 0;background:var(--teal-300);opacity:0;transform:rotate(45deg);animation:pawstep 9s ease-in-out infinite}
+@keyframes pawstep{0%{opacity:0}8%,70%{opacity:1}90%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.paw{animation:none;opacity:1}}
+.stone{text-align:center;flex:1;min-width:120px}
+.stone .dot{width:64px;height:64px;border-radius:50%;background:var(--brand-soft);border:2px solid var(--teal-300);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:24px}
+/* difference stories */
+.diff{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface-card);box-shadow:var(--shadow-card)}
+@media (max-width:700px){.diff{grid-template-columns:1fr}}
+.diff .side{padding:22px 24px}
+.diff .side.ai{background:var(--surface-sunken);color:var(--ink-faint)}
+.diff .side.zz{background:var(--surface-card)}
+.diff .lbl{font:var(--text-label);margin-bottom:10px}
+.diff .side.ai .lbl{color:var(--ink-faint)}
+.diff .side.zz .lbl{color:var(--teal-500)}
+.diff-cap{grid-column:1/-1;text-align:center;padding:14px 20px;border-top:1px solid var(--border);font:var(--text-subtitle);color:var(--text-heading)}
+@media (max-width:700px){.diff-cap{grid-column:1}}
+
+/* ── Final scene: night ── */
+.night{background:linear-gradient(180deg,var(--night-700) 0%,var(--night-900) 70%);color:var(--linen-100);position:relative;overflow:hidden}
+.night h2{color:var(--linen-100)}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.5;animation:twinkle 4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.8}}
+@media (prefers-reduced-motion:reduce){.star{animation:none}}
+.night-line{font:var(--text-body-lg);color:var(--mist-300);margin-top:10px}
+.night-copy b{color:var(--linen-100);font-weight:700}
+.zzz{position:absolute;font-family:var(--font-display);font-weight:800;color:var(--mist-300);animation:zzzrise 4s ease-in-out infinite;opacity:0}
+@keyframes zzzrise{0%{opacity:0;transform:translateY(6px)}30%,70%{opacity:.9}100%{opacity:0;transform:translateY(-14px)}}
+.privacy-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(240,212,148,.12);border:1px solid var(--night-glow);color:var(--night-glow);border-radius:999px;padding:9px 18px;font:var(--text-label)}
+</style>
 </head>
 <body>
 
@@ -25,263 +122,211 @@
   </div>
 </nav>
 
-<!-- Hero -->
-<header class="wrap" style="padding-top:56px;padding-bottom:40px">
-  <div class="split">
-    <div>
-      <span class="badge badge-sage">✓ Your AI companion for real work</span>
-      <h1 style="font:var(--text-display-xl);margin-top:18px;text-wrap:pretty">Everyone deserves a Zazoo.</h1>
-      <p style="font:var(--text-body-lg);color:var(--text-muted);max-width:500px;margin-top:16px">
-        The world's best leaders don't succeed because they work harder. They have someone who keeps everything moving. Zazoo understands your business, coordinates work across your company, surfaces what matters, and turns decisions into action.</p>
-      <div style="display:flex;gap:12px;margin-top:28px;flex-wrap:wrap">
-        <a class="btn btn-lg btn-accent" href="#cta">Start free</a>
-        <a class="btn btn-lg btn-secondary" href="#family">Meet the family</a>
-      </div>
-    </div>
-    <div class="spot" style="background:var(--mist-100);padding:36px 24px 0;position:relative">
-      <div data-zazoo="aeva" data-size="210"></div>
-      <span class="badge badge-success" style="position:absolute;top:20px;left:20px">✓ 12 tasks handled today</span>
-    </div>
+<!-- ═══ Scene 1: Your Zazoo never stops ═══ -->
+<header class="wrap" style="padding-top:48px;padding-bottom:24px;text-align:center">
+  <h1 style="font:var(--text-display-xl);text-wrap:pretty">Your Zazoo never stops.</h1>
+  <p style="font:var(--text-body-lg);color:var(--text-muted);max-width:460px;margin:14px auto 0">
+    Not waiting. Not listening for a prompt. By the time you arrive, it has already started.</p>
+  <div style="display:flex;gap:12px;margin-top:24px;justify-content:center;flex-wrap:wrap">
+    <a class="btn btn-lg btn-accent" href="#cta">Start free</a>
+    <a class="btn btn-lg btn-secondary" href="#dictionary">Meet the family</a>
   </div>
+
+  <div class="eco" style="margin-top:36px" aria-label="Aeva at the centre of a living workspace, tirelessly helping">
+    <div class="eco-ring"></div><div class="eco-ring r2"></div>
+    <div class="eco-spin" id="eco-spin"></div>
+    <div class="eco-center">
+      <div class="eco-aeva" style="position:relative" data-quirk="aeva"><span id="hero-aeva"></span></div>
+      <div class="eco-now">Right now: <b id="eco-task">taking meeting notes</b></div>
+    </div>
+    <div class="eco-bubble" id="eco-b1" style="top:16%;left:4%"></div>
+    <div class="eco-bubble" id="eco-b2" style="top:24%;right:2%"></div>
+    <div class="eco-bubble" id="eco-b3" style="bottom:14%;right:8%"></div>
+  </div>
+  <p class="muted" style="margin-top:56px;font:var(--text-body-md)">She yawns sometimes. Stretches. Glances over at you. Then gets back to it. She's happy because she's helping.</p>
 </header>
 
-<!-- The bigger picture -->
-<section class="section reveal">
+<!-- ═══ Scene 2: Dictionary ═══ -->
+<section class="section reveal" id="dictionary">
   <div class="wrap">
-    <div class="card" style="padding:44px 48px;text-align:center">
-      <div style="font:var(--text-label);color:var(--text-muted)">THE BIG PICTURE</div>
-      <h2 style="font:var(--text-display);margin-top:10px;text-wrap:pretty">Work is reorganizing itself around AI.</h2>
-      <p class="muted" style="font:var(--text-body-lg);max-width:680px;margin:14px auto 0">
-        Agents are moving from demos into production. Workflow integration is now the top AI investment priority in the enterprise. The companies that pull ahead won't be the ones that use AI the most, but the ones whose AI knows them the best. Zazoo is built for that world: a companion that learns your business and grows with it.</p>
-      <div class="grid g3" style="margin-top:36px;border-top:1px solid var(--border);padding-top:32px">
-        <div>
-          <div style="font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--text-heading)">Hundreds</div>
-          <div class="muted" style="margin-top:4px">of hours returned</div>
-        </div>
-        <div>
-          <div style="font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--text-heading)">Thousands</div>
-          <div class="muted" style="margin-top:4px">of decisions coordinated</div>
-        </div>
-        <div>
-          <div style="font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--text-heading)">Millions</div>
-          <div class="muted" style="margin-top:4px">of small tasks never forgotten</div>
-        </div>
+    <div class="split" style="align-items:start">
+      <div class="dict">
+        <div><span class="word">Zazoo</span><span class="pron">/za·zoo/</span> <span class="pos">noun</span></div>
+        <dl style="margin:0">
+          <dt>Definition</dt><dd>An asymmetrical leap in capability.</dd>
+          <dt>Origin</dt><dd>Coined from the belief that everyone deserves extraordinary support.</dd>
+          <dt>Purpose</dt><dd>Quietly remove everyday friction so people can focus on extraordinary work.</dd>
+          <dt>Impact</dt><dd>Hundreds of hours returned. Thousands of decisions coordinated. Millions of tiny hurdles removed.</dd>
+        </dl>
+        <div style="border-top:1px solid var(--border);margin-top:22px;padding-top:18px;font:var(--text-subtitle);color:var(--text-heading)">"A Zazoo's only ambition is yours."</div>
+      </div>
+      <div>
+        <div class="fam" id="fam"></div>
+        <div class="fam-intro" id="fam-intro"><span class="muted" style="font:var(--text-body-md)">Hover a companion. Everyone else keeps working; this one stops, looks at you, and introduces itself.</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Family selector -->
-<section class="section reveal" id="family">
+<!-- ═══ Scene 3: Governance castle ═══ -->
+<section class="section section-brand reveal" id="governance">
+  <div class="wrap" style="text-align:center">
+    <h2 style="font:var(--text-display);text-wrap:pretty">Governance isn't what slows work. It's what allows trust to grow.</h2>
+    <p class="muted" style="font:var(--text-body-lg);margin-top:10px">Not cybersecurity. Safety. A castle with beautiful doors, and guardians who know exactly which ones open for whom.</p>
+
+    <div class="castle-stage">
+      <svg viewBox="0 0 760 300" width="100%" role="img" aria-label="A friendly castle. A small robot without a badge is gently turned away at the gate.">
+        <rect x="0" y="256" width="760" height="44" fill="#0c3b3f"/>
+        <rect x="120" y="60" width="70" height="200" rx="6" fill="#2e7278"/>
+        <rect x="570" y="60" width="70" height="200" rx="6" fill="#2e7278"/>
+        <path d="M116 60 h78 l-8 -18 h-62 Z" fill="#dcebe4"/><path d="M566 60 h78 l-8 -18 h-62 Z" fill="#dcebe4"/>
+        <path d="M155 40 l0 -22 l26 8 l-26 8" fill="#e2704a"/><path d="M605 40 l0 -22 l26 8 l-26 8" fill="#e2704a"/>
+        <rect x="190" y="110" width="380" height="150" fill="#14555a"/>
+        <rect x="140" y="90" width="30" height="34" rx="14" fill="#f0d494" opacity=".85"/>
+        <rect x="590" y="90" width="30" height="34" rx="14" fill="#f0d494" opacity=".85"/>
+        <path d="M310 260 v-96 a70 70 0 0 1 140 0 v96 Z" fill="#0c3b3f"/>
+        <g id="gate-doors">
+          <path class="gate-door" id="door-l" d="M312 258 v-94 a68 68 0 0 1 68 -66 v160 Z" fill="#c9a284"/>
+          <path class="gate-door" id="door-r" d="M448 258 v-94 a68 68 0 0 0 -68 -66 v160 Z" fill="#b58e69"/>
+          <circle cx="368" cy="190" r="4" fill="#f0d494"/><circle cx="392" cy="190" r="4" fill="#f0d494"/>
+        </g>
+        <rect x="240" y="140" width="26" height="38" rx="12" fill="#f0d494" opacity=".85"/>
+        <rect x="494" y="140" width="26" height="38" rx="12" fill="#f0d494" opacity=".85"/>
+      </svg>
+      <div style="position:absolute;bottom:4px;left:57%" id="castle-dog"></div>
+      <div class="robo" id="castle-robot"></div>
+      <div class="robo-say">"Sorry. Not authorized."</div>
+    </div>
+
+    <div class="grid g4" style="margin-top:28px;text-align:left" id="guardians"></div>
+
+    <div class="mirror">
+      <div class="l">Always available.</div><div class="r">Only when permitted.</div>
+      <div class="l">Always learning.</div><div class="r">Only what you allow.</div>
+      <div class="l">Always transparent.</div><div class="r">Nothing hidden.</div>
+      <div class="l">Always helpful.</div><div class="r">Never overreaching.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Scene 4: The storybooks ═══ -->
+<section class="section reveal" id="chapters">
   <div class="wrap">
-    <h2 style="font:var(--text-display);text-align:center;text-wrap:pretty">Choose your Zazoo, choose your superpowers.</h2>
-    <p class="muted" style="text-align:center;margin-top:10px;font:var(--text-body-lg)">Every companion is raised for the work you do.</p>
-    <div data-zazoo-family style="margin-top:32px"></div>
-  </div>
-</section>
+    <h2 style="font:var(--text-display);text-align:center">Four little books.</h2>
+    <p class="muted" style="text-align:center;font:var(--text-body-lg);margin-top:8px">Open one. Each is a chapter of how a Zazoo lives.</p>
 
-<!-- Hurdles -->
-<section class="section reveal">
-  <div class="wrap split">
-    <div>
-      <h2 style="font:var(--text-display)">Small hurdles. Giant ambitions.</h2>
-      <p class="muted" style="font:var(--text-body-lg);margin-top:14px;max-width:420px">
-        Nobody fails because of one impossible task. They struggle because of a thousand tiny interruptions.</p>
-      <p class="subtitle" style="margin-top:18px;max-width:440px;text-wrap:pretty">
-        A Zazoo clears those hurdles before they slow you down, because extraordinary work shouldn't be blocked by ordinary friction.</p>
+    <div class="shelf" role="tablist" aria-label="Chapters">
+      <button class="book open" role="tab" aria-selected="true" data-ch="values" style="background:#2e7278">Values<small>how she behaves</small></button>
+      <button class="book" role="tab" aria-selected="false" data-ch="process" style="background:#c85a36">Process<small>how she walks</small></button>
+      <button class="book" role="tab" aria-selected="false" data-ch="difference" style="background:#5d4a8a">Difference<small>how she differs</small></button>
+      <button class="book" role="tab" aria-selected="false" data-ch="impact" style="background:#3c7a54">Impact<small>what it adds up to</small></button>
     </div>
-    <div class="grid g2" style="gap:12px">
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One forgotten follow-up.</div>
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One missing document.</div>
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One delayed approval.</div>
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One unanswered message.</div>
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One meeting without context.</div>
-      <div class="card" style="padding:14px 18px;color:var(--text-muted)">One task that quietly slips away.</div>
-    </div>
-  </div>
-</section>
 
-<!-- Trust -->
-<section class="section reveal">
-  <div class="wrap">
-    <h2 style="font:var(--text-display)">Built for enterprise trust.</h2>
-    <p class="muted" style="font:var(--text-body-lg);margin-top:10px;max-width:520px">Privacy and security aren't features. Zazoo guarantees them.</p>
-    <div class="grid g4" style="margin-top:28px">
-      <div class="card card-hover">
-        <div class="subtitle">Enterprise permissions</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Granular, role-aware access. Zazoo operates only within the boundaries you define.</p>
-      </div>
-      <div class="card card-hover">
-        <div class="subtitle">Private memory</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">What your Zazoo learns about you stays yours. Your data remains yours.</p>
-      </div>
-      <div class="card card-hover">
-        <div class="subtitle">Complete audit trails</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Every action is transparent and reviewable, from insight to execution.</p>
-      </div>
-      <div class="card card-hover">
-        <div class="subtitle">Human approvals</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Whenever it matters, a person decides. Support you can trust, freedom you can scale.</p>
-      </div>
+    <!-- Chapter: Values -->
+    <div class="chapter open" id="ch-values">
+      <div class="grid g3" id="values-grid" style="grid-template-columns:repeat(3,1fr)"></div>
     </div>
-    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:28px">
-      <span style="background:var(--teal-100);border-radius:999px;padding:10px 22px;font:var(--text-label);color:var(--teal-700)">Always present. <span style="color:var(--teal-500)">Never intrusive.</span></span>
-      <span style="background:var(--teal-100);border-radius:999px;padding:10px 22px;font:var(--text-label);color:var(--teal-700)">Always helpful. <span style="color:var(--teal-500)">Never in control.</span></span>
-      <span style="background:var(--teal-100);border-radius:999px;padding:10px 22px;font:var(--text-label);color:var(--teal-700)">Always available. <span style="color:var(--teal-500)">Never overreaching.</span></span>
-    </div>
-  </div>
-</section>
 
-<!-- Flow -->
-<section class="section section-brand reveal">
-  <div class="wrap">
-    <h2 style="font:var(--text-display)">From insight to execution.</h2>
-    <p class="muted" style="font:var(--text-body-lg);margin-top:10px">Most AI helps you think. Zazoo helps your organization move.</p>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:32px;flex-wrap:wrap">
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Insight</span>
-      <span class="muted" style="font-size:20px">→</span>
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Decision</span>
-      <span class="muted" style="font-size:20px">→</span>
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Delegation</span>
-      <span class="muted" style="font-size:20px">→</span>
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Execution</span>
-      <span class="muted" style="font-size:20px">→</span>
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Follow-up</span>
-      <span class="muted" style="font-size:20px">→</span>
-      <span style="background:rgba(247,243,234,.1);border:1px solid var(--teal-500);border-radius:999px;padding:12px 26px;font:var(--text-label)">Learning</span>
+    <!-- Chapter: Process -->
+    <div class="chapter" id="ch-process">
+      <p class="muted" style="text-align:center;font:var(--text-body-lg);max-width:560px;margin:0 auto">Tiny footprints across your work. And at the moment that matters, they stop, look back, and wait for you.</p>
+      <div class="trail" id="trail"></div>
+      <p style="text-align:center;margin-top:26px" class="subtitle">The footprints pause at every decision that is yours. Then they carry on.</p>
     </div>
-    <p class="muted" style="margin-top:20px">Every step powered by your Zazoo.</p>
-  </div>
-</section>
 
-<!-- Aeva -->
-<section class="section reveal">
-  <div class="wrap" style="display:grid;grid-template-columns:auto 1fr;gap:56px;align-items:center" id="aeva-grid">
-    <div class="spot" style="background:var(--mist-100);padding:32px 36px 0">
-      <div data-zazoo="aeva" data-size="230"></div>
-    </div>
-    <div>
-      <span class="badge badge-mist">Meet Aeva</span>
-      <h2 style="font:var(--text-display);margin-top:14px">Your chief of staff Zazoo.</h2>
-      <p class="muted" style="font:var(--text-body-lg);margin-top:12px;max-width:480px">
-        She notices the little things. Protects your attention. Coordinates the moving pieces. Keeps promises from falling through the cracks. And quietly celebrates every win as though it were her own, because in many ways, it is.</p>
-      <p class="subtitle" style="margin-top:16px">When you succeed, your Zazoo succeeds. Your success is its only purpose.</p>
-      <div class="companion-msg" style="margin-top:20px;max-width:520px">
-        <div data-zazoo="aeva" data-size="44" style="flex-shrink:0"></div>
-        <div>
-          <div class="who">Aeva</div>
-          <div class="txt">I've drafted three intros and moved the vendor review to Thursday. Your afternoon is clear for deep work.</div>
-        </div>
+    <!-- Chapter: Difference -->
+    <div class="chapter" id="ch-difference">
+      <p class="muted" style="text-align:center;font:var(--text-body-lg);max-width:600px;margin:0 auto 30px">Most AI companies compare features. A Zazoo is defined by how it behaves. Tiny stories you'll recognize from any workday.</p>
+      <div class="grid" style="gap:24px" id="diff-grid"></div>
+
+      <div class="card" style="margin-top:26px;border:1.5px solid var(--teal-300);padding:26px 30px">
+        <div class="subtitle">And one thing nobody else has: companions improve one another.</div>
+        <p class="muted" style="margin-top:8px;max-width:680px">Zazoos have their own culture. They ask each other for help, review each other's work, cover for one another when overloaded, and celebrate shared wins. Catch Lina thanking Nori for a missing document, or Bomi checking with Aeva before changing a workflow. Not multi-agent orchestration. A supportive team, working for one person's success.</p>
       </div>
+
+      <!-- The Mountain -->
+      <div style="margin-top:36px;text-align:center">
+        <svg viewBox="0 0 760 260" width="100%" style="max-width:760px" role="img" aria-label="Two climbers on the same mountain. One carries everything alone. The other climbs light while Zazoos clear the path.">
+          <line x1="380" y1="10" x2="380" y2="250" stroke="#e6ddc9" stroke-width="2" stroke-dasharray="5 6"/>
+          <path d="M40 250 L190 60 L340 250 Z" fill="#efe8d9"/>
+          <path d="M420 250 L570 60 L720 250 Z" fill="#dcebe4"/>
+          <path d="M175 79 L190 60 L205 79 L197 74 L190 82 L183 74 Z" fill="#fffdf8"/>
+          <path d="M555 79 L570 60 L585 79 L577 74 L570 82 L563 74 Z" fill="#fffdf8"/>
+          <circle cx="150" cy="180" r="10" fill="#223231"/>
+          <rect x="142" y="188" width="16" height="22" rx="6" fill="#223231"/>
+          <rect x="156" y="182" width="16" height="14" rx="3" fill="#b04a3a"/>
+          <rect x="158" y="198" width="13" height="9" rx="2" fill="#8b938d"/>
+          <rect x="136" y="196" width="9" height="12" rx="2" fill="#a3722c"/>
+          <circle cx="530" cy="170" r="10" fill="#223231"/>
+          <rect x="522" y="178" width="16" height="22" rx="6" fill="#2e7278"/>
+          <g transform="translate(470,196) scale(.32)" opacity=".95"><circle cx="60" cy="40" r="30" fill="#a3c6e0"/><circle cx="50" cy="36" r="5" fill="#22303a"/><circle cx="70" cy="36" r="5" fill="#22303a"/><path d="M48 50 Q60 58 72 50" stroke="#22303a" stroke-width="4" fill="none"/></g>
+          <g transform="translate(575,210) scale(.32)" opacity=".95"><circle cx="60" cy="40" r="30" fill="#abd4ba"/><circle cx="50" cy="36" r="5" fill="#22303a"/><circle cx="70" cy="36" r="5" fill="#22303a"/><path d="M48 50 Q60 58 72 50" stroke="#22303a" stroke-width="4" fill="none"/></g>
+          <g transform="translate(620,168) scale(.32)" opacity=".95"><circle cx="60" cy="40" r="30" fill="#f0d494"/><circle cx="50" cy="36" r="5" fill="#22303a"/><circle cx="70" cy="36" r="5" fill="#22303a"/><path d="M48 50 Q60 58 72 50" stroke="#22303a" stroke-width="4" fill="none"/></g>
+          <circle cx="640" cy="150" r="7" fill="#f0d494"><animate attributeName="opacity" values=".4;1;.4" dur="3s" repeatCount="indefinite"/></circle>
+          <text x="150" y="242" text-anchor="middle" style="font:700 13px 'Nunito Sans'" fill="#8b938d">carrying everything</text>
+          <text x="570" y="242" text-anchor="middle" style="font:700 13px 'Nunito Sans'" fill="#14555a">never climbing alone</text>
+        </svg>
+        <p class="subtitle" style="max-width:520px;margin:18px auto 0;text-wrap:pretty">The greatest achievements don't come from carrying more. They come from never climbing alone.</p>
+      </div>
+    </div>
+
+    <!-- Chapter: Impact -->
+    <div class="chapter" id="ch-impact">
+      <div class="grid g3" style="text-align:center">
+        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Hundreds</div><div class="muted" style="margin-top:4px">of hours returned</div></div>
+        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Thousands</div><div class="muted" style="margin-top:4px">of decisions coordinated</div></div>
+        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Millions</div><div class="muted" style="margin-top:4px">of tiny hurdles removed</div></div>
+      </div>
+      <p class="subtitle" style="text-align:center;margin-top:26px">"A Zazoo's only ambition is yours."</p>
     </div>
   </div>
 </section>
 
-<!-- Teams -->
-<section class="section reveal">
-  <div class="wrap">
-    <h2 style="font:var(--text-display)">Every team gets a multiplier.</h2>
-    <div class="grid g4" style="margin-top:28px">
-      <div class="card card-hover" style="text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="pip" data-size="84"></div></div>
-        <div class="subtitle" style="margin-top:12px">Engineering</div>
-        <div class="muted" style="margin-top:10px;font:var(--text-body-sm);text-align:left">✓ Keeps projects aligned<br>✓ Surfaces blockers<br>✓ Coordinates releases</div>
+<!-- ═══ Final scene: night falls ═══ -->
+<section class="night" id="night">
+  <div class="wrap" style="padding:64px 32px 56px;position:relative">
+    <span class="star" style="top:36px;left:12%"></span><span class="star" style="top:60px;left:28%;animation-delay:1s"></span>
+    <span class="star" style="top:30px;left:52%;animation-delay:2s"></span><span class="star" style="top:70px;left:70%;animation-delay:.5s"></span>
+    <span class="star" style="top:44px;left:88%;animation-delay:1.6s"></span>
+    <div class="split">
+      <div class="night-copy">
+        <span class="privacy-pill">● Privacy Mode enabled</span>
+        <h2 style="font:var(--text-display);margin-top:18px;text-wrap:pretty">Night falls. The office empties.</h2>
+        <p class="night-line">Aeva hangs up her little badge. Places her notebooks on the shelf. Looks at the photo of you on her wall, and smiles.</p>
+        <p class="night-line">Then she sleeps. And in her dream she is clearing tiny stones, holding a lantern, building little bridges, <b>while you climb impossible mountains.</b></p>
+        <p class="night-line">She never climbs the mountain. <b>She makes the climb possible.</b></p>
+        <p class="night-line" style="color:var(--night-glow)">Morning. Alarm rings. Eyes open. Smile. Back to work.</p>
       </div>
-      <div class="card card-hover" style="text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="sol" data-size="84" data-delay="0.5"></div></div>
-        <div class="subtitle" style="margin-top:12px">Sales</div>
-        <div class="muted" style="margin-top:10px;font:var(--text-body-sm);text-align:left">✓ Prepares meetings<br>✓ Tracks deals<br>✓ Follows up automatically</div>
-      </div>
-      <div class="card card-hover" style="text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="mira" data-size="84" data-delay="1"></div></div>
-        <div class="subtitle" style="margin-top:12px">Operations</div>
-        <div class="muted" style="margin-top:10px;font:var(--text-body-sm);text-align:left">✓ Runs recurring processes<br>✓ Coordinates vendors<br>✓ Keeps everything moving</div>
-      </div>
-      <div class="card card-hover" style="text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="odo" data-size="84" data-delay="1.5"></div></div>
-        <div class="subtitle" style="margin-top:12px">Leadership</div>
-        <div class="muted" style="margin-top:10px;font:var(--text-body-sm);text-align:left">✓ Summarizes everything<br>✓ Highlights risks<br>✓ Turns strategy into execution</div>
-      </div>
-    </div>
-    <div class="grid g2" style="margin-top:28px;gap:14px">
-      <div class="card" style="text-align:center;padding:16px 22px"><span class="muted">Less friction.</span> <span class="subtitle">More momentum.</span></div>
-      <div class="card" style="text-align:center;padding:16px 22px"><span class="muted">Less chasing.</span> <span class="subtitle">More leading.</span></div>
-      <div class="card" style="text-align:center;padding:16px 22px"><span class="muted">Less context switching.</span> <span class="subtitle">More deep work.</span></div>
-      <div class="card" style="text-align:center;padding:16px 22px"><span class="muted">Less managing work.</span> <span class="subtitle">More changing the world.</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- Compare -->
-<section class="section reveal">
-  <div class="wrap">
-    <h2 style="font:var(--text-display)">Why teams choose Zazoo.</h2>
-    <p class="muted" style="font:var(--text-body-lg);margin-top:10px">Most AI tools answer questions. Zazoo owns outcomes.</p>
-    <div class="card" style="margin-top:24px;padding:0;overflow:hidden">
-      <div style="display:grid;grid-template-columns:1fr 1fr;background:var(--surface-sunken);padding:14px 28px;font:var(--text-label);color:var(--text-muted)">
-        <div>Other AI tools</div><div style="color:var(--text-heading)">zazoo</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;border-top:1px solid var(--border)">
-        <div style="color:var(--ink-faint)">Answers prompts</div><div style="font-weight:600">✓ Understands your business</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;border-top:1px solid var(--border)">
-        <div style="color:var(--ink-faint)">Starts fresh every chat</div><div style="font-weight:600">✓ Learns continuously</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;border-top:1px solid var(--border)">
-        <div style="color:var(--ink-faint)">Works in one window</div><div style="font-weight:600">✓ Works across your organization</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;border-top:1px solid var(--border)">
-        <div style="color:var(--ink-faint)">Waits for instructions</div><div style="font-weight:600">✓ Proactively coordinates</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;padding:16px 28px;border-top:1px solid var(--border)">
-        <div style="color:var(--ink-faint)">Individual productivity</div><div style="font-weight:600">✓ Team execution</div>
-      </div>
-    </div>
-    <p class="subtitle" style="text-align:center;margin-top:22px">Most AI promises to do more. Zazoo promises to remove friction.</p>
-  </div>
-</section>
-
-<!-- Values -->
-<section class="section reveal">
-  <div class="wrap">
-    <h2 style="font:var(--text-display);text-align:center">Built to accompany. Never to overshadow.</h2>
-    <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:32px">
-      <div class="card card-hover" style="width:208px;text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="aeva" data-size="70"></div></div>
-        <div class="subtitle" style="margin-top:10px;font-size:17px">Loyal before clever</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Anyone can answer questions. Your Zazoo stays beside you.</p>
-      </div>
-      <div class="card card-hover" style="width:208px;text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="pip" data-size="70" data-delay="0.35"></div></div>
-        <div class="subtitle" style="margin-top:10px;font-size:17px">Quiet before loud</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">The best support goes unnoticed, until you imagine working without it.</p>
-      </div>
-      <div class="card card-hover" style="width:208px;text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="sol" data-size="70" data-delay="0.7"></div></div>
-        <div class="subtitle" style="margin-top:10px;font-size:17px">Helpful before impressive</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">No magic tricks. Just thousands of thoughtful moments.</p>
-      </div>
-      <div class="card card-hover" style="width:208px;text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="mira" data-size="70" data-delay="1.05"></div></div>
-        <div class="subtitle" style="margin-top:10px;font-size:17px">Present before prompted</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Ready when you need it. Invisible when you don't.</p>
-      </div>
-      <div class="card card-hover" style="width:208px;text-align:center">
-        <div style="display:flex;justify-content:center"><div data-zazoo="odo" data-size="70" data-delay="1.4"></div></div>
-        <div class="subtitle" style="margin-top:10px;font-size:17px">Trusted before autonomous</div>
-        <p class="muted" style="margin-top:8px;font:var(--text-body-sm)">Capability means little without confidence. Trust comes first.</p>
+      <div style="position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:260px">
+        <svg viewBox="0 0 320 240" width="320" role="img" aria-label="Aeva asleep in her cottage, dreaming of lighting your path">
+          <rect x="60" y="120" width="200" height="100" rx="10" fill="#3a5266"/>
+          <path d="M45 125 L160 45 L275 125 Z" fill="#2c4256"/>
+          <rect x="105" y="150" width="46" height="46" rx="8" fill="#f0d494" opacity=".9"/>
+          <line x1="128" y1="150" x2="128" y2="196" stroke="#3a5266" stroke-width="4"/><line x1="105" y1="173" x2="151" y2="173" stroke="#3a5266" stroke-width="4"/>
+          <rect x="185" y="158" width="40" height="62" rx="6" fill="#22384a"/>
+          <circle cx="192" cy="190" r="3" fill="#f0d494"/>
+          <ellipse cx="160" cy="228" rx="130" ry="10" fill="#0c1a24"/>
+          <g transform="translate(230,86)">
+            <ellipse cx="0" cy="0" rx="46" ry="30" fill="#e4edf2" opacity=".95"/>
+            <ellipse cx="-34" cy="12" rx="18" ry="13" fill="#e4edf2" opacity=".95"/>
+            <path d="M-18 12 L0 -12 L18 12 Z" fill="#7fadb2"/>
+            <circle cx="12" cy="-2" r="5" fill="#f0d494"><animate attributeName="opacity" values=".5;1;.5" dur="2.5s" repeatCount="indefinite"/></circle>
+          </g>
+        </svg>
+        <span class="zzz" style="top:30%;right:22%">z</span>
+        <span class="zzz" style="top:22%;right:16%;animation-delay:1.3s">z</span>
+        <span class="zzz" style="top:14%;right:10%;animation-delay:2.6s">Z</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA + footer -->
+<!-- ═══ CTA + footer ═══ -->
 <section class="section-brand" id="cta">
-  <div class="wrap" style="padding:64px 32px 56px;text-align:center">
-    <div style="font:var(--text-title);color:var(--text-on-brand);max-width:720px;margin:0 auto;text-wrap:pretty">
-      "The greatest companion is the one you never have to think about. Always prepared. Always on your side."</div>
-    <h2 style="font:var(--text-display);color:var(--text-on-brand);margin-top:36px">Everyone deserves a Zazoo.</h2>
-    <form data-email-capture data-subject="Zazoo early access" style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:24px;flex-wrap:wrap">
+  <div class="wrap" style="padding:56px 32px 48px;text-align:center">
+    <h2 style="font:var(--text-display);color:var(--text-on-brand)">Everyone deserves a Zazoo.</h2>
+    <p class="muted" style="font:var(--text-body-lg);margin-top:10px">Tomorrow morning, yours could already be working.</p>
+    <form data-email-capture data-subject="Zazoo early access" style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:22px;flex-wrap:wrap">
       <div data-fields style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
         <input type="email" required placeholder="you@company.com" aria-label="Work email"
           style="width:280px;padding:13px 20px;border-radius:var(--radius-pill);border:1.5px solid var(--teal-500);background:rgba(247,243,234,.08);color:var(--text-on-brand);font:var(--text-body-md);outline:none">
@@ -302,7 +347,199 @@
   </div>
 </section>
 
-<style>@media (max-width:860px){#aeva-grid{grid-template-columns:1fr !important}}</style>
 <script src="assets/zazoo.js" defer></script>
+<script src="assets/menagerie.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var M = window.Menagerie;
+
+  /* ── Scene 1: living ecosystem ── */
+  document.getElementById('hero-aeva').innerHTML = M.animalSVG('owl', 150, { label: 'Aeva, your chief of staff, working at the centre of your workspace' });
+  var ART = [
+    ['📄', 'Papers filing'], ['📅', 'Calendar updating'], ['✉️', 'Emails sorting'], ['📝', 'Notes writing themselves'],
+    ['💡', 'Idea appearing'], ['📊', 'Graphs updating'], ['🔍', 'Web pages scanned'], ['📚', 'Research opening'],
+    ['🔔', 'Reminder popping up'], ['🔗', 'Workflows connecting'], ['🌱', 'Your progress, watered']
+  ];
+  var spin = document.getElementById('eco-spin');
+  ART.forEach(function (a, i) {
+    var ang = (360 / ART.length) * i;
+    var w = document.createElement('div');
+    w.className = 'eco-item';
+    w.style.transform = 'rotate(' + ang + 'deg) translateY(calc(min(560px,90vw) / -2.15))';
+    w.innerHTML = '<span style="--na:' + (-ang) + 'deg">' + a[0] + ' ' + a[1] + '</span>';
+    spin.appendChild(w);
+  });
+
+  var TASKS = ['taking meeting notes', 'reviewing documents', 'searching', 'following up', 'scheduling', 'organizing tasks',
+    'reading contracts', 'summarizing PDFs', 'watching dashboards', 'reviewing proposals', 'coordinating other Zazoos',
+    'finding duplicate work', 'asking Nori for help', 'delivering updates', 'watering your progress plant'];
+  var BUBBLES = ['Vendor replied.', 'Draft ready.', 'I found three similar proposals.', 'Meeting moved to Thursday.',
+    'Waiting for your approval.', 'I think this article might help.', 'I’ve already reminded them.', 'Thanks, Nori. Found it.'];
+  var ti = 0, bi = 0, bubbles = [document.getElementById('eco-b1'), document.getElementById('eco-b2'), document.getElementById('eco-b3')];
+  setInterval(function () { ti = (ti + 1) % TASKS.length; document.getElementById('eco-task').textContent = TASKS[ti]; }, 2600);
+  setInterval(function () {
+    var b = bubbles[bi % 3];
+    b.textContent = BUBBLES[bi % BUBBLES.length];
+    b.classList.add('show');
+    setTimeout(function () { b.classList.remove('show'); }, 3000);
+    bi++;
+  }, 3600);
+
+  /* ── Scene 2: dictionary family ── */
+  var EMOJI = { aeva: '🦉', lina: '🦊', nori: '🐘', bomi: '🦫', jia: '🦢', neva: '🐬' };
+  var PROPS = { aeva: 'calendar', lina: 'book', nori: 'ledger', bomi: 'wrench', jia: 'letter', neva: 'brush' };
+  var fam = document.getElementById('fam'), famIntro = document.getElementById('fam-intro');
+  M.FAMILY.forEach(function (z, i) {
+    var c = document.createElement('button');
+    c.type = 'button';
+    c.className = 'fam-card';
+    c.dataset.id = z.id;
+    c.style.background = z.spot;
+    c.innerHTML = '<div class="art" data-quirk="' + z.id + '">' + M.animalSVG(z.animal, 88, { delay: i * 0.45, prop: PROPS[z.id], label: z.name + ', ' + z.role }) + '</div>' +
+      '<div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--text-heading);margin-top:8px">' + EMOJI[z.id] + ' ' + z.name + '</div>' +
+      '<div class="muted" style="font:var(--text-body-sm)">' + z.role + '</div>';
+    function focusZ() {
+      fam.classList.add('dimmed');
+      fam.querySelectorAll('.fam-card').forEach(function (x) { x.classList.toggle('on', x === c); });
+      famIntro.innerHTML = '<div class="say">' + z.intro + '<div class="muted" style="font:var(--text-body-sm);margin-top:8px;font-style:italic">' + z.quirk + '</div></div>';
+    }
+    function blurZ() {
+      fam.classList.remove('dimmed');
+      c.classList.remove('on');
+    }
+    c.addEventListener('mouseenter', focusZ);
+    c.addEventListener('focus', focusZ);
+    c.addEventListener('mouseleave', blurZ);
+    c.addEventListener('blur', blurZ);
+    c.addEventListener('click', focusZ);
+    fam.appendChild(c);
+  });
+
+  /* ── Scene 3: guardians + castle actors ── */
+  document.getElementById('castle-dog').innerHTML = M.animalSVG('dog', 74, { label: 'The Gatekeeper checks badges at the gate' });
+  document.getElementById('castle-robot').innerHTML = M.robotSVG(72);
+  var gu = document.getElementById('guardians');
+  var GPROPS = { judge: 'scales', security: 'key', gatekeeper: 'lantern', auditor: 'ledger' };
+  M.GUARDIANS.forEach(function (g, i) {
+    var d = document.createElement('div');
+    d.style.cssText = 'background:rgba(247,243,234,.08);border:1px solid var(--teal-500);border-radius:var(--radius-lg);padding:18px 20px;text-align:center';
+    d.innerHTML = '<div style="display:flex;justify-content:center">' + M.animalSVG(g.animal, 76, { delay: i * 0.5, prop: GPROPS[g.id], label: g.name }) + '</div>' +
+      '<div class="subtitle" style="color:var(--text-on-brand);margin-top:8px;font-size:17px">' + g.name + '</div>' +
+      '<div class="muted" style="font:var(--text-body-sm);margin-top:6px">' + g.doing + '</div>';
+    gu.appendChild(d);
+  });
+  // Gate doors close while the robot is refused, reopen after it leaves.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var dl = document.getElementById('door-l'), dr = document.getElementById('door-r');
+    setInterval(function () {
+      dl.style.transform = 'translateX(0)'; dr.style.transform = 'translateX(0)';
+      setTimeout(function () { dl.style.transform = 'translateX(-14px)'; dr.style.transform = 'translateX(14px)'; }, 12800);
+    }, 16000);
+    setTimeout(function () { dl.style.transform = 'translateX(-14px)'; dr.style.transform = 'translateX(14px)'; }, 12800);
+  }
+
+  /* ── Scene 4: chapters ── */
+  var books = document.querySelectorAll('.book');
+  books.forEach(function (b) {
+    b.addEventListener('click', function () {
+      books.forEach(function (x) { x.classList.remove('open'); x.setAttribute('aria-selected', 'false'); });
+      b.classList.add('open'); b.setAttribute('aria-selected', 'true');
+      document.querySelectorAll('.chapter').forEach(function (ch) { ch.classList.remove('open'); });
+      document.getElementById('ch-' + b.dataset.ch).classList.add('open');
+    });
+  });
+
+  // Values storybook
+  var VALUES = [
+    ['owl', 'coffee', 'Loyal before clever', 'She waits outside your meeting room holding coffee, because she noticed your schedule.'],
+    ['beaver', 'wrench', 'Quiet before loud', 'He fixes something and never mentions it.'],
+    ['fox', 'book', 'Helpful before impressive', 'She chooses the simpler answer, because it helps you more.'],
+    ['elephant', 'key', 'Trusted before autonomous', 'He knocks before entering. Every time.'],
+    ['swan', 'umbrella', 'Present before prompted', 'She is already carrying the umbrella before it rains.']
+  ];
+  var vg = document.getElementById('values-grid');
+  VALUES.forEach(function (v, i) {
+    var d = document.createElement('div');
+    d.className = 'story reveal in';
+    d.innerHTML = '<div class="pic">' + M.animalSVG(v[0], 96, { delay: i * 0.4, prop: v[1] }) + '</div>' +
+      '<div class="subtitle" style="margin-top:10px">' + v[2] + '</div>' +
+      '<p class="muted" style="margin-top:8px">' + v[3] + '</p>';
+    vg.appendChild(d);
+  });
+
+  // Process footprints
+  var STONES = [['👁', 'Insight'], ['🤝', 'Decision'], ['📨', 'Delegation'], ['⚙️', 'Execution'], ['🌱', 'Learning']];
+  var trail = document.getElementById('trail');
+  STONES.forEach(function (s, i) {
+    var st = document.createElement('div');
+    st.className = 'stone';
+    st.innerHTML = '<div class="dot">' + s[0] + '</div><div class="subtitle" style="margin-top:10px;font-size:17px">' + s[1] + '</div>' +
+      (s[1] === 'Decision' ? '<div class="badge badge-coral" style="margin-top:6px">waits for you</div>' : '');
+    trail.appendChild(st);
+    if (i < STONES.length - 1) {
+      var paws = document.createElement('div');
+      paws.style.cssText = 'display:flex;gap:10px;align-items:center';
+      for (var p = 0; p < 3; p++) {
+        var paw = document.createElement('span');
+        paw.className = 'paw';
+        paw.style.animationDelay = (i * 1.6 + p * 0.4) + 's';
+        paw.style.marginTop = (p % 2 ? '-8px' : '8px');
+        paws.appendChild(paw);
+      }
+      trail.appendChild(paws);
+    }
+  });
+
+  // Difference stories
+  var DIFF = [
+    ['The forgotten promise',
+      'Conversation ends. The AI disappears. Nothing happens.',
+      'The meeting ends. Aeva writes the action items, schedules follow-ups, notices one person never replied, and reminds them two days later. The loop closes.',
+      'Some AI ends with the conversation. A Zazoo begins with it.'],
+    ['Memory',
+      'Monday: explain the project. Tuesday: explain it again. Wednesday: again. The robot smiles blankly.',
+      'Monday: Aeva takes notes. Tuesday: she already knows. Wednesday: she is already prepared.',
+      'Some AI remembers conversations. A Zazoo remembers journeys.'],
+    ['Interruptions',
+      'The phone explodes. Notifications, emails, windows. The robot adds another popup.',
+      'Aeva quietly dismisses the spam, the duplicates, the low-priority noise. One notification remains: "This actually matters."',
+      'Some AI creates more information. A Zazoo protects your attention.'],
+    ['Teamwork',
+      'Five robots. Working separately. None of them talking.',
+      'Five Zazoos. Passing work along, checking each other, helping each other, celebrating together.',
+      'Some AI works alone. Zazoos work together.'],
+    ['The human pause',
+      'The robot clicks SEND. Immediately.',
+      'Aeva starts typing. Stops. Walks over. "I think this email may upset them. Would you like another version?"',
+      'Capability includes judgment.'],
+    ['The new idea',
+      'The robot answers exactly what was asked. Nothing more.',
+      'Aeva notices a pattern and walks over: "We solve this every week. Would you like me to automate it?"',
+      'Some AI answers questions. A Zazoo notices opportunities.'],
+    ['Growth',
+      'One year later, the robot is exactly the same.',
+      'One year later, her room is full of books. New badges, new skills, new memories. The plant is bigger. The nest is larger.',
+      'Some AI is updated. A Zazoo grows.'],
+    ['Success',
+      'The robot celebrates itself: "Response generated."',
+      'You win the award. Aeva claps quietly from backstage. Nobody notices her. She has never been happier.',
+      'Your success is your Zazoo’s success.']
+  ];
+  var dg = document.getElementById('diff-grid');
+  DIFF.forEach(function (s) {
+    var d = document.createElement('div');
+    d.className = 'diff';
+    d.innerHTML =
+      '<div class="side ai"><div class="lbl">SOME AI</div><p>' + s[1] + '</p></div>' +
+      '<div class="side zz"><div class="lbl">A ZAZOO</div><p>' + s[2] + '</p></div>' +
+      '<div class="diff-cap">' + s[3] + '</div>';
+    dg.appendChild(d);
+  });
+
+  /* ── life ── */
+  M.initEyeTracking();
+  M.initQuirks();
+});
+</script>
 </body>
 </html>

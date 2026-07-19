@@ -1,114 +1,136 @@
-# Zazoo Experience Guide
+# Zazoo Brand & Experience Guide
 
 How the zazoo website is implemented, and how to keep its empathy and emotional feel consistent across every surface (web today; platform, app, decks, and docs tomorrow).
 
 ---
 
+## 0. The one core principle
+
+**The website shouldn't feel like scrolling through sections. It should feel like following a Zazoo through its day.**
+
+Every animation must answer one question: *"What is my Zazoo doing while I'm busy?"* That question is the emotional thread of the entire homepage, and of every surface we build. If an animation doesn't answer it, cut the animation.
+
+The visitor's first thought must be: *"This thing has already started working for me."* Not waiting. Not listening. Already helping.
+
 ## 1. The emotional thesis
 
-Zazoo is not "an AI tool." It is **a companion whose only purpose is your success**. Every design and copy decision flows from that:
+Zazoo is not "an AI tool." It is **a companion whose only ambition is yours**.
 
-- **Warmth over slickness.** Felt textures, linen backgrounds, soft shadows. The interface should feel like something sitting gently on a table, not glowing in a server room.
-- **Calm over hype.** No exclamation marks, no "10x productivity," no countdown timers. The companion speaks quietly and confidently: "I've handled the scheduling for Thursday."
-- **Companionship over capability.** We never lead with model names, parameter counts, or feature matrices. We lead with what the companion *takes off your plate* and how that *feels*.
-- **Trust before autonomy.** Every promise of capability is paired with a promise of control: permissions, audit trails, human approvals. Trust copy is never in the footer; it is a first-class section.
+- **Warmth over slickness.** Felt textures, linen backgrounds, soft teal-tinted shadows.
+- **Calm over hype.** Nothing feels like notifications. Everything feels like companionship.
+- **Behavior over features.** We never compare feature lists. A Zazoo is defined by how it behaves, so we show tiny animated stories people recognize from daily work.
+- **Trust before autonomy.** Governance is a castle, not a firewall. Safety, not cybersecurity.
 
-The emotional arc of every page: **recognition** (you see your own friction), **relief** (someone is beside you), **confidence** (it operates within rules you set), **invitation** (start small, start free).
+The homepage arc is a day in a Zazoo's life: **she is already working** (hero) → **you learn what she is** (dictionary) → **you see what protects you** (castle) → **you read her little books** (values, process, difference, impact) → **night falls, she rests, and dreams of your climb** (final scene) → **you invite one home** (CTA).
 
-## 2. Design tokens (source of truth)
+## 2. Appeal: the Pixar rule
+
+Every Zazoo has a recognizable personality expressed in **micro-behaviors that never advance the product**. Pixar calls this "appeal": small, repeatable quirks that make audiences emotionally attach.
+
+| Zazoo | Quirk |
+|---|---|
+| Aeva | Pauses for a second before every important decision. |
+| Lina | Hums while researching. |
+| Nori | Neatly straightens objects before moving on. |
+| Bomi | Gets visibly excited when a tricky automation clicks. |
+| Jia | Waves enthusiastically after sending a thoughtful follow-up. |
+| Neva | Doodles in the margins when a meeting runs long. |
+
+Aeva also yawns, stretches, glances at the visitor, and returns to work. She's happy because she's helping. The goal: visitors leave remembering not just that "Aeva schedules meetings" but that **"Aeva smiled at me before going back to work."** We are not selling software; we are introducing a companion people want beside them.
+
+Implementation: `assets/menagerie.js` (`initQuirks` emits periodic quirk emotes; `initEyeTracking` makes pupils follow the visitor's cursor, so a paused Zazoo genuinely "looks at you"). All of it collapses under `prefers-reduced-motion`.
+
+## 3. The menagerie
+
+Every Zazoo is a **unique animal**. No two placements reuse the same animal. All share the felt material, the suit, the blush, the smile: animals change, warmth doesn't.
+
+### The family (dictionary scene)
+| Animal | Name | Role | Workspace behavior |
+|---|---|---|---|
+| 🦉 Owl | Aeva | Chief of staff | Planning, prioritization, decision making, keeps everyone moving |
+| 🦊 Fox | Lina | Research companion | Constantly reading, highlighting ideas, connecting information |
+| 🐘 Elephant | Nori | Operations | Approvals, processes, vendors, moving things along |
+| 🦫 Beaver | Bomi | Builder | Constructing automations, connecting workflows, fixing things |
+| 🦢 Swan | Jia | Relationships | Follow-ups, meeting prep, birthdays, customer care |
+| 🐬 Dolphin | Neva | Creativity | Sketches, mood boards, presentations, possibilities |
+
+### The guardians (governance castle)
+Owl Judge (weighs requests against your rules), Elephant Security (opens only allowed doors), Dog Gatekeeper (checks badges), Bear Auditor (writes everything down).
+
+### The outsider
+A small grey robot with red eyes plays "some AI" in governance and Difference scenes. It is never menacing and never harmed. It is gently escorted out: *"Sorry. Not authorized."* No violence. No fear.
+
+Rendering: `Menagerie.animalSVG(kind, size, {delay, prop})` in `assets/menagerie.js`. Props (book, wrench, ledger, letter, brush, calendar, key, scales, lantern, coffee, umbrella, plant) show what a companion is doing right now; a Zazoo is always doing something for someone.
+
+## 4. The homepage scenes (canonical storyboard)
+
+1. **Hero, "Your Zazoo never stops."** A living circular workspace: papers filing, calendars updating, emails sorting, ideas lighting up, all orbiting Aeva, who works at the centre. A ticker shows what she's doing right now; speech bubbles surface small cared-for moments ("Vendor replied." "I've already reminded them." "Thanks, Nori. Found it."). Copy stays minimal; the animation tells the story.
+2. **Dictionary.** Oxford-style entry. *Zazoo /za·zoo/ noun. An asymmetrical leap in capability.* Origin, purpose, impact, and the quote "A Zazoo's only ambition is yours." Beside it, the whole family works; hovering pauses everyone else while the chosen companion stops, looks into your eyes, and introduces itself with real numbers from its week.
+3. **Governance castle.** Beautiful doors, warm windows, guardians at their posts. The robot vignette loops: approach, gentle refusal, doors close, calm returns. Mirrored statements: Always available / Only when permitted. Always learning / Only what you allow. Always transparent / Nothing hidden. Always helpful / Never overreaching.
+4. **Four little books.** Values (storybook: one illustration, one sentence per value), Process (tiny footprints across Insight → Decision → Delegation → Execution → Learning, stopping to wait for the human at Decision), Difference (see §5), Impact (hundreds / thousands / millions).
+5. **Night falls.** Privacy Mode enabled. Aeva walks home, hangs up her badge, looks at your photo, sleeps, and dreams: clearing stones, holding the lantern, building bridges, while you climb impossible mountains. **She never climbs the mountain. She makes the climb possible.** Morning. Alarm. Smile. Back to work.
+
+## 5. The Zazoo Difference (behavior, not features)
+
+Never a comparison table. A collection of tiny recognizable stories, each "Some AI…" vs "A Zazoo…", each with one caption:
+
+- The forgotten promise. *Some AI ends with the conversation. A Zazoo begins with it.*
+- Memory. *Some AI remembers conversations. A Zazoo remembers journeys.*
+- Interruptions. *Some AI creates more information. A Zazoo protects your attention.*
+- Teamwork. *Some AI works alone. Zazoos work together.*
+- The human pause. *Capability includes judgment.*
+- The new idea. *Some AI answers questions. A Zazoo notices opportunities.*
+- Growth. *Some AI is updated. A Zazoo grows.*
+- Success. *Your success is your Zazoo's success.*
+- Signature visual: **The Mountain.** Left, a climber carrying everything. Right, the same mountain, climbing light, Zazoos holding ropes, clearing rocks, lighting the path. *The greatest achievements don't come from carrying more. They come from never climbing alone.*
+
+**The uniquely-Zazoo differentiator: companions improve one another.** Zazoos have a culture: they ask each other for help, review each other's work, cover for one another, learn from one another, and celebrate shared wins. Show it in passing moments (Lina thanking Nori; Bomi checking a change with Aeva). Competitors compare benchmarks; we show a supportive team working for one person's success.
+
+## 6. Design tokens
 
 All tokens live in `assets/zazoo.css` and mirror the Zazoo design-system project on claude.ai/design.
 
 | Layer | Tokens | Emotional job |
 |---|---|---|
 | Linen neutrals | `--linen-50 … 400` | Paper, warmth, calm ground |
-| Teal brand | `--teal-100 … 900` | Depth, trust, "the adult in the room" |
-| Coral accent | `--coral-100 / 500 / 600` | Warm invitation; used ONLY for the primary action |
-| Companion pastels | `--sage / mist / heather` | Each character's home color; softness and individuality |
+| Teal brand | `--teal-100 … 900` | Depth, trust |
+| Coral accent | `--coral-*` | The hand extended; ONLY for the primary action |
+| Companion pastels | `--sage / mist / heather / warmwood` | Each character's home color |
+| Night | `--night-900 / 700 / glow` | The final scene: rest, privacy, warm windows |
 | Ink | `--ink / -soft / -faint` | Honest, readable, never pure black |
 
-Rules:
+Rules: one coral CTA per viewport; dark teal sections are "belief" moments (max 2 to 3 per page); shadows always teal-tinted; the night palette appears only in the closing scene.
 
-- One coral CTA per viewport. Coral is the "hand extended" color; if everything is coral, nothing is inviting.
-- Dark sections (`--surface-brand`, teal-700) are the "belief" moments: flow, program elements, quotes, final CTA. Use at most 2 to 3 per page so they land as emphasis, not wallpaper.
-- Shadows are always teal-tinted (`--shadow-card`, `--shadow-raised`), never gray or black. Felt sits gently on the table.
+## 7. Typography and voice
 
-## 3. Typography
+`Baloo 2` for display (rounded, friendly authority), `Nunito Sans` for body. Headlines may be playful only when the body under them is concrete. Companion speech is warm first person, short, concrete: "I've handled the scheduling for Thursday." Never "TASK COMPLETED SUCCESSFULLY", never "10x your productivity!". No em-dashes. "You/your" outnumbers "we/our" on every page.
 
-- `Baloo 2` (display): rounded, friendly authority. Headlines, buttons, numbers, the wordmark.
-- `Nunito Sans` (body): plain-spoken clarity.
-- Scale lives in `--text-*` tokens. Headlines use `text-wrap: pretty`. Body copy stays under ~65ch.
+## 8. Motion rules
 
-Voice pairing rule: a Baloo headline may be playful ("Small hurdles. Giant ambitions.") only when the Nunito body under it is concrete and honest. Whimsy in the display layer, substance in the body layer, never the reverse.
+- Idle life is slow: 3.4s bob, 4.6s blink, 70s ecosystem orbit. UI transitions 150 to 250ms with `--ease-soft`.
+- Motion always answers the core question ("what is my Zazoo doing?") or a user action. Nothing loops for attention except the companions' idle life.
+- Hover pauses, never accelerates: attention makes the world stop and look back at you.
+- Everything honors `prefers-reduced-motion: reduce` (orbits, bobs, blinks, robot loop, quirk emotes, eye tracking all gated).
+- Performance: no frameworks, no scroll listeners (IntersectionObserver + rAF-throttled pointer tracking only), animations restricted to transform/opacity.
 
-## 4. The companions
-
-The five Zazoos (Aeva, Pip, Sol, Mira, Odo) are rendered by `assets/zazoo.js` (`Zazoo.charSVG`) as inline SVG: felt egg body, business suit, blink and bob animations.
-
-Emotional rules:
-
-- **A companion is always doing something for someone.** Never use a character as pure decoration; pair it with a role, a message bubble, or a superpower list.
-- **Companions live in their pastel "spot"** (`.spot` + their `--*-100` color). The spot is their home; it makes them feel placed, not pasted.
-- **They blink.** The blink (and gentle bob) is the "alive" tell. Never remove it except under `prefers-reduced-motion`, which both animations respect.
-- **Stagger their delays** (`data-delay`) when several appear together, so they read as individuals, not clones.
-- Speech is always warm first person, concrete, and short: what was done, what needs the human. See "Voice" below.
-
-## 5. Voice
-
-From the brand guideline (`guidelines/brand-voice.html` in the design project):
-
-- DO: "I've handled the scheduling for Thursday." / "Inbox at zero. Two things need you."
-- DON'T: "Supercharge your productivity 10x!" / "TASK COMPLETED SUCCESSFULLY"
-
-Site-wide copy rules applied in this implementation:
-
-- Short declarative sentences. Periods, not exclamation marks. No em-dashes.
-- "You/your" always outnumbers "we/our" on a page.
-- Every claim of power is followed by a claim of restraint ("Always helpful. Never in control.").
-- The consulting page deliberately does NOT sell Zazoo; it sells readiness, systems, and judgment. The platform sells itself by how the advice feels.
-
-## 6. Interaction principles
-
-All interactivity is vanilla JS in `assets/zazoo.js` plus small per-page scripts. Patterns ported from the interactive reference kit, re-skinned in zazoo theme:
-
-| Pattern | Where | Emotional job |
-|---|---|---|
-| Family selector (hover to preview, click to lock) | Landing | "Choose your companion" is the core product metaphor; choosing should feel like play |
-| Journey wheel (SVG segments) | Training | The 6-month journey is one whole; the wheel makes progression tangible |
-| Program tabs (All / Running now / Coming next) | Training | Honesty: what exists now vs. what is coming is never blurred |
-| Blocker chips + answer card | Consulting | Recognition first: the visitor names their pain before we pitch anything |
-| Scroll reveal (`.reveal` + IntersectionObserver) | All pages | Content arrives gently, like being handed something, not thrown |
-| Card hover lift | All pages | Felt objects respond to touch |
-| Email capture with honest done state | All pages | One field, one promise; the done state confirms without confetti |
-
-Motion rules:
-
-- Durations 150 to 250ms with `--ease-soft`; character idle loops are slow (3.4s bob, 4.6s blink).
-- Everything collapses gracefully under `prefers-reduced-motion: reduce` (reveal, bob, blink, fades all gated).
-- Motion always answers a user action or entrance; nothing loops for attention except the characters' idle life.
-
-## 7. Page architecture
+## 9. Page architecture
 
 ```
-index.html       Platform: hero (Aeva) → big picture → family selector → hurdles
-                 → trust → flow (dark) → Aeva feature → teams → comparison → values → CTA (dark)
-training.html    Hero (Pip+Odo) + stats → journey wheel → program elements (dark)
-                 → programs current/next → CTA
-consulting.html  Hero (Aeva+Mira) → three practices → system anatomy (dark)
-                 → blocker selector → trends → approach → belief quote (dark) → CTA
-assets/zazoo.css Tokens + components (single stylesheet, no build step)
-assets/zazoo.js  Characters + shared interactions (no framework, no CDN dependency)
+index.html       The day of a Zazoo: hero ecosystem → dictionary → castle
+                 → four books (values/process/difference/impact) → night → CTA
+training.html    Hero + stats → journey wheel → program elements → programs → CTA
+consulting.html  Hero → practices → system anatomy → blockers → trends → approach → belief → CTA
+assets/zazoo.css Tokens + components
+assets/zazoo.js  Legacy egg companions (training/consulting) + shared interactions
+assets/menagerie.js  Animal companions, guardians, robot, eye tracking, quirks
 ```
 
-Performance choices (the "optimization" in this pass): the original kit shipped React + ReactDOM + Babel-standalone from CDN and compiled JSX in the browser on every load. This implementation is static HTML + one CSS file + one JS file, no build step, no external JS. Only external request is Google Fonts.
+## 10. Extending to new surfaces
 
-## 8. Extending to new surfaces
-
-When building anything new under the zazoo brand (platform UI, decks, emails):
-
-1. Start from the tokens, never from hex values.
-2. Give every surface one companion with a job, in its spot color.
-3. Write the companion's line first ("I've prepared the agenda"), design around it.
+1. Start from the tokens, never hex values.
+2. Give every surface one companion, a unique animal, with a job and a prop.
+3. Write the companion's line first; design around it.
 4. Pair every capability statement with a control statement.
-5. End with one coral action. Everything else is teal or quiet.
-6. Read the final copy aloud. If it sounds like a press release, rewrite it; if it sounds like a kind, competent colleague, ship it.
+5. One coral action; everything else teal or quiet.
+6. Add one quirk that doesn't advance the product. That's the part people remember.
+7. Read the copy aloud. Kind, competent colleague: ship. Press release: rewrite.

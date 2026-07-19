@@ -1,6 +1,6 @@
 # Task: Website Interactions (full interactive redesign)
 
-Status: **PLANNED, not started.** This is the deferred follow-up task split out from the 2026-07-18 website optimization. The current site ships the content, theme, and baseline interactivity; this task covers the full interactive re-imagining.
+Status: **IN PROGRESS.** 2026-07-18: the homepage now implements the day-in-the-life storyboard (hero ecosystem, dictionary family with 6 unique animal Zazoos, governance castle with guardians and the robot vignette, four chapter books incl. the behavior-based Difference stories and the Mountain, and the night scene), with eye tracking and personality quirks in `assets/menagerie.js`. Remaining scope: training + consulting pages, page transitions, richer 2.5D parallax layers, and the polish list below.
 
 ## Goal
 
