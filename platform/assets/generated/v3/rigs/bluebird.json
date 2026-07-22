@@ -1,0 +1,123 @@
+{
+  "animal": "bluebird",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 207.5,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "body",
+      "file": "parts/bluebird/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 1.0526,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 1
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r3_c7.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.8927,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 2
+    },
+    {
+      "name": "beak",
+      "file": "parts/bluebird/beak.png",
+      "x": 320.0,
+      "y": 352.0,
+      "scale": 1.0526,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 246.2,
+      "y": 316.9,
+      "scale": 0.8356,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 393.8,
+      "y": 316.9,
+      "scale": 0.8588,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_slate.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2701,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 6
+    },
+    {
+      "name": "wingL",
+      "file": "parts/bluebird/wingL.png",
+      "x": 134.5,
+      "y": 514.0,
+      "scale": 1.0526,
+      "rot": -6,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 7
+    },
+    {
+      "name": "wingR",
+      "file": "parts/bluebird/wingR.png",
+      "x": 505.5,
+      "y": 514.0,
+      "scale": 1.0526,
+      "rot": 6,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 8
+    }
+  ]
+}

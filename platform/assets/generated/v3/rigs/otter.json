@@ -1,0 +1,149 @@
+{
+  "animal": "otter",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 176.0,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "earL",
+      "file": "parts/otter/earL.png",
+      "x": 225.2,
+      "y": 230.5,
+      "scale": 0.8838,
+      "rot": 14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 1
+    },
+    {
+      "name": "earR",
+      "file": "parts/otter/earR.png",
+      "x": 414.8,
+      "y": 230.5,
+      "scale": 0.8838,
+      "rot": -14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 2
+    },
+    {
+      "name": "body",
+      "file": "parts/otter/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.8838,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r0_c5.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.621,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "nose",
+      "file": "parts/otter/nose.png",
+      "x": 320.0,
+      "y": 360.1,
+      "scale": 0.8838,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 257.4,
+      "y": 316.9,
+      "scale": 0.709,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 382.6,
+      "y": 316.9,
+      "scale": 0.7287,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_denim.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2304,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 8
+    },
+    {
+      "name": "armL",
+      "file": "parts/otter/armL.png",
+      "x": 169.4,
+      "y": 530.2,
+      "scale": 0.8838,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    },
+    {
+      "name": "armR",
+      "file": "parts/otter/armR.png",
+      "x": 470.6,
+      "y": 530.2,
+      "scale": 0.8838,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    }
+  ]
+}

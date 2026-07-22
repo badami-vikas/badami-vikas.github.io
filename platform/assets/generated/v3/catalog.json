@@ -1,0 +1,108 @@
+{
+  "hippo": [
+    "body",
+    "armL",
+    "armR",
+    "earL",
+    "earR",
+    "nose"
+  ],
+  "koala": [
+    "body",
+    "armL",
+    "armR",
+    "earL",
+    "earR",
+    "nose"
+  ],
+  "otter": [
+    "body",
+    "armL",
+    "armR",
+    "earL",
+    "earR",
+    "nose"
+  ],
+  "rhino": [
+    "body",
+    "armL",
+    "armR",
+    "horn",
+    "nose"
+  ],
+  "beaver": [
+    "body",
+    "armL",
+    "armR",
+    "earL",
+    "earR",
+    "tail",
+    "nose"
+  ],
+  "pig": [
+    "body",
+    "armL",
+    "armR",
+    "earL",
+    "earR",
+    "nose"
+  ],
+  "parrot": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "bluebird": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "owl": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "flamingo": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "peacock": [
+    "body",
+    "wingL",
+    "wingR",
+    "crestL",
+    "crestR",
+    "beak"
+  ],
+  "seagull": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "cardinal": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "penguin": [
+    "body",
+    "wingL",
+    "wingR",
+    "beak"
+  ],
+  "sloth": [
+    "body",
+    "armL",
+    "armR",
+    "eyepatchL",
+    "eyepatchR",
+    "nose"
+  ]
+}

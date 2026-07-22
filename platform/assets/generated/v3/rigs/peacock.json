@@ -1,0 +1,149 @@
+{
+  "animal": "peacock",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 218.0,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "crestL",
+      "file": "parts/peacock/crestL.png",
+      "x": 236.2,
+      "y": 181.9,
+      "scale": 1.0325,
+      "rot": 10,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 1
+    },
+    {
+      "name": "crestR",
+      "file": "parts/peacock/crestR.png",
+      "x": 403.8,
+      "y": 181.9,
+      "scale": 1.0325,
+      "rot": -10,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 2
+    },
+    {
+      "name": "body",
+      "file": "parts/peacock/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 1.0325,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r3_c8.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.998,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "beak",
+      "file": "parts/peacock/beak.png",
+      "x": 320.0,
+      "y": 352.0,
+      "scale": 1.0325,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 242.4,
+      "y": 316.9,
+      "scale": 0.878,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 397.6,
+      "y": 316.9,
+      "scale": 0.9024,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_pine.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2838,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 8
+    },
+    {
+      "name": "wingL",
+      "file": "parts/peacock/wingL.png",
+      "x": 125.1,
+      "y": 514.0,
+      "scale": 1.0325,
+      "rot": -6,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    },
+    {
+      "name": "wingR",
+      "file": "parts/peacock/wingR.png",
+      "x": 514.9,
+      "y": 514.0,
+      "scale": 1.0325,
+      "rot": 6,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    }
+  ]
+}

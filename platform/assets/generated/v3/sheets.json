@@ -1,0 +1,174 @@
+{
+  "sheets": {
+    "Screenshot 2026-07-20 at 2.04.17 PM.png": {
+      "animal": "hippo",
+      "parts": [
+        "armL",
+        "armR",
+        "earL",
+        "earR",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.04.24 PM.png": {
+      "animal": "koala",
+      "parts": [
+        "armL",
+        "armR",
+        "earL",
+        "earR",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.04.32 PM.png": {
+      "animal": "otter",
+      "parts": [
+        "armL",
+        "armR",
+        "earL",
+        "earR",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.04.42 PM.png": {
+      "animal": "rhino",
+      "parts": [
+        "armL",
+        "armR",
+        "horn",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.04.53 PM.png": {
+      "animal": "beaver",
+      "parts": [
+        "armL",
+        "armR",
+        "earL",
+        "earR",
+        "tail",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.03 PM.png": {
+      "animal": "pig",
+      "parts": [
+        "armL",
+        "armR",
+        "earL",
+        "earR",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.11 PM.png": {
+      "animal": "parrot",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.16 PM.png": {
+      "animal": "bluebird",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.20 PM.png": {
+      "animal": "owl",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.26 PM.png": {
+      "animal": "flamingo",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.32 PM.png": {
+      "animal": "peacock",
+      "parts": [
+        "wingL",
+        "wingR",
+        "crestL",
+        "crestR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.40 PM.png": {
+      "animal": "seagull",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.45 PM.png": {
+      "animal": "cardinal",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.05.50 PM.png": {
+      "animal": "penguin",
+      "parts": [
+        "wingL",
+        "wingR",
+        "beak"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.06.46 PM.png": {
+      "animal": "sloth",
+      "parts": [
+        "armL",
+        "armR",
+        "eyepatchL",
+        "eyepatchR",
+        "nose"
+      ]
+    },
+    "Screenshot 2026-07-20 at 2.06.11 PM.png": {
+      "animal": null,
+      "note": "misc grid: spare arms, ties, noses - skipped"
+    },
+    "Screenshot 2026-07-20 at 2.06.27 PM.png": {
+      "animal": null,
+      "note": "misc strip: spare ears/horns - skipped"
+    }
+  },
+  "accessories": {
+    "Screenshot 2026-07-20 at 1.23.29 PM.png": "suit_navy",
+    "Screenshot 2026-07-20 at 1.23.45 PM.png": "suit_brown",
+    "Screenshot 2026-07-20 at 1.23.58 PM.png": "suit_sage",
+    "Screenshot 2026-07-20 at 1.24.07 PM.png": "suit_blue",
+    "Screenshot 2026-07-20 at 1.24.21 PM.png": "suit_cream",
+    "Screenshot 2026-07-20 at 1.30.25 PM.png": "tie_black",
+    "Screenshot 2026-07-20 at 1.30.31 PM.png": "tie_charcoal",
+    "Screenshot 2026-07-20 at 1.30.35 PM.png": "tie_gray",
+    "Screenshot 2026-07-20 at 1.30.39 PM.png": "tie_white",
+    "Screenshot 2026-07-20 at 1.30.42 PM.png": "tie_beige",
+    "Screenshot 2026-07-20 at 1.30.47 PM.png": "tie_tan",
+    "Screenshot 2026-07-20 at 1.31.01 PM.png": "tie_olive",
+    "Screenshot 2026-07-20 at 1.31.13 PM.png": "tie_mustard",
+    "Screenshot 2026-07-20 at 1.31.22 PM.png": "tie_ochre",
+    "Screenshot 2026-07-20 at 1.31.31 PM.png": "tie_rust",
+    "Screenshot 2026-07-20 at 1.31.44 PM.png": "tie_sienna",
+    "Screenshot 2026-07-20 at 1.31.58 PM.png": "tie_brown",
+    "Screenshot 2026-07-20 at 1.32.05 PM.png": "tie_sage",
+    "Screenshot 2026-07-20 at 1.32.11 PM.png": "tie_forest",
+    "Screenshot 2026-07-20 at 1.32.19 PM.png": "tie_pine",
+    "Screenshot 2026-07-20 at 1.32.26 PM.png": "tie_slate",
+    "Screenshot 2026-07-20 at 1.32.35 PM.png": "tie_mint",
+    "Screenshot 2026-07-20 at 1.32.42 PM.png": "tie_powder",
+    "Screenshot 2026-07-20 at 1.32.56 PM.png": "tie_denim"
+  }
+}

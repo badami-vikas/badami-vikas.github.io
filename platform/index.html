@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f3efe7" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='34' rx='22' ry='26' fill='%23768375'/%3E%3Ccircle cx='25' cy='31' r='3' fill='%23282722'/%3E%3Ccircle cx='39' cy='31' r='3' fill='%23282722'/%3E%3C/svg%3E" />
+    <title>Zazoo Motion Lab</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Zazoo Motion Lab home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <span>Zazoo</span>
+      </a>
+      <div class="engine-status"><span></span></div>
+    </header>
+
+    <main>
+      <section class="lab-shell" aria-label="Interactive animation lab">
+        <aside class="layer-panel" aria-label="Render layers">
+          <div class="layer-panel-heading">Layers</div>
+          <select id="layer-filter" class="layer-filter">
+            <option value="all">All</option>
+            <option value="body">Body</option>
+            <option value="accessory">Accessory</option>
+          </select>
+          <div class="layer-list" id="layer-list"></div>
+        </aside>
+
+        <div class="stage-column">
+          <div class="stage" id="stage">
+            <div class="stage-label">
+              <b id="performance-label">Calm · Idle</b>
+              <div class="stage-toolbar">
+                <button type="button" id="zoom-out-button" title="Zoom out">−</button>
+                <button type="button" id="zoom-reset-button" title="Reset zoom">100%</button>
+                <button type="button" id="zoom-in-button" title="Zoom in">+</button>
+                <button type="button" id="grid-toggle-button" title="Toggle reference grid">Grid</button>
+                <button type="button" id="annotate-toggle-button" title="Draw on canvas">Annotate</button>
+                <button type="button" id="annotate-clear-button" title="Clear annotations">Clear</button>
+              </div>
+            </div>
+            <canvas class="annotate-canvas" id="annotate-canvas"></canvas>
+            <div class="avatar-scene" id="avatar-scene">
+              <div class="pixi-host" id="pixi-host" role="img" aria-label="A fully layered felt Zazoo character"></div>
+            </div>
+          </div>
+
+          <div class="crew-strip" aria-label="Choose a Zazoo">
+            <div class="strip-heading"><span id="crew-count">01 / 16</span></div>
+            <div class="crew-list" id="crew-list"></div>
+          </div>
+        </div>
+
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <button class="icon-button" id="reset-button" title="Reset performance" aria-label="Reset performance">↺</button>
+          </div>
+
+          <div class="control-group">
+            <label for="emotion-select">Emotion</label>
+            <div class="select-wrap"><select id="emotion-select"></select></div>
+          </div>
+
+          <div class="control-group">
+            <label>Action</label>
+            <div class="segmented segmented-5" id="action-controls"></div>
+          </div>
+
+          <div class="control-group appearance-controls">
+            <label>Wardrobe &amp; artefacts</label>
+            <div class="appearance-grid">
+              <label><span>Suit</span><select id="suit-select"></select></label>
+              <label><span>Tie</span><select id="accessory-select"></select></label>
+              <label><span>Held item</span><select id="artifact-select"></select></label>
+              <label class="spectacles-toggle"><span>Spectacles</span><input id="spectacles-toggle" type="checkbox" /><i></i></label>
+            </div>
+          </div>
+
+          <div class="control-group sliders">
+            <div class="range-row">
+              <label for="warmth-range">Warmth <output id="warmth-output">45</output></label>
+              <input id="warmth-range" type="range" min="0" max="100" value="45" />
+            </div>
+            <div class="range-row">
+              <label for="confidence-range">Confidence <output id="confidence-output">72</output></label>
+              <input id="confidence-range" type="range" min="0" max="100" value="72" />
+            </div>
+            <div class="range-row">
+              <label for="energy-range">Energy <output id="energy-output">50</output></label>
+              <input id="energy-range" type="range" min="0" max="100" value="50" />
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>Attention</label>
+            <div class="attention-row" id="attention-controls">
+              <button data-value="user" type="button">User</button>
+              <button data-value="cursor" class="active" type="button">Cursor</button>
+              <button data-value="away" type="button">Away</button>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div><span class="api-dot"></span><span>Performance contract</span><button id="copy-button" type="button">Copy</button></div>
+            <code id="api-code">perform({ emotion: 'calm', action: 'idle' })</code>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

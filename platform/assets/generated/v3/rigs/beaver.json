@@ -1,0 +1,162 @@
+{
+  "animal": "beaver",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 197.2,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "earL",
+      "file": "parts/beaver/earL.png",
+      "x": 213.8,
+      "y": 230.5,
+      "scale": 0.8504,
+      "rot": 14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 1
+    },
+    {
+      "name": "earR",
+      "file": "parts/beaver/earR.png",
+      "x": 426.2,
+      "y": 230.5,
+      "scale": 0.8504,
+      "rot": -14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 2
+    },
+    {
+      "name": "tail",
+      "file": "parts/beaver/tail.png",
+      "x": 502.1,
+      "y": 622.0,
+      "scale": 0.8504,
+      "rot": -35,
+      "pivot": [
+        0.2,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "body",
+      "file": "parts/beaver/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.8504,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r2_c5.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.791,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "nose",
+      "file": "parts/beaver/nose.png",
+      "x": 320.0,
+      "y": 360.1,
+      "scale": 0.8504,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 249.8,
+      "y": 316.9,
+      "scale": 0.7944,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 390.2,
+      "y": 316.9,
+      "scale": 0.8165,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 8
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_rust.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2581,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 9
+    },
+    {
+      "name": "armL",
+      "file": "parts/beaver/armL.png",
+      "x": 151.2,
+      "y": 530.2,
+      "scale": 0.8504,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    },
+    {
+      "name": "armR",
+      "file": "parts/beaver/armR.png",
+      "x": 488.8,
+      "y": 530.2,
+      "scale": 0.8504,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 11
+    }
+  ]
+}

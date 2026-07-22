@@ -1,0 +1,812 @@
+[
+  {
+    "name": "suit_black_blackcol",
+    "row": 0,
+    "col": 0,
+    "size": [
+      227,
+      248
+    ],
+    "rgb": [
+      21,
+      21,
+      20
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_black_blackcol_2",
+    "row": 0,
+    "col": 1,
+    "size": [
+      219,
+      247
+    ],
+    "rgb": [
+      21,
+      28,
+      36
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_sky_blackcol",
+    "row": 0,
+    "col": 2,
+    "size": [
+      217,
+      245
+    ],
+    "rgb": [
+      33,
+      63,
+      69
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_black_blackcol_3",
+    "row": 0,
+    "col": 3,
+    "size": [
+      217,
+      246
+    ],
+    "rgb": [
+      26,
+      37,
+      26
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_black_whitecol",
+    "row": 0,
+    "col": 4,
+    "size": [
+      218,
+      249
+    ],
+    "rgb": [
+      39,
+      18,
+      22
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_terracotta_whitecol",
+    "row": 0,
+    "col": 5,
+    "size": [
+      213,
+      248
+    ],
+    "rgb": [
+      209,
+      194,
+      174
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_terracotta_whitecol_2",
+    "row": 0,
+    "col": 6,
+    "size": [
+      215,
+      247
+    ],
+    "rgb": [
+      185,
+      164,
+      139
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_terracotta_whitecol_3",
+    "row": 0,
+    "col": 7,
+    "size": [
+      214,
+      247
+    ],
+    "rgb": [
+      178,
+      157,
+      136
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_terracotta_whitecol",
+    "row": 0,
+    "col": 8,
+    "size": [
+      215,
+      247
+    ],
+    "rgb": [
+      193,
+      124,
+      33
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_magenta_blackcol",
+    "row": 1,
+    "col": 0,
+    "size": [
+      221,
+      248
+    ],
+    "rgb": [
+      145,
+      113,
+      143
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_magenta_blackcol",
+    "row": 1,
+    "col": 1,
+    "size": [
+      219,
+      247
+    ],
+    "rgb": [
+      68,
+      36,
+      66
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_rose_blackcol",
+    "row": 1,
+    "col": 2,
+    "size": [
+      218,
+      248
+    ],
+    "rgb": [
+      111,
+      33,
+      72
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_dusty_crimson_whitecol",
+    "row": 1,
+    "col": 3,
+    "size": [
+      216,
+      247
+    ],
+    "rgb": [
+      186,
+      130,
+      132
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_black_blackcol_4",
+    "row": 1,
+    "col": 4,
+    "size": [
+      219,
+      248
+    ],
+    "rgb": [
+      55,
+      7,
+      16
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_soft_terracotta_whitecol",
+    "row": 1,
+    "col": 5,
+    "size": [
+      215,
+      250
+    ],
+    "rgb": [
+      218,
+      170,
+      140
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_crimson_whitecol",
+    "row": 1,
+    "col": 6,
+    "size": [
+      215,
+      249
+    ],
+    "rgb": [
+      189,
+      111,
+      123
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_rust_whitecol",
+    "row": 1,
+    "col": 7,
+    "size": [
+      217,
+      248
+    ],
+    "rgb": [
+      185,
+      82,
+      57
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_terracotta_whitecol",
+    "row": 1,
+    "col": 8,
+    "size": [
+      217,
+      249
+    ],
+    "rgb": [
+      140,
+      75,
+      36
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_blue_blackcol",
+    "row": 2,
+    "col": 0,
+    "size": [
+      220,
+      247
+    ],
+    "rgb": [
+      27,
+      39,
+      65
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_blue_blackcol_2",
+    "row": 2,
+    "col": 1,
+    "size": [
+      219,
+      245
+    ],
+    "rgb": [
+      43,
+      63,
+      95
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_sky_blackcol_2",
+    "row": 2,
+    "col": 2,
+    "size": [
+      218,
+      246
+    ],
+    "rgb": [
+      17,
+      101,
+      139
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_sky_whitecol",
+    "row": 2,
+    "col": 3,
+    "size": [
+      216,
+      245
+    ],
+    "rgb": [
+      50,
+      102,
+      113
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_forest_blackcol",
+    "row": 2,
+    "col": 4,
+    "size": [
+      219,
+      244
+    ],
+    "rgb": [
+      31,
+      85,
+      28
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_dusty_olive_whitecol",
+    "row": 2,
+    "col": 5,
+    "size": [
+      216,
+      250
+    ],
+    "rgb": [
+      155,
+      175,
+      114
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_forest_whitecol",
+    "row": 2,
+    "col": 6,
+    "size": [
+      217,
+      248
+    ],
+    "rgb": [
+      140,
+      158,
+      134
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_gray_whitecol",
+    "row": 2,
+    "col": 7,
+    "size": [
+      216,
+      248
+    ],
+    "rgb": [
+      117,
+      125,
+      103
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_amber_whitecol",
+    "row": 2,
+    "col": 8,
+    "size": [
+      216,
+      247
+    ],
+    "rgb": [
+      205,
+      146,
+      31
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_charcoal_whitecol",
+    "row": 3,
+    "col": 0,
+    "size": [
+      220,
+      240
+    ],
+    "rgb": [
+      47,
+      46,
+      46
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_charcoal_whitecol_2",
+    "row": 3,
+    "col": 1,
+    "size": [
+      217,
+      239
+    ],
+    "rgb": [
+      78,
+      77,
+      77
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_blue_blackcol",
+    "row": 3,
+    "col": 2,
+    "size": [
+      217,
+      240
+    ],
+    "rgb": [
+      107,
+      121,
+      133
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_sky_blackcol_3",
+    "row": 3,
+    "col": 3,
+    "size": [
+      216,
+      239
+    ],
+    "rgb": [
+      12,
+      58,
+      68
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_black_blackcol_5",
+    "row": 3,
+    "col": 4,
+    "size": [
+      216,
+      238
+    ],
+    "rgb": [
+      19,
+      33,
+      34
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_dusty_moss_whitecol",
+    "row": 3,
+    "col": 5,
+    "size": [
+      215,
+      244
+    ],
+    "rgb": [
+      146,
+      169,
+      124
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_cyan_whitecol",
+    "row": 3,
+    "col": 6,
+    "size": [
+      215,
+      243
+    ],
+    "rgb": [
+      104,
+      162,
+      159
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_blue_whitecol",
+    "row": 3,
+    "col": 7,
+    "size": [
+      215,
+      242
+    ],
+    "rgb": [
+      88,
+      107,
+      142
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_sky_whitecol_2",
+    "row": 3,
+    "col": 8,
+    "size": [
+      214,
+      242
+    ],
+    "rgb": [
+      32,
+      82,
+      101
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_navy_blackcol",
+    "row": 4,
+    "col": 0,
+    "size": [
+      218,
+      233
+    ],
+    "rgb": [
+      24,
+      30,
+      58
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_indigo_blackcol",
+    "row": 4,
+    "col": 1,
+    "size": [
+      218,
+      234
+    ],
+    "rgb": [
+      30,
+      22,
+      86
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_purple_blackcol",
+    "row": 4,
+    "col": 2,
+    "size": [
+      216,
+      235
+    ],
+    "rgb": [
+      103,
+      50,
+      128
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_deep_pink_whitecol",
+    "row": 4,
+    "col": 3,
+    "size": [
+      214,
+      234
+    ],
+    "rgb": [
+      69,
+      23,
+      55
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_pink_whitecol_2",
+    "row": 4,
+    "col": 4,
+    "size": [
+      215,
+      234
+    ],
+    "rgb": [
+      64,
+      22,
+      43
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_violet_whitecol",
+    "row": 4,
+    "col": 5,
+    "size": [
+      214,
+      240
+    ],
+    "rgb": [
+      114,
+      95,
+      150
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_violet_whitecol_2",
+    "row": 4,
+    "col": 6,
+    "size": [
+      214,
+      237
+    ],
+    "rgb": [
+      149,
+      128,
+      172
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_navy_whitecol",
+    "row": 4,
+    "col": 7,
+    "size": [
+      214,
+      236
+    ],
+    "rgb": [
+      107,
+      119,
+      160
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_rose_whitecol",
+    "row": 4,
+    "col": 8,
+    "size": [
+      214,
+      237
+    ],
+    "rgb": [
+      155,
+      107,
+      122
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_black_whitecol_2",
+    "row": 5,
+    "col": 0,
+    "size": [
+      219,
+      222
+    ],
+    "rgb": [
+      41,
+      30,
+      25
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_rust_whitecol",
+    "row": 5,
+    "col": 1,
+    "size": [
+      217,
+      221
+    ],
+    "rgb": [
+      66,
+      40,
+      28
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_terracotta_blackcol",
+    "row": 5,
+    "col": 2,
+    "size": [
+      216,
+      221
+    ],
+    "rgb": [
+      106,
+      71,
+      39
+    ],
+    "collar": "black"
+  },
+  {
+    "name": "suit_dusty_terracotta_whitecol_4",
+    "row": 5,
+    "col": 3,
+    "size": [
+      215,
+      222
+    ],
+    "rgb": [
+      114,
+      91,
+      69
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_deep_amber_whitecol",
+    "row": 5,
+    "col": 4,
+    "size": [
+      215,
+      221
+    ],
+    "rgb": [
+      71,
+      62,
+      37
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_amber_whitecol_2",
+    "row": 5,
+    "col": 5,
+    "size": [
+      214,
+      226
+    ],
+    "rgb": [
+      213,
+      187,
+      115
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_gold_whitecol",
+    "row": 5,
+    "col": 6,
+    "size": [
+      215,
+      223
+    ],
+    "rgb": [
+      198,
+      180,
+      66
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_dusty_forest_whitecol_2",
+    "row": 5,
+    "col": 7,
+    "size": [
+      215,
+      224
+    ],
+    "rgb": [
+      121,
+      157,
+      124
+    ],
+    "collar": "white"
+  },
+  {
+    "name": "suit_cyan_whitecol",
+    "row": 5,
+    "col": 8,
+    "size": [
+      213,
+      223
+    ],
+    "rgb": [
+      57,
+      171,
+      163
+    ],
+    "collar": "white"
+  }
+]

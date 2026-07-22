@@ -1,0 +1,136 @@
+{
+  "animal": "rhino",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 169.5,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "body",
+      "file": "parts/rhino/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.8048,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 1
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r5_c1.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.532,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 2
+    },
+    {
+      "name": "nose",
+      "file": "parts/rhino/nose.png",
+      "x": 320.0,
+      "y": 352.0,
+      "scale": 0.8048,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "horn",
+      "file": "parts/rhino/horn.png",
+      "x": 320.0,
+      "y": 284.5,
+      "scale": 0.8048,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 259.7,
+      "y": 316.9,
+      "scale": 0.6827,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 380.3,
+      "y": 316.9,
+      "scale": 0.7017,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_olive.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2254,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 7
+    },
+    {
+      "name": "armL",
+      "file": "parts/rhino/armL.png",
+      "x": 175.0,
+      "y": 530.2,
+      "scale": 0.8048,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 8
+    },
+    {
+      "name": "armR",
+      "file": "parts/rhino/armR.png",
+      "x": 465.0,
+      "y": 530.2,
+      "scale": 0.8048,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    }
+  ]
+}

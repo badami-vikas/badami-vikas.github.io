@@ -1,0 +1,149 @@
+{
+  "animal": "pig",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 177.8,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "earL",
+      "file": "parts/pig/earL.png",
+      "x": 224.3,
+      "y": 230.5,
+      "scale": 0.8654,
+      "rot": 14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 1
+    },
+    {
+      "name": "earR",
+      "file": "parts/pig/earR.png",
+      "x": 415.7,
+      "y": 230.5,
+      "scale": 0.8654,
+      "rot": -14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 2
+    },
+    {
+      "name": "body",
+      "file": "parts/pig/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.8654,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r2_c1.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.5921,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "nose",
+      "file": "parts/pig/nose.png",
+      "x": 320.0,
+      "y": 368.2,
+      "scale": 0.8654,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 256.8,
+      "y": 316.9,
+      "scale": 0.716,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 383.2,
+      "y": 316.9,
+      "scale": 0.7359,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_forest.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2314,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 8
+    },
+    {
+      "name": "armL",
+      "file": "parts/pig/armL.png",
+      "x": 167.9,
+      "y": 530.2,
+      "scale": 0.8654,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    },
+    {
+      "name": "armR",
+      "file": "parts/pig/armR.png",
+      "x": 472.1,
+      "y": 530.2,
+      "scale": 0.8654,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    }
+  ]
+}

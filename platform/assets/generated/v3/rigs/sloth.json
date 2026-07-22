@@ -1,0 +1,149 @@
+{
+  "animal": "sloth",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 217.0,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "body",
+      "file": "parts/sloth/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.6775,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 1
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r0_c6.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.9801,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 2
+    },
+    {
+      "name": "nose",
+      "file": "parts/sloth/nose.png",
+      "x": 320.0,
+      "y": 360.1,
+      "scale": 0.6775,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "eyepatchL",
+      "file": "parts/sloth/eyepatchL.png",
+      "x": 251.1,
+      "y": 316.9,
+      "scale": 0.6775,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "eyepatchR",
+      "file": "parts/sloth/eyepatchR.png",
+      "x": 388.9,
+      "y": 316.9,
+      "scale": 0.6775,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 255.3,
+      "y": 327.7,
+      "scale": 0.423,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 384.7,
+      "y": 327.7,
+      "scale": 0.4348,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_beige.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2901,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 8
+    },
+    {
+      "name": "armL",
+      "file": "parts/sloth/armL.png",
+      "x": 134.3,
+      "y": 530.2,
+      "scale": 0.6775,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    },
+    {
+      "name": "armR",
+      "file": "parts/sloth/armR.png",
+      "x": 505.7,
+      "y": 530.2,
+      "scale": 0.6775,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    }
+  ]
+}

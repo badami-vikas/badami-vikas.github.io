@@ -1,0 +1,149 @@
+{
+  "animal": "hippo",
+  "canvas": [
+    640,
+    800
+  ],
+  "layers": [
+    {
+      "name": "ground_shadow",
+      "file": null,
+      "x": 320.0,
+      "y": 724,
+      "rx": 203.4,
+      "ry": 40.5,
+      "strength": 0.3,
+      "z": 0
+    },
+    {
+      "name": "earL",
+      "file": "parts/hippo/earL.png",
+      "x": 210.5,
+      "y": 230.5,
+      "scale": 0.8411,
+      "rot": 14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 1
+    },
+    {
+      "name": "earR",
+      "file": "parts/hippo/earR.png",
+      "x": 429.5,
+      "y": 230.5,
+      "scale": 0.8411,
+      "rot": -14,
+      "pivot": [
+        0.5,
+        0.85
+      ],
+      "z": 2
+    },
+    {
+      "name": "body",
+      "file": "parts/hippo/body.png",
+      "x": 320.0,
+      "y": 460.0,
+      "scale": 0.8411,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 3
+    },
+    {
+      "name": "suit",
+      "file": "suits_v4/r0_c1.png",
+      "x": 320.0,
+      "y": 550.8,
+      "scale": 1.8217,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 4
+    },
+    {
+      "name": "nose",
+      "file": "parts/hippo/nose.png",
+      "x": 320.0,
+      "y": 352.0,
+      "scale": 0.8411,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 5
+    },
+    {
+      "name": "eyeL",
+      "file": "parts/_shared/eyeL.png",
+      "x": 247.6,
+      "y": 316.9,
+      "scale": 0.8192,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 6
+    },
+    {
+      "name": "eyeR",
+      "file": "parts/_shared/eyeR.png",
+      "x": 392.4,
+      "y": 316.9,
+      "scale": 0.842,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "z": 7
+    },
+    {
+      "name": "tie",
+      "file": "accessories/tie_powder.png",
+      "x": 320.0,
+      "y": 438.4,
+      "scale": 0.2719,
+      "rot": 0,
+      "pivot": [
+        0.5,
+        0.06
+      ],
+      "z": 8
+    },
+    {
+      "name": "armL",
+      "file": "parts/hippo/armL.png",
+      "x": 146.0,
+      "y": 530.2,
+      "scale": 0.8411,
+      "rot": -4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 9
+    },
+    {
+      "name": "armR",
+      "file": "parts/hippo/armR.png",
+      "x": 494.0,
+      "y": 530.2,
+      "scale": 0.8411,
+      "rot": 4,
+      "pivot": [
+        0.5,
+        0.15
+      ],
+      "z": 10
+    }
+  ]
+}
