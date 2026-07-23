@@ -5,7 +5,7 @@
     steam: [
       {
         title: "Manufacturing",
-        image: "steam-manufacturing.jpg",
+        image: "steam-manufacturing.webp",
         left: [
           "**The steam engine** is a better source of power.",
           "By replacing water wheels with steam engines, manufacturers powered existing mills more reliably.",
@@ -19,7 +19,7 @@
       },
       {
         title: "Agriculture",
-        image: "steam-agriculture.jpg",
+        image: "steam-agriculture.webp",
         left: [
           "**Steam power** makes existing farm work faster.",
           "By powering threshers and pumps with steam, farmers reduced labor within existing field patterns.",
@@ -33,7 +33,7 @@
       },
       {
         title: "Transport",
-        image: "steam-transport.jpg",
+        image: "steam-transport.webp",
         left: [
           "**The steam locomotive** is a faster vehicle.",
           "By improving locomotives, operators moved passengers and freight faster along individual road routes.",
@@ -49,7 +49,7 @@
     electricity: [
       {
         title: "Manufacturing",
-        image: "electricity-manufacturing.jpg",
+        image: "electricity-manufacturing.webp",
         left: [
           "**The electric motor** is a cleaner replacement for the steam engine.",
           "By attaching one motor to existing shafts and belts, manufacturers preserved traditional factory layouts.",
@@ -63,7 +63,7 @@
       },
       {
         title: "The home",
-        image: "electricity-home.jpg",
+        image: "electricity-home.webp",
         left: [
           "**Electricity** makes individual household chores easier.",
           "By electrifying irons and other single tools, households reduced effort one task at a time.",
@@ -77,7 +77,7 @@
       },
       {
         title: "Communication",
-        image: "electricity-communication.jpg",
+        image: "electricity-communication.webp",
         left: [
           "**Electric communication** sends written messages faster.",
           "By improving telegraph equipment, operators transmitted coded messages faster between staffed offices.",
@@ -91,7 +91,7 @@
       },
       {
         title: "Power distribution",
-        image: "electricity-grid.jpg",
+        image: "electricity-grid.webp",
         left: [
           "**Electricity** is a better way to light nearby buildings.",
           "By replacing gas lamps with bulbs supplied by local generators, providers improved lighting within limited areas.",
@@ -105,7 +105,7 @@
       },
       {
         title: "Vertical transportation",
-        image: "electricity-vertical.jpg",
+        image: "electricity-vertical.webp",
         left: [
           "**Electricity** makes stairways safer and easier to use.",
           "By replacing gas lamps with electric lighting, building owners improved the existing journey between floors.",
@@ -119,7 +119,7 @@
       },
       {
         title: "Motion pictures",
-        image: "electricity-cinema.jpg",
+        image: "electricity-cinema.webp",
         left: [
           "**Motion pictures** can enhance live entertainment.",
           "By showing short films between live acts, theater owners added novelty without changing the performance model.",
@@ -135,7 +135,7 @@
     computer: [
       {
         title: "Retail operations",
-        image: "computer-retail.jpg",
+        image: "computer-retail.webp",
         left: [
           "**Computers** make administrative retail work faster.",
           "By automating payroll and accounting, retailers reduced paperwork while stores continued operating independently.",
@@ -149,7 +149,7 @@
       },
       {
         title: "Enterprise operations",
-        image: "computer-enterprise.jpg",
+        image: "computer-enterprise.webp",
         left: [
           "**Computers** make record-keeping faster.",
           "By replacing paper ledgers with digital records, companies accelerated work inside separate departments.",
@@ -163,7 +163,7 @@
       },
       {
         title: "Payments",
-        image: "computer-payments.jpg",
+        image: "computer-payments.webp",
         left: [
           "**Computers** process each bank's transactions faster.",
           "By automating internal records and settlements, banks improved processing while preserving branch-centered operations.",
@@ -179,7 +179,7 @@
     internet: [
       {
         title: "Entertainment",
-        image: "internet-entertainment.jpg",
+        image: "internet-entertainment.webp",
         left: [
           "**The Internet** is another channel for renting DVDs.",
           "By accepting DVD orders online, rental companies added convenience while physical inventory remained central.",
@@ -193,7 +193,7 @@
       },
       {
         title: "Retail",
-        image: "internet-retail.jpg",
+        image: "internet-retail.webp",
         left: [
           "**The Internet** is another channel for selling products.",
           "By adding an online storefront, retailers sold existing inventory while physical stores remained central.",
@@ -207,7 +207,7 @@
       },
       {
         title: "Knowledge",
-        image: "internet-knowledge.jpg",
+        image: "internet-knowledge.webp",
         left: [
           "**The Internet** is a faster way to publish an encyclopedia.",
           "By placing expert-written articles online, publishers expanded access while retaining centralized editorial control.",
@@ -221,7 +221,7 @@
       },
       {
         title: "Urban mobility",
-        image: "internet-mobility.jpg",
+        image: "internet-mobility.webp",
         left: [
           "**The Internet** makes booking a taxi easier.",
           "By adding online reservations, taxi companies simplified booking while preserving fleets and dispatch centers.",
@@ -235,7 +235,7 @@
       },
       {
         title: "Music",
-        image: "internet-music.jpg",
+        image: "internet-music.webp",
         left: [
           "**The Internet** is another channel for selling music.",
           "By selling downloadable tracks, music companies changed delivery while customers still purchased individual recordings.",
@@ -302,6 +302,8 @@
   var activeIndexes = { steam: 0, electricity: 0, computer: 0, internet: 0 };
   var caseStudy = document.querySelector(".case-study");
   var caseImage = document.getElementById("case-image");
+  var comingSoon = document.getElementById("case-coming-soon");
+  var generateCase = document.getElementById("generate-case");
 
   function setText(id, text) {
     var node = document.getElementById(id);
@@ -320,8 +322,17 @@
   }
 
   function renderCase(category, index) {
+    if (category === "ai") {
+      caseStudy.classList.add("ai-active");
+      comingSoon.hidden = false;
+      generateCase.hidden = true;
+      return;
+    }
     var entry = cases[category][index];
     if (!entry) return;
+    caseStudy.classList.remove("ai-active");
+    comingSoon.hidden = true;
+    generateCase.hidden = false;
     caseStudy.classList.add("changing");
     window.setTimeout(function () {
       caseImage.src = "assets/comparison-case-studies/" + entry.image;
@@ -344,7 +355,7 @@
     });
   });
 
-  document.getElementById("generate-case").addEventListener("click", function () {
+  generateCase.addEventListener("click", function () {
     activeIndexes[activeCategory] = (activeIndexes[activeCategory] + 1) % cases[activeCategory].length;
     renderCase(activeCategory, activeIndexes[activeCategory]);
   });
@@ -352,7 +363,6 @@
   var overview = document.getElementById("level-overview");
   var expanded = document.getElementById("level-expanded");
   var points = document.getElementById("level-points");
-  var lockedLevel = null;
 
   function showLevel(level) {
     var entry = levels[level];
@@ -372,10 +382,6 @@
   }
 
   function showOverview() {
-    if (lockedLevel) {
-      showLevel(lockedLevel);
-      return;
-    }
     overview.hidden = false;
     expanded.hidden = true;
     document.querySelectorAll(".maturity-level").forEach(function (button) {
@@ -389,10 +395,5 @@
     button.addEventListener("focus", function () { showLevel(button.dataset.level); });
     button.addEventListener("mouseleave", showOverview);
     button.addEventListener("blur", showOverview);
-    button.addEventListener("click", function () {
-      lockedLevel = lockedLevel === button.dataset.level ? null : button.dataset.level;
-      if (lockedLevel) showLevel(lockedLevel);
-      else showOverview();
-    });
   });
 })();

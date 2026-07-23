@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 import { scoreBrief } from "../assets/operating-brief.mjs";
 
@@ -22,11 +22,14 @@ test("home page presents the AI-native transformation narrative", async () => {
 
 test("home page exposes all requested comparison categories and cycling control", async () => {
   const html = await page("index.html");
+  const css = await page("assets/home.css");
   const script = await page("assets/home.js");
 
-  for (const category of ["Steam Engine", "Electricity", "Computer", "Internet"]) {
+  for (const category of ["Steam Engine", "Electricity", "Computer", "Internet", "AI"]) {
     assert.match(html, new RegExp(`>${category}<`));
   }
+  assert.match(html, /id="case-coming-soon"/);
+  assert.match(html, /Coming soon/);
   assert.match(html, /id="generate-case"/);
   assert.match(html, /id="case-image"/);
   assert.match(html, /id="case-transitional"/);
@@ -34,7 +37,11 @@ test("home page exposes all requested comparison categories and cycling control"
   assert.doesNotMatch(html, /class="case-heading"/);
   assert.doesNotMatch(html, /class="case-shade"/);
   assert.ok(html.indexOf('class="case-tabs"') > html.indexOf('class="case-study"'));
-  assert.ok(html.indexOf('class="hero-copy"') > html.indexOf("</article>"));
+  assert.ok(html.indexOf('class="hero-copy"') < html.indexOf('class="hero-question"'));
+  assert.ok(html.indexOf("Book a Strategy Session") > html.indexOf('id="generate-case"'));
+  assert.doesNotMatch(html, /Assess Your Organization/);
+  assert.match(css, /\.case-tabs\{[^}]*top:34px/);
+  assert.match(css, /\.case-copy\{[^}]*background:rgba\(/);
   assert.match(script, /\*\*The steam engine\*\* is a better source of power\./);
   assert.match(script, /By replacing water wheels with steam engines, manufacturers powered existing mills more reliably\./);
   assert.match(script, /By preserving existing workflows, they built \*\*better mills\*\*\./);
@@ -50,10 +57,16 @@ test("home page exposes five accessible infrastructure levels", async () => {
   assert.match(html, /data-level="1"/);
   assert.match(html, /data-level="5"/);
   assert.match(html, /id="level-detail"/);
+  assert.equal((html.match(/class="zazo-footprint"/g) ?? []).length, 5);
   assert.doesNotMatch(html, /level-arrow/);
+  assert.doesNotMatch(html, /Hover or select a level to explore it/);
   assert.doesNotMatch(script, /Remove bottlenecks\. Accelerate decisions\./);
+  assert.doesNotMatch(script, /lockedLevel/);
+  assert.doesNotMatch(script, /button\.addEventListener\("click"/);
   assert.match(css, /\.maturity-detail\{[^}]*border:0/);
   assert.match(css, /\.maturity-level::after/);
+  assert.match(css, /\.maturity-scale\{[^}]*max-width:/);
+  assert.match(css, /\.maturity-level:hover \.zazo-footprint/);
 });
 
 test("operating brief is a seven-question modal with final-only submission", async () => {
@@ -61,7 +74,7 @@ test("operating brief is a seven-question modal with final-only submission", asy
   const css = await page("assets/home.css");
 
   assert.match(html, /data-open-brief/);
-  assert.match(html, /Takes less than 2 mins/);
+  assert.match(html, /data-open-brief[^>]*>[\s\S]*Takes less than 2 mins[\s\S]*<\/button>/);
   assert.match(html, /<dialog[^>]+id="brief-dialog"/);
   assert.equal((html.match(/class="brief-question/g) ?? []).length, 7);
   assert.match(html, /name="name"/);
@@ -85,7 +98,7 @@ test("brief scoring returns dominant pattern and diagnostic dimensions", () => {
   assert.equal(result.nextMove, "Redesign one high-volume process as a governed AI workflow");
 });
 
-test("path cards and compact footer use the requested aligned treatment", async () => {
+test("path cards and restored footer use the requested treatment", async () => {
   const html = await page("index.html");
   const css = await page("assets/home.css");
 
@@ -93,14 +106,32 @@ test("path cards and compact footer use the requested aligned treatment", async 
   assert.match(css, /\.path-heading>p:last-child\{[^}]*white-space:nowrap/);
   assert.match(css, /\.path-card h3\{[^}]*white-space:nowrap/);
   assert.match(css, /\.path-best\{[^}]*margin-top:auto/);
-  assert.match(html, /<footer class="footer compact-footer">/);
+  assert.match(html, /Research and Training Lab/);
+  assert.doesNotMatch(html, /Leadership for the AI Era/);
+  assert.doesNotMatch(html, /culture for organizations where AI-native/);
+  assert.match(css, /\.path-section \.wrap\{[^}]*max-width:1280px/);
+  assert.match(html, /<footer class="future-footer">/);
+  assert.match(html, /type="email"[^>]+placeholder="Work email"/);
+  assert.match(html, />Subscribe to the newsletter</);
 });
 
 test("the former home experience lives at Platform", async () => {
   const html = await page("platform/index.html");
+  const css = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
 
-  assert.match(html, /Your Zazoo never stops\./);
-  assert.match(html, /Everyone deserves a Zazoo\./);
+  assert.match(html, /Everyone deserves a ZAZO\./);
+  assert.match(html, /Your AI Chief of Staff built with enterprise grade trust\./);
+  assert.match(html, /Zazo \/za·zoo\//);
+  assert.match(html, /1 Zazo\. 100s of hours returned\. 1000s of decisions coordinated\. 1000000s of tiny tasks never forgotten\./);
+  assert.match(html, /Built for enterprise trust\./);
+  assert.match(html, /Always present\.<\/div><div class="r">Never intrusive\./);
+  assert.match(html, /Always helpful\.<\/div><div class="r">Never in control\./);
+  assert.match(html, /Trusted by ambitious teams building the future\./);
+  assert.match(html, /class="platform-story"/);
+  assert.match(html, /id="all-zazos"/);
+  assert.match(css, /\.zazo-frame\{[^}]*aspect-ratio:4\/3/);
+  assert.match(css, /\.zazo-sticky\{[^}]*position:sticky/);
+  assert.ok(html.indexOf('id="chapters"') > html.indexOf("Trusted by ambitious teams building the future."));
   assert.match(html, /\.\.\/assets\/zazoo\.css/);
 });
 
@@ -110,11 +141,20 @@ test("Consulting is renamed Labs while legacy links remain recoverable", async (
 
   assert.match(labs, /<title>Labs\. Zazoo<\/title>/);
   assert.match(labs, />Labs<\/a>/);
+  assert.match(labs, />Assess Your Organization</);
   assert.match(legacy, /url=labs\.html/);
 });
 
-test("all supplied comparison imagery is available to the home page", async () => {
+test("all supplied comparison imagery is converted to compact WebP", async () => {
   const images = await readdir(new URL("assets/comparison-case-studies/", root));
+  const webp = images.filter((name) => name.endsWith(".webp"));
+  const sizes = await Promise.all(webp.map((name) => stat(new URL(`assets/comparison-case-studies/${name}`, root))));
+  const html = await page("index.html");
+  const script = await page("assets/home.js");
 
-  assert.equal(images.filter((name) => name.endsWith(".jpg")).length, 17);
+  assert.equal(webp.length, 17);
+  assert.equal(images.filter((name) => name.endsWith(".jpg")).length, 0);
+  assert.ok(sizes.reduce((sum, entry) => sum + entry.size, 0) < 3_000_000);
+  assert.match(html, /steam-manufacturing\.webp/);
+  assert.doesNotMatch(script, /\.jpg/);
 });
