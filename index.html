@@ -32,19 +32,24 @@
     <section class="screen-section opening-screen" aria-labelledby="opening-title">
       <div class="wrap screen-inner">
         <header class="hero">
-          <h1 id="opening-title">There are moments when the old rules stop working.</h1>
-          <p class="hero-question">When history looks back at the AI era, where will you stand?</p>
+          <div>
+            <h1 id="opening-title">There are moments when the old rules stop working.</h1>
+            <p class="hero-question">When history looks back at the AI era, where will you stand?</p>
+          </div>
+          <p class="hero-copy">Every major paradigm shift transforms the market. The organizations that merely adopt the new technology fade with the past. The organizations that transform themselves around it define the future.</p>
         </header>
 
         <div class="comparison-section">
+          <div class="case-tabs" role="tablist" aria-label="Choose a technology shift">
+            <button type="button" class="case-tab on" role="tab" aria-selected="true" data-category="steam">Steam Engine</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="electricity">Electricity</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="computer">Computer</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="internet">Internet</button>
+          </div>
+
           <article class="case-study" aria-live="polite">
-            <div class="case-tabs" role="tablist" aria-label="Choose a technology shift">
-              <button type="button" class="case-tab on" role="tab" aria-selected="true" data-category="steam">Steam Engine</button>
-              <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="electricity">Electricity</button>
-              <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="computer">Computer</button>
-              <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="internet">Internet</button>
-            </div>
             <img id="case-image" src="assets/comparison-case-studies/steam-manufacturing.jpg" alt="Manufacturing: transitional and transformational approaches">
+            <div class="case-shade" aria-hidden="true"></div>
             <div class="case-copy case-left">
               <span>Transitional Thinking</span>
               <ol id="case-transitional">
@@ -65,9 +70,6 @@
           </article>
         </div>
 
-        <p class="hero-copy">Every major paradigm shift transforms the market. The organizations that merely adopt the new technology<br>
-          fade with the past. The organizations that transform themselves around it define the future.</p>
-
         <div class="cta-row">
           <a class="btn btn-md btn-accent" href="mailto:hello@zazoo.me?subject=Strategy%20Session">Book a Strategy Session</a>
           <a class="btn btn-md btn-secondary" href="labs.html#readiness">Assess Your Organization</a>
@@ -80,8 +82,7 @@
         <div class="native-heading">
           <div>
             <h2 id="native-title">THE NEXT GENERATION OF ORGANIZATIONS ARE <span>AI-native</span>.</h2>
-            <p>The greatest risk is not that your organization fails to adopt AI.<br>
-              It is that AI succeeds everywhere and yet you fail.</p>
+            <p>The greatest risk is not that your organization fails to adopt AI.<br>It is that AI succeeds everywhere and yet you fail.</p>
           </div>
         </div>
 
@@ -145,7 +146,6 @@
 
         <div class="section-cta">
           <button class="btn btn-md btn-accent" type="button" data-open-brief>Get your AI Native Operating Brief</button>
-          <small>Takes less than 2 mins</small>
         </div>
       </div>
     </section>
@@ -181,6 +181,7 @@
             <h3>Leadership for the AI Era</h3>
             <p class="path-lead">The most challenging transformation isn't technology. It's human.</p>
             <p>We help leaders, managers, and teams redesign decisions, roles, accountability, and culture for organizations where AI-native practises are embedded in organisational DNA.</p>
+            <p class="path-for"><strong>For:</strong> Leaders preparing their people—and their organizations—for the AI era.</p>
             <p class="path-best"><strong>Best for:</strong> Leaders preparing their people for the AI era.</p>
             <a class="path-link" href="training.html">Explore Programs</a>
           </article>
@@ -293,6 +294,7 @@
       </div>
 
       <footer class="brief-controls">
+        <button class="btn btn-md btn-secondary" id="brief-back" type="button" hidden>Back</button>
         <button class="btn btn-md btn-accent" id="brief-next" type="button">Continue</button>
         <button class="btn btn-md btn-accent" id="brief-submit" type="submit" hidden>Send me the report</button>
       </footer>
