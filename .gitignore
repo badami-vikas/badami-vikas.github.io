@@ -1,4 +1,2 @@
 .playwright-cli/
 output/
-node_modules/
-.wrangler/
