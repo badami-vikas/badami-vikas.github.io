@@ -47,6 +47,18 @@ test("home page exposes all requested comparison categories and cycling control"
   assert.match(script, /By preserving existing workflows, they built \*\*better mills\*\*\./);
 });
 
+test("comparison layout centers each action in its half and uses lighter glass overlays", async () => {
+  const html = await page("index.html");
+  const css = await page("assets/home.css");
+
+  assert.match(html, /new technology<br>fade with the past\./);
+  assert.match(css, /\.case-actions\{[^}]*grid-template-columns:repeat\(2,1fr\)[^}]*width:100%/);
+  assert.match(css, /\.case-generate\{[^}]*justify-self:center/);
+  assert.match(css, /\.case-strategy\{[^}]*justify-self:center/);
+  assert.match(css, /\.case-copy\{[^}]*background:rgba\(9,20,20,\.28\)[^}]*backdrop-filter:blur\(12px\)/);
+  assert.match(css, /\.comparison-section\{[^}]*padding-bottom:/);
+});
+
 test("home page exposes five accessible infrastructure levels", async () => {
   const html = await page("index.html");
   const css = await page("assets/home.css");
@@ -67,6 +79,9 @@ test("home page exposes five accessible infrastructure levels", async () => {
   assert.match(css, /\.maturity-level::after/);
   assert.match(css, /\.maturity-scale\{[^}]*max-width:/);
   assert.match(css, /\.maturity-level:hover \.zazo-footprint/);
+  assert.match(css, /\.maturity\{[^}]*minmax\(560px,1fr\)/);
+  assert.match(css, /\.maturity-scale\{[^}]*max-width:none/);
+  assert.match(css, /\.maturity-level strong,.maturity-level small\{white-space:nowrap\}/);
 });
 
 test("operating brief is a seven-question modal with final-only submission", async () => {
@@ -84,6 +99,10 @@ test("operating brief is a seven-question modal with final-only submission", asy
   assert.doesNotMatch(html, /id="brief-back"/);
   assert.match(css, /body:has\(\.brief-dialog\[open\]\)\{overflow:hidden\}/);
   assert.match(css, /\.brief-question legend[^}]*text-align:center/);
+  assert.match(css, /\.brief-dialog\{[^}]*width:min\(1080px/);
+  assert.match(css, /\.brief-steps\{[^}]*overflow:hidden/);
+  assert.match(css, /\.brief-question legend[^}]*white-space:nowrap/);
+  assert.match(css, /\.brief-question label span\{[^}]*white-space:nowrap/);
 });
 
 test("brief scoring returns dominant pattern and diagnostic dimensions", () => {
@@ -113,6 +132,8 @@ test("path cards and restored footer use the requested treatment", async () => {
   assert.match(html, /<footer class="future-footer">/);
   assert.match(html, /type="email"[^>]+placeholder="Work email"/);
   assert.match(html, />Subscribe to the newsletter</);
+  assert.match(css, /\.future-footer h2\{[^}]*white-space:nowrap[^}]*max-width:none/);
+  assert.match(css, /\.footer-answer\{[^}]*white-space:nowrap[^}]*max-width:none/);
 });
 
 test("the former home experience lives at Platform", async () => {
@@ -133,6 +154,30 @@ test("the former home experience lives at Platform", async () => {
   assert.match(css, /\.zazo-sticky\{[^}]*position:sticky/);
   assert.ok(html.indexOf('id="chapters"') > html.indexOf("Trusted by ambitious teams building the future."));
   assert.match(html, /\.\.\/assets\/zazoo\.css/);
+});
+
+test("Platform uses animated v3 companions with scene-specific hover stories", async () => {
+  const html = await page("platform/index.html");
+  const script = await page("platform/src/showcase.js");
+
+  assert.match(html, /type="module" src="src\/showcase\.js"/);
+  assert.doesNotMatch(html, /menagerie\.js/);
+  assert.doesNotMatch(html, /animalSVG/);
+  assert.doesNotMatch(html, /class="pic"/);
+  assert.match(script, /generated\/v3\/engine_rigs\.js/);
+  assert.match(script, /setInterval\([^,]+,\s*4000\)/);
+  assert.match(script, /mouseenter/);
+  assert.match(script, /mouseleave/);
+  assert.match(script, /landing:\s*\["kairo"\]/);
+  assert.match(script, /dictionary:\s*\["kairo",\s*"milo",\s*"suri",\s*"tova"\]/);
+  assert.match(script, /governance:\s*\["vera",\s*"sora",\s*"remi",\s*"arlo"\]/);
+
+  for (const companion of ["Kairo", "Milo", "Suri", "Tova", "Vera", "Sora", "Remi", "Arlo"]) {
+    assert.match(script, new RegExp(`name: "${companion}"`));
+  }
+
+  assert.match(script, /Last week I identified 14 strategic risks, uncovered 9 new opportunities, and connected 37 decisions to long-term goals before they drifted off course\./);
+  assert.match(script, /Last week I reviewed 281,000 requests, requested 1,482 human approvals, enforced 12 organizational policies, and prevented 418 unauthorized actions\./);
 });
 
 test("Consulting is renamed Labs while legacy links remain recoverable", async () => {

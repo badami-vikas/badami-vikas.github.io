@@ -22,13 +22,31 @@
 .platform-body .emphasis{font:var(--text-subtitle);color:var(--text-heading)}
 .zazo-sticky{position:sticky;top:calc(68px + 34px);padding-top:34px}
 .zazo-frame{position:relative;aspect-ratio:4/3;border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden;background:radial-gradient(circle at 50% 40%,#fffdf8,var(--linen-200));box-shadow:var(--shadow-raised)}
-.zazo-cast{position:absolute;transform:translate(-50%,-50%) rotate(var(--tilt));filter:drop-shadow(0 12px 12px rgba(20,50,50,.12))}
-.zazo-cast:nth-child(1){left:20%;top:31%;--tilt:-8deg}
-.zazo-cast:nth-child(2){left:49%;top:25%;--tilt:4deg}
-.zazo-cast:nth-child(3){left:77%;top:33%;--tilt:9deg}
-.zazo-cast:nth-child(4){left:30%;top:72%;--tilt:6deg}
-.zazo-cast:nth-child(5){left:61%;top:69%;--tilt:-5deg}
-.zazo-cast:nth-child(6){left:87%;top:72%;--tilt:8deg}
+.showcase-group{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s var(--ease-soft),visibility .45s}
+.showcase-group.on{opacity:1;visibility:visible}
+.showcase-companion{position:absolute;width:31%;aspect-ratio:10/11;transform:translate(-50%,-50%);border:0;background:transparent;padding:0;cursor:pointer;filter:drop-shadow(0 12px 12px rgba(20,50,50,.14));transition:filter .2s var(--ease-soft),scale .2s var(--ease-soft)}
+.showcase-group[data-scene="landing"] .showcase-companion{width:48%}
+.showcase-companion:hover,.showcase-companion:focus-visible{filter:drop-shadow(0 18px 18px rgba(20,50,50,.24));scale:1.08;outline:none}
+.v3-rig{position:absolute;inset:0;transform-origin:50% 78%;will-change:transform}
+.v3-rig img{position:absolute;display:block;pointer-events:none}
+.anim-breathe{animation:v3Breathe 4s ease-in-out infinite}
+.anim-wave{animation:v3Wave 4s ease-in-out infinite}
+.anim-hop{animation:v3Hop 4s ease-in-out infinite}
+.anim-think{animation:v3Think 4s ease-in-out infinite}
+.anim-sway{animation:v3Sway 4s ease-in-out infinite}
+@keyframes v3Breathe{0%,100%{transform:scale(1)}50%{transform:scale(.985,1.025)}}
+@keyframes v3Wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}55%{transform:rotate(4deg)}}
+@keyframes v3Hop{0%,100%{transform:translateY(0) scale(1)}45%{transform:translateY(-12%) scale(.98,1.04)}65%{transform:translateY(0) scale(1.04,.96)}}
+@keyframes v3Think{0%,100%{transform:rotate(0)}40%,65%{transform:rotate(-7deg) translateY(-2%)}}
+@keyframes v3Sway{0%,100%{transform:translateX(0)}35%{transform:translateX(-5%) rotate(-2deg)}70%{transform:translateX(5%) rotate(2deg)}}
+.companion-detail{display:grid;gap:12px;max-width:650px;animation:detailIn .22s var(--ease-soft)}
+.companion-detail[hidden]{display:none}
+.companion-detail .detail-role{font:var(--text-label);text-transform:uppercase;letter-spacing:.1em;color:var(--accent)}
+.companion-detail h2{font:800 clamp(42px,5vw,68px)/1 var(--font-display)}
+.companion-detail .detail-hello{font:var(--text-title);color:var(--text-heading)}
+.companion-detail p:not(.detail-role,.detail-hello){font:var(--text-body);color:var(--text-muted)}
+.companion-detail .detail-last{font-weight:700!important;color:var(--text-heading)!important}
+@keyframes detailIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .dict-line{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .dict-line strong{font:800 clamp(44px,5vw,68px)/1 var(--font-display);color:var(--text-heading)}
 .dict-line em{font:italic var(--text-body-lg)}
@@ -55,6 +73,9 @@
   .platform-story{padding-inline:20px}.trust-list,.mirror{grid-template-columns:1fr}.mirror .l,.mirror .r{text-align:left}.impact-line{grid-template-columns:1fr}
   #values-grid{grid-template-columns:1fr!important}
 }
+@media (prefers-reduced-motion:reduce){
+  .v3-rig{animation:none!important}
+}
 
 /* ── Scene 4: chapter books ── */
 .shelf{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:30px}
@@ -68,7 +89,6 @@
 @keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 /* values storybook */
 .story{background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:26px 22px;text-align:center;box-shadow:var(--shadow-card)}
-.story .pic{display:flex;justify-content:center;align-items:flex-end;min-height:120px}
 /* process footprints */
 .trail{position:relative;display:flex;justify-content:space-between;align-items:center;max-width:820px;margin:40px auto 0;flex-wrap:wrap;gap:20px}
 .paw{width:11px;height:11px;border-radius:50% 50% 50% 0;background:var(--teal-300);opacity:0;transform:rotate(45deg);animation:pawstep 9s ease-in-out infinite}
@@ -320,26 +340,9 @@
 </section>
 
 <script src="../assets/zazoo.js" defer></script>
-<script src="../assets/menagerie.js" defer></script>
+<script type="module" src="src/showcase.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  var M = window.Menagerie;
-
-  /* ── Fixed Zazo cast ── */
-  var PROPS = { aeva: 'calendar', lina: 'book', nori: 'ledger', bomi: 'wrench', jia: 'letter', neva: 'brush' };
-  var cast = document.getElementById('all-zazos');
-  M.FAMILY.forEach(function (z, i) {
-    var companion = document.createElement('div');
-    companion.className = 'zazo-cast';
-    companion.dataset.quirk = z.id;
-    companion.innerHTML = M.animalSVG(z.animal, i % 2 ? 122 : 112, {
-      delay: i * 0.45,
-      prop: PROPS[z.id],
-      label: z.name + ', ' + z.role
-    });
-    cast.appendChild(companion);
-  });
-
   /* ── Scene 4: chapters ── */
   var books = document.querySelectorAll('.book');
   books.forEach(function (b) {
@@ -353,19 +356,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Values storybook
   var VALUES = [
-    ['owl', 'coffee', 'Loyal before clever', 'She waits outside your meeting room holding coffee, because she noticed your schedule.'],
-    ['beaver', 'wrench', 'Quiet before loud', 'He fixes something and never mentions it.'],
-    ['fox', 'book', 'Helpful before impressive', 'She chooses the simpler answer, because it helps you more.'],
-    ['elephant', 'key', 'Trusted before autonomous', 'He knocks before entering. Every time.'],
-    ['swan', 'umbrella', 'Present before prompted', 'She is already carrying the umbrella before it rains.']
+    ['Loyal before clever', 'She waits outside your meeting room holding coffee, because she noticed your schedule.'],
+    ['Quiet before loud', 'He fixes something and never mentions it.'],
+    ['Helpful before impressive', 'She chooses the simpler answer, because it helps you more.'],
+    ['Trusted before autonomous', 'He knocks before entering. Every time.'],
+    ['Present before prompted', 'She is already carrying the umbrella before it rains.']
   ];
   var vg = document.getElementById('values-grid');
-  VALUES.forEach(function (v, i) {
+  VALUES.forEach(function (v) {
     var d = document.createElement('div');
     d.className = 'story reveal in';
-    d.innerHTML = '<div class="pic">' + M.animalSVG(v[0], 96, { delay: i * 0.4, prop: v[1] }) + '</div>' +
-      '<div class="subtitle" style="margin-top:10px">' + v[2] + '</div>' +
-      '<p class="muted" style="margin-top:8px">' + v[3] + '</p>';
+    d.innerHTML = '<div class="subtitle">' + v[0] + '</div>' +
+      '<p class="muted" style="margin-top:8px">' + v[1] + '</p>';
     vg.appendChild(d);
   });
 
@@ -438,9 +440,6 @@ document.addEventListener('DOMContentLoaded', function () {
     dg.appendChild(d);
   });
 
-  /* ── life ── */
-  M.initEyeTracking();
-  M.initQuirks();
 });
 </script>
 </body>
