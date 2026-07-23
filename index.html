@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f3ea">
+    <meta name="operating-brief-endpoint" content="https://zazoo-operating-brief-api.dev-bridge-ai.workers.dev/submissions">
   <title>Zazoo. Become AI-native.</title>
   <meta name="description" content="Build the operating model, intelligence infrastructure, and leadership your organization needs to become AI-native.">
   <meta property="og:title" content="Zazoo. Become AI-native.">
@@ -28,67 +29,71 @@
   </nav>
 
   <main>
-    <header class="hero wrap">
-      <p class="eyebrow">The AI era is an organizational event</p>
-      <h1>There are moments when the old rules stop working.</h1>
-      <p class="hero-question">When history looks back at the AI era, where will you stand?</p>
-      <p class="hero-copy">Every major paradigm shift transforms the market. The organizations that merely adopt the new technology fade with the past. The organizations that transform themselves around it define the future.</p>
-    </header>
+    <section class="screen-section opening-screen" aria-labelledby="opening-title">
+      <div class="wrap screen-inner">
+        <header class="hero">
+          <div>
+            <h1 id="opening-title">There are moments when the old rules stop working.</h1>
+            <p class="hero-question">When history looks back at the AI era, where will you stand?</p>
+          </div>
+          <p class="hero-copy">Every major paradigm shift transforms the market. The organizations that merely adopt the new technology fade with the past. The organizations that transform themselves around it define the future.</p>
+        </header>
 
-    <section class="comparison-section wrap" aria-labelledby="comparison-heading">
-      <h2 id="comparison-heading" class="sr-only">Transitional and transformational thinking through history</h2>
-      <div class="case-tabs" role="tablist" aria-label="Choose a technology shift">
-        <button type="button" class="case-tab on" role="tab" aria-selected="true" data-category="steam">Steam Engine</button>
-        <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="electricity">Electricity</button>
-        <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="computer">Computer</button>
-        <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="internet">Internet</button>
+        <div class="comparison-section">
+          <div class="case-tabs" role="tablist" aria-label="Choose a technology shift">
+            <button type="button" class="case-tab on" role="tab" aria-selected="true" data-category="steam">Steam Engine</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="electricity">Electricity</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="computer">Computer</button>
+            <button type="button" class="case-tab" role="tab" aria-selected="false" data-category="internet">Internet</button>
+          </div>
+
+          <article class="case-study" aria-live="polite">
+            <img id="case-image" src="assets/comparison-case-studies/steam-manufacturing.jpg" alt="Manufacturing: transitional and transformational approaches">
+            <div class="case-shade" aria-hidden="true"></div>
+            <div class="case-copy case-left">
+              <span>Transitional Thinking</span>
+              <ol id="case-transitional">
+                <li><strong>The steam engine</strong> is a better source of power.</li>
+                <li>By replacing water wheels with steam engines, manufacturers powered existing mills more reliably.</li>
+                <li>By preserving existing workflows, they built <strong>better mills</strong>.</li>
+              </ol>
+            </div>
+            <div class="case-copy case-right">
+              <span>Transformational Thinking</span>
+              <ol id="case-transformational">
+                <li><strong>The steam engine</strong> is a new way to organize production.</li>
+                <li>By centralizing workers and machines around steam power, manufacturers coordinated specialized production at unprecedented scale.</li>
+                <li>By redesigning work around centralized production, they created the <strong>factory system</strong>.</li>
+              </ol>
+            </div>
+            <button type="button" class="btn btn-sm btn-accent case-generate" id="generate-case">Generate New Case</button>
+          </article>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn btn-md btn-accent" href="mailto:hello@zazoo.me?subject=Strategy%20Session">Book a Strategy Session</a>
+          <a class="btn btn-md btn-secondary" href="labs.html#readiness">Assess Your Organization</a>
+        </div>
       </div>
-
-      <article class="case-study" aria-live="polite">
-        <img id="case-image" src="assets/comparison-case-studies/steam-manufacturing.jpg" alt="">
-        <div class="case-shade" aria-hidden="true"></div>
-        <div class="case-heading">
-          <span id="case-era">Steam Engine</span>
-          <h3 id="case-title">Manufacturing</h3>
-        </div>
-        <div class="case-copy case-left">
-          <span>Transitional thinking</span>
-          <h4 id="case-transitional">The steam engine is a better source of power.</h4>
-          <p id="case-transitional-detail">By preserving existing workflows, manufacturers built better mills.</p>
-        </div>
-        <div class="case-copy case-right">
-          <span>Transformational thinking</span>
-          <h4 id="case-transformational">The steam engine is a new way to organize production.</h4>
-          <p id="case-transformational-detail">By redesigning work around centralized production, manufacturers created the factory system.</p>
-        </div>
-        <button type="button" class="btn btn-md btn-accent case-generate" id="generate-case">
-          Generate New Case <span aria-hidden="true">↻</span>
-        </button>
-      </article>
     </section>
 
-    <div class="cta-row wrap">
-      <a class="btn btn-lg btn-accent" href="mailto:hello@zazoo.me?subject=Strategy%20Session">Book a Strategy Session</a>
-      <a class="btn btn-lg btn-secondary" href="labs.html#readiness">Assess Your Organization</a>
-    </div>
-
-    <section class="native-section section-brand" id="infrastructure">
-      <div class="wrap">
+    <section class="screen-section native-section section-brand" id="infrastructure" aria-labelledby="native-title">
+      <div class="wrap screen-inner">
         <div class="native-heading">
-          <p class="eyebrow light">The operating model is changing</p>
-          <h2>THE NEXT GENERATION OF ORGANIZATIONS ARE <span>AI-native</span>.</h2>
-          <p>The greatest risk is not that your organization fails to adopt AI.<br>It is that AI succeeds everywhere and yet you fail.</p>
+          <div>
+            <h2 id="native-title">THE NEXT GENERATION OF ORGANIZATIONS ARE <span>AI-native</span>.</h2>
+            <p>The greatest risk is not that your organization fails to adopt AI.<br>It is that AI succeeds everywhere and yet you fail.</p>
+          </div>
         </div>
 
         <div class="maturity">
           <article class="maturity-detail" id="level-detail" aria-live="polite">
             <div id="level-overview">
-              <p class="detail-kicker">Business AI Infrastructure</p>
               <h3>An AI-native organization learns as one.</h3>
-              <p>Intelligence is an organizational capability.</p>
+              <p>Intelligence is an organisational capability.</p>
               <p>Context lives in shared memory.<br>Expertise becomes reusable skill.</p>
               <p>Workflows turn into learning systems.<br>Every decision improves the next one.</p>
-              <p>Governance removes friction from everyday work.</p>
+              <p>And Governance removes friction from everyday work.</p>
               <strong>We call this Business AI Infrastructure.</strong>
             </div>
             <div id="level-expanded" hidden>
@@ -102,41 +107,37 @@
             <div class="scale-heading">
               <p>Levels of Business AI Infrastructure.</p>
               <h3>Where do you stand?</h3>
+              <span>Hover or select a level to explore it.</span>
             </div>
             <ol>
               <li>
                 <button class="maturity-level" type="button" data-level="1" aria-expanded="false">
                   <span class="level-number">1</span>
                   <span><strong>Doing the Same Work Differently</strong><small>I use AI.</small></span>
-                  <span class="level-arrow" aria-hidden="true">↗</span>
                 </button>
               </li>
               <li>
                 <button class="maturity-level" type="button" data-level="2" aria-expanded="false">
                   <span class="level-number">2</span>
                   <span><strong>Doing Different Work the Same Way</strong><small>I manage AI.</small></span>
-                  <span class="level-arrow" aria-hidden="true">↗</span>
                 </button>
               </li>
               <li>
                 <button class="maturity-level" type="button" data-level="3" aria-expanded="false">
                   <span class="level-number">3</span>
                   <span><strong>Working Differently</strong><small>I build AI systems.</small></span>
-                  <span class="level-arrow" aria-hidden="true">↗</span>
                 </button>
               </li>
               <li>
                 <button class="maturity-level" type="button" data-level="4" aria-expanded="false">
                   <span class="level-number">4</span>
                   <span><strong>Organizing Differently</strong><small>I build organizational capabilities.</small></span>
-                  <span class="level-arrow" aria-hidden="true">↗</span>
                 </button>
               </li>
               <li>
                 <button class="maturity-level" type="button" data-level="5" aria-expanded="false">
                   <span class="level-number">5</span>
                   <span><strong>Competing Differently</strong><small>I shape how the business competes.</small></span>
-                  <span class="level-arrow" aria-hidden="true">↗</span>
                 </button>
               </li>
             </ol>
@@ -144,71 +145,164 @@
         </div>
 
         <div class="section-cta">
-          <a class="btn btn-lg btn-accent" href="mailto:hello@zazoo.me?subject=AI-native%20Operating%20Brief">Get your AI-native Operating Brief</a>
+          <button class="btn btn-md btn-accent" type="button" data-open-brief>Get your AI Native Operating Brief</button>
         </div>
       </div>
     </section>
 
-    <section class="path-section section" id="path">
-      <div class="wrap">
+    <section class="screen-section path-section" id="path" aria-labelledby="path-title">
+      <div class="wrap screen-inner">
         <div class="path-heading">
-          <p class="eyebrow">Transformation, operationalized</p>
-          <h2>Your path to AI-native</h2>
+          <h2 id="path-title">Your path to AI-native</h2>
           <p>AI-native requires more than technology. It requires a new operating model, new infrastructure, and new leadership.</p>
         </div>
 
         <div class="path-grid">
           <article class="path-card">
-            <div class="path-number">01</div>
             <p class="path-action">Design the operating model.</p>
             <h3>Consulting Lab</h3>
             <p class="path-lead">Transforming an organization begins with redesigning how it works.</p>
             <p>We help leaders assess where they are today, design their Business AI Infrastructure, establish governance, and build a roadmap toward becoming an AI-native organization.</p>
             <p class="path-best"><strong>Best for:</strong> Executive teams, founders, and transformation leaders.</p>
-            <a class="path-link" href="labs.html">Explore Transformation Lab <span aria-hidden="true">→</span></a>
+            <a class="path-link" href="labs.html">Explore Transformation Lab</a>
           </article>
 
           <article class="path-card featured">
-            <div class="path-number">02</div>
             <p class="path-action">Build the intelligence infrastructure.</p>
             <h3>Zazoo Business Companions</h3>
             <p class="path-lead">Operationalize your transformation.</p>
             <p>Deploy a governed network of AI companions with shared context, organizational memory, reusable skills, connected workflows, and intelligent systems that compound capability across your organization.</p>
             <p class="path-best"><strong>Best for:</strong> Organizations ready to operationalize Business AI Infrastructure.</p>
-            <a class="path-link" href="platform/">Meet the Companions <span aria-hidden="true">→</span></a>
+            <a class="path-link" href="platform/">Meet the Companions</a>
           </article>
 
           <article class="path-card">
-            <div class="path-number">03</div>
             <p class="path-action">Lead the human transformation.</p>
             <h3>Leadership for the AI Era</h3>
             <p class="path-lead">The most challenging transformation isn't technology. It's human.</p>
-            <p>We help leaders, managers, and teams redesign decisions, roles, accountability, and culture for organizations where AI-native practices are embedded in organizational DNA.</p>
-            <p class="path-best"><strong>Best for:</strong> Leaders preparing their people—and their organizations—for the AI era.</p>
-            <a class="path-link" href="training.html">Explore Programs <span aria-hidden="true">→</span></a>
+            <p>We help leaders, managers, and teams redesign decisions, roles, accountability, and culture for organizations where AI-native practises are embedded in organisational DNA.</p>
+            <p class="path-for"><strong>For:</strong> Leaders preparing their people—and their organizations—for the AI era.</p>
+            <p class="path-best"><strong>Best for:</strong> Leaders preparing their people for the AI era.</p>
+            <a class="path-link" href="training.html">Explore Programs</a>
           </article>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="future-footer">
+  <footer class="footer compact-footer">
     <div class="wrap">
-      <p class="footer-kicker">A final thought</p>
-      <h2>The future will not belong to the organizations that use the most AI.</h2>
-      <p class="footer-answer">It will belong to the organizations that learn fastest.</p>
+      <div>
+        <h2>The future will not belong to the organizations that use the most AI.</h2>
+        <p>It will belong to the organizations that learn fastest.</p>
+      </div>
       <div class="footer-actions">
-        <a class="btn btn-lg btn-accent" href="labs.html#readiness">Assess Your Organization</a>
-        <a class="btn btn-lg btn-on-brand" href="mailto:hello@zazoo.me?subject=Strategy%20Session">Book a Strategy Session</a>
+        <a href="labs.html#readiness">Assess Your Organization</a>
+        <a href="mailto:hello@zazoo.me?subject=Strategy%20Session">Book a Strategy Session</a>
       </div>
       <div class="footer-bottom">
         <a class="logo" href="index.html">zazoo</a>
-        <span>Business AI Infrastructure for organizations that intend to lead.</span>
+        <span>© 2026 zazoo.me</span>
       </div>
     </div>
   </footer>
 
+  <dialog class="brief-dialog" id="brief-dialog" aria-labelledby="brief-title">
+    <form id="brief-form">
+      <header class="brief-header">
+        <div>
+          <p>AI Native Operating Brief</p>
+          <h2 id="brief-title">Where does your organization stand?</h2>
+        </div>
+        <button type="button" class="brief-close" data-close-brief aria-label="Close questionnaire">×</button>
+      </header>
+
+      <div class="brief-progress" aria-hidden="true"><span id="brief-progress-bar"></span></div>
+      <p class="brief-step-count" id="brief-step-count">Question 1 of 7</p>
+
+      <div class="brief-steps">
+        <fieldset class="brief-question" data-brief-step>
+          <legend>When someone needs to complete a task, what happens first?</legend>
+          <label><input type="radio" name="q1" value="1" required><span>Work stays with the individual.</span></label>
+          <label><input type="radio" name="q1" value="2"><span>Teams use AI to do the same work faster.</span></label>
+          <label><input type="radio" name="q1" value="3"><span>Teams reuse prompts, workflows, and artifacts across similar tasks.</span></label>
+          <label><input type="radio" name="q1" value="4"><span>Work is redesigned around shared intelligence and reusable context.</span></label>
+          <label><input type="radio" name="q1" value="5"><span>Work runs as a compounding system where each task improves the next one.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Knowledge flow</span>What happens to useful context after a task is completed?</legend>
+          <label><input type="radio" name="q2" value="1" required><span>It disappears into inboxes, docs, and memory.</span></label>
+          <label><input type="radio" name="q2" value="2"><span>It lives in a few strong performers.</span></label>
+          <label><input type="radio" name="q2" value="3"><span>It is shared informally across teams.</span></label>
+          <label><input type="radio" name="q2" value="4"><span>It is captured in systems that others can reuse.</span></label>
+          <label><input type="radio" name="q2" value="5"><span>It becomes organizational memory that improves decisions over time.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Governance</span>How are rules and approvals handled?</legend>
+          <label><input type="radio" name="q3" value="1" required><span>People stop work to ask for permission.</span></label>
+          <label><input type="radio" name="q3" value="2"><span>Governance slows work because it sits outside the flow.</span></label>
+          <label><input type="radio" name="q3" value="3"><span>Teams create ad hoc guardrails to move faster.</span></label>
+          <label><input type="radio" name="q3" value="4"><span>Governance is embedded in workflows and tools.</span></label>
+          <label><input type="radio" name="q3" value="5"><span>Governance removes friction because safe action is already built in.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Consistency</span>If two teams solve the same problem, what happens?</legend>
+          <label><input type="radio" name="q4" value="1" required><span>They solve it differently every time.</span></label>
+          <label><input type="radio" name="q4" value="2"><span>They use AI individually, with inconsistent results.</span></label>
+          <label><input type="radio" name="q4" value="3"><span>They share templates and standards.</span></label>
+          <label><input type="radio" name="q4" value="4"><span>They operate from common playbooks and memory.</span></label>
+          <label><input type="radio" name="q4" value="5"><span>They produce repeatable outcomes with organizational learning built in.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Leadership</span>What does leadership spend most of its time doing?</legend>
+          <label><input type="radio" name="q5" value="1" required><span>Approving work.</span></label>
+          <label><input type="radio" name="q5" value="2"><span>Encouraging AI adoption.</span></label>
+          <label><input type="radio" name="q5" value="3"><span>Standardizing tools and practices.</span></label>
+          <label><input type="radio" name="q5" value="4"><span>Redesigning the operating model.</span></label>
+          <label><input type="radio" name="q5" value="5"><span>Scaling intelligence as a core organizational capability.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Exception handling</span>What happens when AI gets something wrong?</legend>
+          <label><input type="radio" name="q6" value="1" required><span>People ignore it or work around it.</span></label>
+          <label><input type="radio" name="q6" value="2"><span>The issue is handled case by case.</span></label>
+          <label><input type="radio" name="q6" value="3"><span>A team updates the prompt or process.</span></label>
+          <label><input type="radio" name="q6" value="4"><span>The system is adjusted so the error is less likely to recur.</span></label>
+          <label><input type="radio" name="q6" value="5"><span>The organization learns from the error automatically.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-question" data-brief-step hidden>
+          <legend><span>Onboarding</span>How quickly can a new person become effective?</legend>
+          <label><input type="radio" name="q7" value="1" required><span>They depend on shadowing and tribal knowledge.</span></label>
+          <label><input type="radio" name="q7" value="2"><span>They use AI tools, but still learn mostly from people.</span></label>
+          <label><input type="radio" name="q7" value="3"><span>They follow team-specific guides and examples.</span></label>
+          <label><input type="radio" name="q7" value="4"><span>They ramp through shared memory, standards, and workflows.</span></label>
+          <label><input type="radio" name="q7" value="5"><span>They become productive inside an AI-native operating system.</span></label>
+        </fieldset>
+
+        <fieldset class="brief-details" data-brief-step hidden>
+          <legend>Where should we send your report?</legend>
+          <label>Name<input type="text" name="name" autocomplete="name" required></label>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+          <label>Profession<input type="text" name="profession" autocomplete="organization-title" required></label>
+          <p class="brief-error" id="brief-error" role="alert" hidden></p>
+        </fieldset>
+      </div>
+
+      <footer class="brief-controls">
+        <button class="btn btn-md btn-secondary" id="brief-back" type="button" hidden>Back</button>
+        <button class="btn btn-md btn-accent" id="brief-next" type="button">Continue</button>
+        <button class="btn btn-md btn-accent" id="brief-submit" type="submit" hidden>Send me the report</button>
+      </footer>
+    </form>
+  </dialog>
+
   <script src="assets/zazoo.js"></script>
   <script src="assets/home.js"></script>
+  <script type="module" src="assets/operating-brief.mjs"></script>
 </body>
 </html>
