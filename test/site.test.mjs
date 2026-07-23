@@ -180,6 +180,21 @@ test("Platform uses animated v3 companions with scene-specific hover stories", a
   assert.match(script, /Last week I reviewed 281,000 requests, requested 1,482 human approvals, enforced 12 organizational policies, and prevented 418 unauthorized actions\./);
 });
 
+test("Platform companions all wear ties, two wear spectacles, and scenes use distinct topography", async () => {
+  const html = await page("platform/index.html");
+  const script = await page("platform/src/showcase.js");
+
+  assert.match(script, /const SPECTACLES = new Set\(\["milo", "remi"\]\)/);
+  assert.match(script, /name === "tie" \? "v3-tie" : ""/);
+  assert.match(script, /SPECTACLES\.has\(id\)/);
+  assert.match(script, /stage\.dataset\.scene = activeScene/);
+  assert.match(html, /\.v3-tie\{[^}]*filter:/);
+  assert.match(html, /\.v3-spectacles\{/);
+  assert.match(html, /\.zazo-frame\[data-scene="landing"\]::before/);
+  assert.match(html, /\.zazo-frame\[data-scene="dictionary"\]::before/);
+  assert.match(html, /\.zazo-frame\[data-scene="governance"\]::before/);
+});
+
 test("Consulting is renamed Labs while legacy links remain recoverable", async () => {
   const labs = await page("labs.html");
   const legacy = await page("consulting.html");
