@@ -109,6 +109,7 @@ const POSITIONS = {
 };
 
 const ANIMATIONS = ["anim-breathe", "anim-wave", "anim-hop", "anim-think", "anim-sway"];
+const SPECTACLES = new Set(["milo", "remi"]);
 const scenes = [...document.querySelectorAll(".platform-scene")];
 const stage = document.querySelector("#all-zazos");
 const defaults = new Map();
@@ -124,7 +125,8 @@ function layerMarkup(species) {
     const top = ((layer.y - layer.h / 2) / 440) * 100;
     const width = (layer.w / 400) * 100;
     const height = (layer.h / 440) * 100;
-    return `<img src="${layer.file}" alt="" data-layer="${name}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;transform:rotate(${layer.rot || 0}deg)">`;
+    const className = name === "tie" ? "v3-tie" : "";
+    return `<img src="${layer.file}" alt="" class="${className}" data-layer="${name}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;transform:rotate(${layer.rot || 0}deg)">`;
   }).join("");
 }
 
@@ -138,7 +140,8 @@ function companionButton(id, scene, index) {
   button.style.left = `${left}%`;
   button.style.top = `${top}%`;
   button.setAttribute("aria-label", `${companion.name}, ${companion.role}`);
-  button.innerHTML = `<span class="v3-rig ${ANIMATIONS[index % ANIMATIONS.length]}">${layerMarkup(companion.species)}</span>`;
+  const spectacles = SPECTACLES.has(id) ? '<span class="v3-spectacles" aria-hidden="true"><span></span></span>' : "";
+  button.innerHTML = `<span class="v3-rig ${ANIMATIONS[index % ANIMATIONS.length]}">${layerMarkup(companion.species)}${spectacles}</span>`;
   button.addEventListener("mouseenter", () => showDetail(scene, id));
   button.addEventListener("mouseleave", () => restoreScene(scene));
   button.addEventListener("focus", () => showDetail(scene, id));
@@ -194,6 +197,7 @@ function setActiveScene(sceneId) {
   if (sceneId === activeScene) return;
   restoreScene(activeScene);
   activeScene = sceneId;
+  stage.dataset.scene = activeScene;
   document.querySelectorAll(".showcase-group").forEach((group) => {
     group.classList.toggle("on", group.dataset.scene === activeScene);
   });
@@ -218,9 +222,9 @@ function cycleAnimations() {
 }
 
 prepareScenes();
+stage.dataset.scene = activeScene;
 buildStage();
 updateScene();
 window.addEventListener("scroll", updateScene, { passive: true });
 window.addEventListener("resize", updateScene);
 setInterval(cycleAnimations, 4000);
-
