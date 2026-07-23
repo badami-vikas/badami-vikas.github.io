@@ -97,10 +97,21 @@ test("desktop composition encodes the requested compact line and column layout",
   assert.match(css, /\.hero-question\{[^}]*white-space:nowrap/);
   assert.match(css, /\.native-heading h2\{[^}]*white-space:nowrap/);
   assert.match(css, /\.native-heading p\{[^}]*white-space:nowrap/);
-  assert.match(css, /\.maturity\{[^}]*grid-template-columns:minmax\(0,1\.4fr\) minmax\(0,\.6fr\)/);
+  assert.match(css, /\.maturity\{[^}]*grid-template-columns:minmax\(0,\.94fr\) minmax\(0,1\.06fr\)/);
   assert.match(css, /\.path-heading p\{[^}]*white-space:nowrap/);
   assert.match(css, /\.path-card h3\{[^}]*white-space:nowrap/);
   assert.doesNotMatch(html, /class="path-for"/);
+});
+
+test("the 9112049 visual foundation and original compact footer are retained", async () => {
+  const html = await page("index.html");
+  const css = await page("assets/home.css");
+
+  assert.match(css, /\.hero h1\{font:700 clamp\(38px,4\.6vw,66px\)/);
+  assert.match(css, /\.path-card\{[^}]*padding:clamp\(20px,2\.3vw,30px\)/);
+  assert.match(css, /\.maturity-level strong\{[^}]*clamp\(16px,1\.65vw,20px\)/);
+  assert.match(html, /<footer class="footer compact-footer">/);
+  assert.match(css, /\.compact-footer\{padding:30px 0 20px\}/);
 });
 
 test("brief scoring returns dominant pattern and diagnostic dimensions", () => {
