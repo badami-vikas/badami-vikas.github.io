@@ -75,6 +75,7 @@ function initBrief() {
   const steps = Array.from(form.querySelectorAll("[data-brief-step]"));
   const progress = document.getElementById("brief-progress-bar");
   const stepCount = document.getElementById("brief-step-count");
+  const back = document.getElementById("brief-back");
   const next = document.getElementById("brief-next");
   const submit = document.getElementById("brief-submit");
   const error = document.getElementById("brief-error");
@@ -82,6 +83,7 @@ function initBrief() {
 
   function paintStep() {
     steps.forEach((item, index) => { item.hidden = index !== step; });
+    back.hidden = step === 0;
     next.hidden = step === steps.length - 1;
     submit.hidden = step !== steps.length - 1;
     progress.style.width = ((step + 1) / steps.length * 100) + "%";
@@ -124,6 +126,11 @@ function initBrief() {
     step += 1;
     paintStep();
   });
+  back.addEventListener("click", () => {
+    step -= 1;
+    paintStep();
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;

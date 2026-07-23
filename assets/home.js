@@ -284,6 +284,7 @@
         "AI synchronizes. People reinvent.",
         "Intelligence compounds. Leverage becomes the advantage.",
         "The organization is designed around capabilities instead of functions.",
+        "Remove bottlenecks. Accelerate decisions.",
         "Success is measured by Cross-functional collaboration and governance."
       ]
     },
