@@ -4,163 +4,248 @@
   var cases = {
     steam: [
       {
-        era: "Steam Engine",
         title: "Manufacturing",
         image: "steam-manufacturing.jpg",
-        transitional: "The steam engine is a better source of power.",
-        transitionalDetail: "By preserving existing workflows, manufacturers built better mills.",
-        transformational: "The steam engine is a new way to organize production.",
-        transformationalDetail: "By redesigning work around centralized production, manufacturers created the factory system."
+        left: [
+          "**The steam engine** is a better source of power.",
+          "By replacing water wheels with steam engines, manufacturers powered existing mills more reliably.",
+          "By preserving existing workflows, they built **better mills**."
+        ],
+        right: [
+          "**The steam engine** is a new way to organize production.",
+          "By centralizing workers and machines around steam power, manufacturers coordinated specialized production at unprecedented scale.",
+          "By redesigning work around centralized production, they created the **factory system**."
+        ]
       },
       {
-        era: "Steam Engine",
         title: "Agriculture",
         image: "steam-agriculture.jpg",
-        transitional: "Steam power makes existing farm work faster.",
-        transitionalDetail: "By mechanizing individual tasks, producers created more efficient farms.",
-        transformational: "Steam power enables farming to operate as a mechanized system.",
-        transformationalDetail: "By reorganizing land, labor, processing, and transport, producers created modern mechanized agriculture."
+        left: [
+          "**Steam power** makes existing farm work faster.",
+          "By powering threshers and pumps with steam, farmers reduced labor within existing field patterns.",
+          "By mechanizing individual tasks, they created **more efficient farms**."
+        ],
+        right: [
+          "**Steam power** enables farming to operate as a mechanized system.",
+          "By reorganizing land, labor, processing, and transport around machines, producers coordinated farming at greater scale.",
+          "By redesigning the entire production model, they created **modern mechanized agriculture**."
+        ]
       },
       {
-        era: "Steam Engine",
         title: "Transport",
         image: "steam-transport.jpg",
-        transitional: "The steam locomotive is a faster vehicle.",
-        transitionalDetail: "By improving individual journeys, operators created better travel.",
-        transformational: "The steam locomotive is the engine of a connected transport network.",
-        transformationalDetail: "By standardizing tracks, schedules, stations, and freight connections, operators created the railway system."
+        left: [
+          "**The steam locomotive** is a faster vehicle.",
+          "By improving locomotives, operators moved passengers and freight faster along individual road routes.",
+          "By improving individual journeys, they created **better travel**."
+        ],
+        right: [
+          "**The steam locomotive** is the engine of a connected transport network.",
+          "By standardizing tracks, schedules, stations, and freight connections, operators linked cities, ports, and markets.",
+          "By organizing transport as a network, they created the **railway system**."
+        ]
       }
     ],
     electricity: [
       {
-        era: "Electricity",
         title: "Manufacturing",
         image: "electricity-manufacturing.jpg",
-        transitional: "The electric motor is a cleaner replacement for the steam engine.",
-        transitionalDetail: "By replacing the power source, manufacturers created more efficient factories.",
-        transformational: "The electric motor allows production to follow the flow of work.",
-        transformationalDetail: "By arranging workstations in sequence, manufacturers created modern mass production."
+        left: [
+          "**The electric motor** is a cleaner replacement for the steam engine.",
+          "By attaching one motor to existing shafts and belts, manufacturers preserved traditional factory layouts.",
+          "By replacing the power source, they created **more efficient factories**."
+        ],
+        right: [
+          "**The electric motor** allows production to follow the flow of work.",
+          "By powering machines individually, manufacturers arranged workstations in sequence and moved products continuously between them.",
+          "By redesigning factories around production flow, they created **modern mass production**."
+        ]
       },
       {
-        era: "Electricity",
-        title: "The Home",
+        title: "The home",
         image: "electricity-home.jpg",
-        transitional: "Electricity makes individual household chores easier.",
-        transitionalDetail: "By improving separate chores, households created better-equipped homes.",
-        transformational: "Electricity allows the home to function as an integrated labor-saving system.",
-        transformationalDetail: "By redesigning domestic life around electric services, households created the modern electric home."
+        left: [
+          "**Electricity** makes individual household chores easier.",
+          "By electrifying irons and other single tools, households reduced effort one task at a time.",
+          "By improving separate chores, they created **better-equipped homes**."
+        ],
+        right: [
+          "**Electricity** allows the home to function as an integrated labor-saving system.",
+          "By adopting refrigeration, washing, lighting, and appliances together, households reorganized food storage, cleaning, and daily routines.",
+          "By redesigning domestic life around electric services, they created the **modern electric home**."
+        ]
       },
       {
-        era: "Electricity",
         title: "Communication",
         image: "electricity-communication.jpg",
-        transitional: "Electric communication sends written messages faster.",
-        transitionalDetail: "By accelerating message delivery, operators created better telegraphy.",
-        transformational: "Electric communication enables people to converse across distance.",
-        transformationalDetail: "By organizing communication as shared infrastructure, providers created the telephone network."
+        left: [
+          "**Electric communication** sends written messages faster.",
+          "By improving telegraph equipment, operators transmitted coded messages faster between staffed offices.",
+          "By accelerating message delivery, they created **better telegraphy**."
+        ],
+        right: [
+          "**Electric communication** enables people to converse across distance.",
+          "By connecting telephones through exchanges and shared lines, providers enabled direct, real-time conversation.",
+          "By organizing communication as shared infrastructure, they created the **telephone network**."
+        ]
       },
       {
-        era: "Electricity",
-        title: "Power Distribution",
+        title: "Power distribution",
         image: "electricity-grid.jpg",
-        transitional: "Electricity is a better way to light nearby buildings.",
-        transitionalDetail: "By improving local lighting, providers created better illuminated districts.",
-        transformational: "Electricity is a utility that can serve entire regions.",
-        transformationalDetail: "By organizing generation and distribution as a network, providers created the electric grid."
+        left: [
+          "**Electricity** is a better way to light nearby buildings.",
+          "By replacing gas lamps with bulbs supplied by local generators, providers improved lighting within limited areas.",
+          "By improving local lighting, they created **better illuminated districts**."
+        ],
+        right: [
+          "**Electricity** is a utility that can serve entire regions.",
+          "By using alternating current, transformers, and transmission lines, providers moved power efficiently across long distances.",
+          "By organizing generation and distribution as a network, they created the **electric grid**."
+        ]
       },
       {
-        era: "Electricity",
-        title: "Vertical Transportation",
+        title: "Vertical transportation",
         image: "electricity-vertical.jpg",
-        transitional: "Electricity makes stairways safer and easier to use.",
-        transitionalDetail: "By improving the climb, building owners created better stairways.",
-        transformational: "Electricity makes routine vertical travel possible.",
-        transformationalDetail: "By redesigning buildings around vertical movement, architects created the modern skyscraper."
+        left: [
+          "**Electricity** makes stairways safer and easier to use.",
+          "By replacing gas lamps with electric lighting, building owners improved the existing journey between floors.",
+          "By improving the climb, they created **better stairways**."
+        ],
+        right: [
+          "**Electricity** makes routine vertical travel possible.",
+          "By installing electric elevators, architects moved people rapidly through buildings without relying on stairs.",
+          "By redesigning buildings around vertical movement, they created the **modern skyscraper**."
+        ]
       },
       {
-        era: "Electricity",
-        title: "Motion Pictures",
+        title: "Motion pictures",
         image: "electricity-cinema.jpg",
-        transitional: "Motion pictures can enhance live entertainment.",
-        transitionalDetail: "By supplementing stage shows, theater owners created better vaudeville programs.",
-        transformational: "Motion pictures are a repeatable, distributable form of entertainment.",
-        transformationalDetail: "By organizing entertainment around recorded stories, producers created the motion-picture industry."
+        left: [
+          "**Motion pictures** can enhance live entertainment.",
+          "By showing short films between live acts, theater owners added novelty without changing the performance model.",
+          "By supplementing stage shows, they created **better vaudeville programs**."
+        ],
+        right: [
+          "**Motion pictures** are a repeatable, distributable form of entertainment.",
+          "By coordinating studios, cinemas, and film distribution, producers delivered the same recorded performance to mass audiences.",
+          "By organizing entertainment around recorded stories, they created the **motion-picture industry**."
+        ]
       }
     ],
     computer: [
       {
-        era: "Computer",
-        title: "Retail Operations",
+        title: "Retail operations",
         image: "computer-retail.jpg",
-        transitional: "Computers make administrative retail work faster.",
-        transitionalDetail: "By digitizing back-office tasks, retailers created more efficient retail administration.",
-        transformational: "Computers can coordinate the entire retail operation.",
-        transformationalDetail: "By linking stores, warehouses, suppliers, and inventory, retailers created the data-driven retail system."
+        left: [
+          "**Computers** make administrative retail work faster.",
+          "By automating payroll and accounting, retailers reduced paperwork while stores continued operating independently.",
+          "By digitizing back-office tasks, they created **more efficient retail administration**."
+        ],
+        right: [
+          "**Computers** can coordinate the entire retail operation.",
+          "By linking stores, warehouses, suppliers, and inventory data, retailers synchronized replenishment across the business.",
+          "By organizing retail around shared information, they created the **data-driven retail system**."
+        ]
       },
       {
-        era: "Computer",
-        title: "Enterprise Operations",
+        title: "Enterprise operations",
         image: "computer-enterprise.jpg",
-        transitional: "Computers make record-keeping faster.",
-        transitionalDetail: "By digitizing departmental paperwork, companies created more efficient administration.",
-        transformational: "Computers can become the operating backbone of the enterprise.",
-        transformationalDetail: "By integrating core functions through shared data, companies created the digital enterprise."
+        left: [
+          "**Computers** make record-keeping faster.",
+          "By replacing paper ledgers with digital records, companies accelerated work inside separate departments.",
+          "By digitizing departmental paperwork, they created **more efficient administration**."
+        ],
+        right: [
+          "**Computers** can become the operating backbone of the enterprise.",
+          "By connecting finance, procurement, manufacturing, inventory, human resources, and sales, companies coordinated work through shared data.",
+          "By integrating core functions, they created the **digital enterprise**."
+        ]
       },
       {
-        era: "Computer",
         title: "Payments",
         image: "computer-payments.jpg",
-        transitional: "Computers process each bank's transactions faster.",
-        transitionalDetail: "By improving individual banks, institutions created better banking operations.",
-        transformational: "Computers can connect many institutions into one payment network.",
-        transformationalDetail: "By organizing payments as shared infrastructure, providers created the global electronic payment network."
+        left: [
+          "**Computers** process each bank's transactions faster.",
+          "By automating internal records and settlements, banks improved processing while preserving branch-centered operations.",
+          "By improving individual banks, they created **better banking operations**."
+        ],
+        right: [
+          "**Computers** can connect many institutions into one payment network.",
+          "By linking banks, merchants, cardholders, authorization, and settlement, payment providers coordinated transactions across institutions.",
+          "By organizing payments as shared infrastructure, they created the **global electronic payment network**."
+        ]
       }
     ],
     internet: [
       {
-        era: "Internet",
         title: "Entertainment",
         image: "internet-entertainment.jpg",
-        transitional: "The Internet is another channel for renting DVDs.",
-        transitionalDetail: "By extending the rental model online, companies created better video rental.",
-        transformational: "The Internet is the delivery system for entertainment.",
-        transformationalDetail: "By redesigning distribution around instant access, providers created the streaming platform."
+        left: [
+          "**The Internet** is another channel for renting DVDs.",
+          "By accepting DVD orders online, rental companies added convenience while physical inventory remained central.",
+          "By extending the rental model online, they created **better video rental**."
+        ],
+        right: [
+          "**The Internet** is the delivery system for entertainment.",
+          "By streaming digital video on demand, providers delivered entertainment instantly across connected devices.",
+          "By redesigning distribution around instant access, they created the **streaming platform**."
+        ]
       },
       {
-        era: "Internet",
         title: "Retail",
         image: "internet-retail.jpg",
-        transitional: "The Internet is another channel for selling products.",
-        transitionalDetail: "By extending stores onto the web, retailers created online storefronts.",
-        transformational: "The Internet is the foundation of a new retail model.",
-        transformationalDetail: "By redesigning retail around digital discovery and fulfillment, retailers created e-commerce."
+        left: [
+          "**The Internet** is another channel for selling products.",
+          "By adding an online storefront, retailers sold existing inventory while physical stores remained central.",
+          "By extending stores onto the web, they created **online storefronts**."
+        ],
+        right: [
+          "**The Internet** is the foundation of a new retail model.",
+          "By integrating vast selection, search, recommendations, payments, fulfillment, and delivery, retailers built commerce for online customers.",
+          "By redesigning retail around digital discovery and fulfillment, they created **e-commerce**."
+        ]
       },
       {
-        era: "Internet",
         title: "Knowledge",
         image: "internet-knowledge.jpg",
-        transitional: "The Internet is a faster way to publish an encyclopedia.",
-        transitionalDetail: "By digitizing the reference book, publishers created a better encyclopedia.",
-        transformational: "The Internet is a place where knowledge can grow collaboratively.",
-        transformationalDetail: "By organizing knowledge as an open contribution network, platforms created the collaborative encyclopedia."
+        left: [
+          "**The Internet** is a faster way to publish an encyclopedia.",
+          "By placing expert-written articles online, publishers expanded access while retaining centralized editorial control.",
+          "By digitizing the reference book, they created **a better encyclopedia**."
+        ],
+        right: [
+          "**The Internet** is a place where knowledge can grow collaboratively.",
+          "By letting volunteers write, link, review, and continuously revise articles, platforms pooled knowledge across the world.",
+          "By organizing knowledge as an open contribution network, they created the **collaborative encyclopedia**."
+        ]
       },
       {
-        era: "Internet",
-        title: "Urban Mobility",
+        title: "Urban mobility",
         image: "internet-mobility.jpg",
-        transitional: "The Internet makes booking a taxi easier.",
-        transitionalDetail: "By digitizing reservations, operators created better taxi service.",
-        transformational: "The Internet can coordinate urban transportation in real time.",
-        transformationalDetail: "By organizing mobility as a live marketplace, platforms created the ride-hailing model."
+        left: [
+          "**The Internet** makes booking a taxi easier.",
+          "By adding online reservations, taxi companies simplified booking while preserving fleets and dispatch centers.",
+          "By digitizing reservations, they created **better taxi service**."
+        ],
+        right: [
+          "**The Internet** can coordinate urban transportation in real time.",
+          "By connecting riders, independent drivers, routing, pricing, and payments, platforms matched supply with demand continuously.",
+          "By organizing mobility as a live marketplace, they created the **ride-hailing platform**."
+        ]
       },
       {
-        era: "Internet",
         title: "Music",
         image: "internet-music.jpg",
-        transitional: "The Internet is another channel for selling music.",
-        transitionalDetail: "By digitizing individual sales, companies created the online music store.",
-        transformational: "The Internet makes a music catalog continuously accessible.",
-        transformationalDetail: "By reorganizing distribution around access, services created the music-streaming platform."
+        left: [
+          "**The Internet** is another channel for selling music.",
+          "By selling downloadable tracks, music companies changed delivery while customers still purchased individual recordings.",
+          "By digitizing individual sales, they created **the online music store**."
+        ],
+        right: [
+          "**The Internet** makes a music catalog continuously accessible.",
+          "By combining licensed catalogs, subscriptions, recommendations, and on-demand playback, services replaced ownership with access.",
+          "By reorganizing distribution around access, they created the **music-streaming platform**."
+        ]
       }
     ]
   };
@@ -179,7 +264,7 @@
       title: "Teams become AI-native.",
       points: [
         "AI executes. People orchestrate.",
-        "Capabilities compound. Consistency becomes the advantage.",
+        "Capabilities compounds. Consistency becomes the advantage.",
         "Scales output without scaling headcount.",
         "Success is measured by throughput and consistency."
       ]
@@ -199,8 +284,7 @@
         "AI synchronizes. People reinvent.",
         "Intelligence compounds. Leverage becomes the advantage.",
         "The organization is designed around capabilities instead of functions.",
-        "Remove bottlenecks. Accelerate decisions.",
-        "Success is measured by cross-functional collaboration and governance."
+        "Success is measured by Cross-functional collaboration and governance."
       ]
     },
     5: {
@@ -224,6 +308,17 @@
     if (node) node.textContent = text;
   }
 
+  function inlineMarkdown(text) {
+    return text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  }
+
+  function renderPoints(id, values) {
+    var list = document.getElementById(id);
+    list.innerHTML = values.map(function (value) {
+      return "<li>" + inlineMarkdown(value) + "</li>";
+    }).join("");
+  }
+
   function renderCase(category, index) {
     var entry = cases[category][index];
     if (!entry) return;
@@ -231,12 +326,8 @@
     window.setTimeout(function () {
       caseImage.src = "assets/comparison-case-studies/" + entry.image;
       caseImage.alt = entry.title + ": transitional and transformational approaches";
-      setText("case-era", entry.era);
-      setText("case-title", entry.title);
-      setText("case-transitional", entry.transitional);
-      setText("case-transitional-detail", entry.transitionalDetail);
-      setText("case-transformational", entry.transformational);
-      setText("case-transformational-detail", entry.transformationalDetail);
+      renderPoints("case-transitional", entry.left);
+      renderPoints("case-transformational", entry.right);
       caseStudy.classList.remove("changing");
     }, 170);
   }
