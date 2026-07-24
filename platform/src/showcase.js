@@ -110,24 +110,102 @@ const POSITIONS = {
 
 const ANIMATIONS = ["anim-breathe", "anim-wave", "anim-hop", "anim-think", "anim-sway"];
 const SPECTACLES = new Set(["milo", "remi"]);
+const LAB_TIE_TOP = 260;
+const MODEL_WIDTH = 400;
+const MODEL_HEIGHT = 440;
+const BODY_COLORS = {
+  owl: "#b98a54",
+  koala: "#9b9b94",
+  otter: "#8a94a0",
+  sloth: "#ab9a80",
+  rhino: "#b9b6b0",
+  peacock: "#5f9bab",
+  penguin: "#45494c",
+  hippo: "#b7b3ae"
+};
 const scenes = [...document.querySelectorAll(".platform-scene")];
 const stage = document.querySelector("#all-zazos");
 const defaults = new Map();
 let activeScene = "landing";
 let animationIndex = 0;
 
-function layerMarkup(species) {
+function percent(value, total) {
+  return (value / total) * 100;
+}
+
+function photoLayer(name, layer) {
+  const left = percent(layer.x - layer.w / 2, MODEL_WIDTH);
+  const top = percent(layer.y - layer.h / 2, MODEL_HEIGHT);
+  const width = percent(layer.w, MODEL_WIDTH);
+  const height = percent(layer.h, MODEL_HEIGHT);
+  return `<img src="${layer.file}" alt="" data-layer="${name}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;transform:rotate(${layer.rot || 0}deg)">`;
+}
+
+function eyeMarkup(eye, side) {
+  if (!eye) return "";
+  const pupilRadius = Math.min(eye.w, eye.h) * 0.34;
+  const pupilWidth = percent(pupilRadius * 2, eye.w);
+  const pupilHeight = percent(pupilRadius * 2, eye.h);
+  return `<span class="v3-eye v3-eye-${side}" style="left:${percent(eye.x - eye.w / 2, MODEL_WIDTH)}%;top:${percent(eye.y - eye.h / 2, MODEL_HEIGHT)}%;width:${percent(eye.w, MODEL_WIDTH)}%;height:${percent(eye.h, MODEL_HEIGHT)}%"><span class="v3-pupil" style="width:${pupilWidth}%;height:${pupilHeight}%"><i></i></span></span>`;
+}
+
+function fallbackEarMarkup(rig, species) {
+  const layers = rig.layers;
+  if (layers.earL || layers.earR || layers.crestL || layers.crestR) return "";
+  const bird = rig.kind === "bird";
+  const y = bird ? 152 : 166;
+  const xLeft = bird ? 130 : 134;
+  const xRight = bird ? 270 : 266;
+  const kind = bird ? "bird" : "mammal";
+  return [
+    `<span class="v3-ear-fallback ${kind} left" style="left:${percent(xLeft, MODEL_WIDTH)}%;top:${percent(y, MODEL_HEIGHT)}%;--ear-color:${BODY_COLORS[species]}"></span>`,
+    `<span class="v3-ear-fallback ${kind} right" style="left:${percent(xRight, MODEL_WIDTH)}%;top:${percent(y, MODEL_HEIGHT)}%;--ear-color:${BODY_COLORS[species]}"></span>`
+  ].join("");
+}
+
+function tieMarkup(rig) {
+  const tie = rig.layers.tie;
+  const suit = rig.layers.suit;
+  if (!tie || !suit) return "";
+  const naturalAspect = tie.w / tie.h;
+  const width = Math.min(suit.w * 0.15, suit.h * 0.4 * naturalAspect);
+  const height = width / naturalAspect;
+  return `<img src="${tie.file}" alt="" class="v3-tie" data-layer="tie" style="left:${percent(suit.x - width / 2, MODEL_WIDTH)}%;top:${percent(LAB_TIE_TOP, MODEL_HEIGHT)}%;width:${percent(width, MODEL_WIDTH)}%;height:${percent(height, MODEL_HEIGHT)}%">`;
+}
+
+function spectaclesMarkup(rig) {
+  const leftEye = rig.layers.eyeL;
+  const rightEye = rig.layers.eyeR;
+  if (!leftEye || !rightEye) return "";
+  const radius = Math.max(Math.min(leftEye.w, leftEye.h) * 0.6, 16);
+  const left = leftEye.x - radius - 8;
+  const right = rightEye.x + radius + 8;
+  const top = (leftEye.y + rightEye.y) / 2 - radius;
+  const height = radius * 2;
+  const leftCenter = percent(leftEye.x - left, right - left);
+  const rightCenter = percent(rightEye.x - left, right - left);
+  const lensSize = percent(radius * 2, right - left);
+  const bridgeLeft = leftCenter + lensSize * 0.33;
+  const bridgeRight = 100 - rightCenter + lensSize * 0.33;
+  return `<span class="v3-spectacles" aria-hidden="true" style="left:${percent(left, MODEL_WIDTH)}%;top:${percent(top, MODEL_HEIGHT)}%;width:${percent(right - left, MODEL_WIDTH)}%;height:${percent(height, MODEL_HEIGHT)}%;--lens-size:${lensSize}%;--left-lens:${leftCenter}%;--right-lens:${rightCenter}%;--bridge-left:${bridgeLeft}%;--bridge-right:${bridgeRight}%"><i class="lens left"></i><i class="lens right"></i><span></span></span>`;
+}
+
+function layerMarkup(species, withSpectacles) {
   const rig = engineRigs[species];
   if (!rig) return "";
 
-  return Object.entries(rig.layers).map(([name, layer]) => {
-    const left = ((layer.x - layer.w / 2) / 400) * 100;
-    const top = ((layer.y - layer.h / 2) / 440) * 100;
-    const width = (layer.w / 400) * 100;
-    const height = (layer.h / 440) * 100;
-    const className = name === "tie" ? "v3-tie" : "";
-    return `<img src="${layer.file}" alt="" class="${className}" data-layer="${name}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%;transform:rotate(${layer.rot || 0}deg)">`;
-  }).join("");
+  const images = Object.entries(rig.layers)
+    .filter(([name]) => !["eyeL", "eyeR", "tie"].includes(name))
+    .map(([name, layer]) => photoLayer(name, layer))
+    .join("");
+  return [
+    fallbackEarMarkup(rig, species),
+    images,
+    tieMarkup(rig),
+    eyeMarkup(rig.layers.eyeL, "left"),
+    eyeMarkup(rig.layers.eyeR, "right"),
+    withSpectacles ? spectaclesMarkup(rig) : ""
+  ].join("");
 }
 
 function companionButton(id, scene, index) {
@@ -140,8 +218,7 @@ function companionButton(id, scene, index) {
   button.style.left = `${left}%`;
   button.style.top = `${top}%`;
   button.setAttribute("aria-label", `${companion.name}, ${companion.role}`);
-  const spectacles = SPECTACLES.has(id) ? '<span class="v3-spectacles" aria-hidden="true"><span></span></span>' : "";
-  button.innerHTML = `<span class="v3-rig ${ANIMATIONS[index % ANIMATIONS.length]}">${layerMarkup(companion.species)}${spectacles}</span>`;
+  button.innerHTML = `<span class="v3-rig ${ANIMATIONS[index % ANIMATIONS.length]}">${layerMarkup(companion.species, SPECTACLES.has(id))}</span>`;
   button.addEventListener("mouseenter", () => showDetail(scene, id));
   button.addEventListener("mouseleave", () => restoreScene(scene));
   button.addEventListener("focus", () => showDetail(scene, id));
@@ -195,11 +272,22 @@ function restoreScene(sceneId) {
 
 function setActiveScene(sceneId) {
   if (sceneId === activeScene) return;
-  restoreScene(activeScene);
+  const previousScene = activeScene;
+  restoreScene(previousScene);
   activeScene = sceneId;
   stage.dataset.scene = activeScene;
   document.querySelectorAll(".showcase-group").forEach((group) => {
-    group.classList.toggle("on", group.dataset.scene === activeScene);
+    group.classList.remove("landing", "leaving");
+    if (group.dataset.scene === previousScene) {
+      group.classList.remove("on");
+      group.classList.add("leaving");
+      group.addEventListener("animationend", () => group.classList.remove("leaving"), { once: true });
+    } else if (group.dataset.scene === activeScene) {
+      group.classList.add("on", "landing");
+      group.addEventListener("animationend", () => group.classList.remove("landing"), { once: true });
+    } else {
+      group.classList.remove("on");
+    }
   });
 }
 
