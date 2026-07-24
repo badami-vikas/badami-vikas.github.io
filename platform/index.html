@@ -26,18 +26,29 @@
 .zazo-frame[data-scene="landing"]::before{background-color:#f4efe3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450'%3E%3Cg fill='none' stroke='%238fb5aa' stroke-width='1.4' opacity='.42'%3E%3Cpath d='M-40 330C80 200 130 390 250 250S440 120 650 230'/%3E%3Cpath d='M-50 365C70 235 145 420 270 285S470 155 660 260'/%3E%3Cpath d='M-60 400C65 275 165 450 300 320S505 195 670 300'/%3E%3Ccircle cx='475' cy='92' r='42'/%3E%3Ccircle cx='475' cy='92' r='68'/%3E%3C/g%3E%3C/svg%3E")}
 .zazo-frame[data-scene="dictionary"]::before{background-color:#eef3f0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450'%3E%3Cg fill='none' stroke='%237b9faf' stroke-width='1.3' opacity='.4'%3E%3Cpath d='M-20 80Q90 10 190 85T390 82T620 65'/%3E%3Cpath d='M-20 118Q90 48 190 123T390 120T620 103'/%3E%3Cpath d='M-20 156Q90 86 190 161T390 158T620 141'/%3E%3Cpath d='M20 390C90 265 170 330 240 220S410 80 590 155'/%3E%3Cpath d='M-10 420C70 295 180 370 260 250S430 115 625 185'/%3E%3C/g%3E%3C/svg%3E")}
 .zazo-frame[data-scene="governance"]::before{background-color:#f4eee9;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450'%3E%3Cg fill='none' stroke='%23bd8b73' stroke-width='1.25' opacity='.38'%3E%3Cellipse cx='115' cy='100' rx='95' ry='58'/%3E%3Cellipse cx='115' cy='100' rx='65' ry='38'/%3E%3Cellipse cx='115' cy='100' rx='35' ry='19'/%3E%3Cpath d='M250 470C205 345 345 350 310 240S385 45 610 30'/%3E%3Cpath d='M295 470C250 360 390 360 355 250S430 75 620 70'/%3E%3Cpath d='M340 470C295 375 435 375 400 265S475 110 630 110'/%3E%3C/g%3E%3C/svg%3E")}
-.showcase-group{position:absolute;inset:0;z-index:1;opacity:0;visibility:hidden;transition:opacity .45s var(--ease-soft),visibility .45s}
-.showcase-group.on{opacity:1;visibility:visible}
+.showcase-group{position:absolute;inset:0;z-index:1;visibility:hidden;transform-origin:50% 84%}
+.showcase-group.on,.showcase-group.leaving{visibility:visible}
+.showcase-group.leaving{animation:showcaseSqueeze .32s cubic-bezier(.55,.06,.68,.19) both}
+.showcase-group.landing{animation:showcaseLand .62s cubic-bezier(.2,.8,.28,1.18) both}
+@keyframes showcaseSqueeze{0%{transform:translateY(0) scale(1)}65%{transform:translateY(7%) scale(1.08,.72)}100%{transform:translateY(22%) scale(1.16,.06)}}
+@keyframes showcaseLand{0%{transform:translateY(-28%) scale(.82,1.18)}58%{transform:translateY(3%) scale(1.08,.9)}78%{transform:translateY(-1%) scale(.97,1.04)}100%{transform:translateY(0) scale(1)}}
 .showcase-companion{position:absolute;width:31%;aspect-ratio:10/11;transform:translate(-50%,-50%);border:0;background:transparent;padding:0;cursor:pointer;filter:drop-shadow(0 12px 12px rgba(20,50,50,.14));transition:filter .2s var(--ease-soft),scale .2s var(--ease-soft)}
 .showcase-group[data-scene="landing"] .showcase-companion{width:48%}
 .showcase-companion:hover,.showcase-companion:focus-visible{filter:drop-shadow(0 18px 18px rgba(20,50,50,.24));scale:1.08;outline:none}
 .v3-rig{position:absolute;inset:0;transform-origin:50% 78%;will-change:transform}
-.v3-rig img{position:absolute;display:block;pointer-events:none}
-.v3-tie{filter:drop-shadow(0 1px 1px rgba(0,0,0,.48)) saturate(1.15)}
-.v3-spectacles{position:absolute;z-index:20;left:30%;top:37%;width:40%;height:15%;pointer-events:none}
-.v3-spectacles::before,.v3-spectacles::after{content:"";position:absolute;top:0;width:35%;aspect-ratio:1;border:3px solid #344443;border-radius:50%;background:rgba(225,240,239,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.18)}
-.v3-spectacles::before{left:0}.v3-spectacles::after{right:0}
-.v3-spectacles span{position:absolute;left:35%;right:35%;top:28%;height:3px;background:#344443;border-radius:99px}
+.v3-rig img{position:absolute;z-index:1;display:block;pointer-events:none}
+.v3-tie{z-index:28!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.48)) saturate(1.15)}
+.v3-eye{position:absolute;z-index:50;display:block;border-radius:50%;background:#fff;box-shadow:inset 0 -1px 2px rgba(78,57,42,.12);pointer-events:none}
+.v3-pupil{position:absolute;left:50%;top:50%;translate:-50% -50%;display:block;border-radius:50%;background:#18140f}
+.v3-pupil i{position:absolute;left:18%;top:14%;width:28%;height:36%;border-radius:50%;background:rgba(255,255,255,.88)}
+.v3-ear-fallback{position:absolute;z-index:0;display:block;translate:-50% -50%;background:var(--ear-color);pointer-events:none}
+.v3-ear-fallback.mammal{width:15%;height:17.27%;border-radius:50%;box-shadow:inset 0 0 0 7px rgba(255,255,255,.18)}
+.v3-ear-fallback.bird{width:8%;height:10%;clip-path:polygon(50% 0,100% 100%,0 94%)}
+.v3-ear-fallback.bird.left{rotate:-18deg}.v3-ear-fallback.bird.right{rotate:18deg}
+.v3-spectacles{position:absolute;z-index:62;pointer-events:none}
+.v3-spectacles .lens{position:absolute;top:50%;width:var(--lens-size);aspect-ratio:1;translate:-50% -50%;border:3px solid #504940;border-radius:50%;background:rgba(225,240,239,.12);box-shadow:inset 0 0 0 1px rgba(255,255,255,.48),0 2px 3px rgba(0,0,0,.14)}
+.v3-spectacles .lens.left{left:var(--left-lens)}.v3-spectacles .lens.right{left:var(--right-lens)}
+.v3-spectacles span{position:absolute;left:var(--bridge-left);right:var(--bridge-right);top:49%;height:3px;background:#504940;border-radius:99px}
 .anim-breathe{animation:v3Breathe 4s ease-in-out infinite}
 .anim-wave{animation:v3Wave 4s ease-in-out infinite}
 .anim-hop{animation:v3Hop 4s ease-in-out infinite}
@@ -63,10 +74,12 @@
 .dictionary-list p{position:relative;padding-left:28px}
 .dictionary-list p::before{counter-increment:def;content:counter(def) ".";position:absolute;left:0;font-weight:800;color:var(--accent)}
 .usage{border-top:1px solid var(--border);padding-top:20px;margin-top:24px}
-.impact-line{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:34px}
-.impact-stat{display:flex;align-items:center;gap:8px;padding:15px 12px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface-card)}
-.impact-stat strong{font:800 clamp(30px,3vw,46px)/1 var(--font-display);color:var(--brand)}
-.impact-stat span{font:var(--text-body-sm);color:var(--text-muted)}
+.impact-line{display:grid;grid-template-columns:.72fr repeat(3,1fr);gap:8px;margin-top:34px}
+.impact-stat{min-width:0;display:grid;align-content:center;gap:4px;padding:12px 10px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface-card)}
+.impact-stat strong{font:800 clamp(18px,1.7vw,25px)/1 var(--font-display);color:var(--brand);white-space:nowrap}
+.impact-stat span{font:600 11px/1.25 var(--font-body);color:var(--text-muted)}
+.impact-stat.impact-one{background:var(--brand);border-color:var(--brand)}
+.impact-stat.impact-one strong,.impact-stat.impact-one span{color:var(--text-on-brand)}
 .trust-list{display:grid;grid-template-columns:1fr 1fr;gap:9px 22px;margin-top:24px;color:var(--text-heading)}
 .trust-list span{position:relative;padding-left:18px}
 .trust-list span::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--teal-300)}
@@ -83,7 +96,7 @@
   #values-grid{grid-template-columns:1fr!important}
 }
 @media (prefers-reduced-motion:reduce){
-  .v3-rig{animation:none!important}
+  .v3-rig,.showcase-group{animation:none!important}
 }
 
 /* ── Scene 4: chapter books ── */
@@ -170,7 +183,7 @@
         <p>The greatest achievements don't come from doing more. They come from having a Zazo.</p>
       </div>
       <div class="impact-line" aria-label="Zazo impact">
-        <div class="impact-stat"><strong>1</strong><span>Zazo.</span></div>
+        <div class="impact-stat impact-one"><strong>1</strong><span>Zazo.</span></div>
         <div class="impact-stat"><strong>100s</strong><span>of hours returned.</span></div>
         <div class="impact-stat"><strong>1000s</strong><span>of decisions coordinated.</span></div>
         <div class="impact-stat"><strong>1000000s</strong><span>of tiny tasks never forgotten.</span></div>
@@ -213,14 +226,13 @@
 <!-- ═══ Scene 4: The storybooks ═══ -->
 <section class="section reveal" id="chapters">
   <div class="wrap">
-    <h2 style="font:var(--text-display);text-align:center">Four little books.</h2>
+    <h2 style="font:var(--text-display);text-align:center">Three little books.</h2>
     <p class="muted" style="text-align:center;font:var(--text-body-lg);margin-top:8px">Open one. Each is a chapter of how a Zazoo lives.</p>
 
     <div class="shelf" role="tablist" aria-label="Chapters">
       <button class="book open" role="tab" aria-selected="true" data-ch="values" style="background:#2e7278">Values<small>how she behaves</small></button>
       <button class="book" role="tab" aria-selected="false" data-ch="process" style="background:#c85a36">Process<small>how she walks</small></button>
       <button class="book" role="tab" aria-selected="false" data-ch="difference" style="background:#5d4a8a">Difference<small>how she differs</small></button>
-      <button class="book" role="tab" aria-selected="false" data-ch="impact" style="background:#3c7a54">Impact<small>what it adds up to</small></button>
     </div>
 
     <!-- Chapter: Values -->
@@ -271,15 +283,6 @@
       </div>
     </div>
 
-    <!-- Chapter: Impact -->
-    <div class="chapter" id="ch-impact">
-      <div class="grid g3" style="text-align:center">
-        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Hundreds</div><div class="muted" style="margin-top:4px">of hours returned</div></div>
-        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Thousands</div><div class="muted" style="margin-top:4px">of decisions coordinated</div></div>
-        <div class="card"><div style="font-family:var(--font-display);font-weight:800;font-size:36px;color:var(--text-heading)">Millions</div><div class="muted" style="margin-top:4px">of tiny hurdles removed</div></div>
-      </div>
-      <p class="subtitle" style="text-align:center;margin-top:26px">"A Zazoo's only ambition is yours."</p>
-    </div>
   </div>
 </section>
 

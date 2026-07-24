@@ -185,14 +185,37 @@ test("Platform companions all wear ties, two wear spectacles, and scenes use dis
   const script = await page("platform/src/showcase.js");
 
   assert.match(script, /const SPECTACLES = new Set\(\["milo", "remi"\]\)/);
-  assert.match(script, /name === "tie" \? "v3-tie" : ""/);
+  assert.match(script, /const LAB_TIE_TOP = 260/);
+  assert.match(script, /v3-eye/);
+  assert.match(script, /v3-pupil/);
+  assert.match(script, /v3-ear-fallback/);
   assert.match(script, /SPECTACLES\.has\(id\)/);
   assert.match(script, /stage\.dataset\.scene = activeScene/);
   assert.match(html, /\.v3-tie\{[^}]*filter:/);
+  assert.match(html, /\.v3-eye\{/);
+  assert.match(html, /\.v3-pupil\{/);
+  assert.match(html, /\.v3-ear-fallback\{/);
   assert.match(html, /\.v3-spectacles\{/);
+  assert.match(html, /@keyframes showcaseSqueeze/);
+  assert.match(html, /@keyframes showcaseLand/);
   assert.match(html, /\.zazo-frame\[data-scene="landing"\]::before/);
   assert.match(html, /\.zazo-frame\[data-scene="dictionary"\]::before/);
   assert.match(html, /\.zazo-frame\[data-scene="governance"\]::before/);
+});
+
+test("Platform keeps four compact impact blocks and only three little books", async () => {
+  const html = await page("platform/index.html");
+  const css = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? "";
+
+  assert.match(html, /Three little books\./);
+  assert.doesNotMatch(html, /Four little books\./);
+  assert.equal((html.match(/class="book(?:\s|")/g) ?? []).length, 3);
+  assert.doesNotMatch(html, /data-ch="impact"/);
+  assert.doesNotMatch(html, /id="ch-impact"/);
+  assert.match(html, /class="impact-stat impact-one"/);
+  assert.equal((html.match(/class="impact-stat(?:\s[^"]*)?"/g) ?? []).length, 4);
+  assert.match(css, /\.impact-line\{[^}]*grid-template-columns:\.72fr repeat\(3,1fr\)/);
+  assert.match(css, /\.impact-stat strong\{[^}]*clamp\(18px,1\.7vw,25px\)/);
 });
 
 test("Consulting is renamed Labs while legacy links remain recoverable", async () => {
