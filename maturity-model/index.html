@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3ea">
+  <title>Business AI Maturity Model | Zazoo</title>
+  <meta name="description" content="Explore five operating realities on the journey from individual AI assistance to an AI-native organization.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪁</text></svg>">
+  <link rel="stylesheet" href="../assets/zazoo.css">
+  <link rel="stylesheet" href="../assets/maturity-model.css">
+</head>
+<body>
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="logo" href="../index.html">zazoo</a>
+      <button class="nav-toggle" aria-expanded="false" aria-label="Menu">☰</button>
+      <div class="links">
+        <a href="../index.html">Home</a>
+        <a href="./" class="active">Maturity Model</a>
+        <a href="../platform/">Platform</a>
+        <a href="../labs.html">Labs</a>
+        <a href="../training.html">Leadership</a>
+        <a href="mailto:hello@zazoo.me?subject=Strategy%20Session" class="btn btn-sm btn-accent nav-cta">Book a session</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="maturity-page">
+    <div class="maturity-shell wrap">
+      <header class="model-heading">
+        <div>
+          <p class="model-kicker">Levels of Business AI Infrastructure</p>
+          <h1>How does an organization become AI-native?</h1>
+          <p class="model-intro">Follow the shift from asking AI for help to building an organization that learns and competes differently.</p>
+        </div>
+
+        <div class="model-controls" aria-label="Customize the model">
+          <label class="function-control" for="function-select">
+            <span>Explore a function</span>
+            <select id="function-select">
+              <option value="general">General</option>
+              <option value="hr">Human Resources</option>
+              <option value="finance">Finance</option>
+              <option value="sales">Sales</option>
+              <option value="marketing">Marketing</option>
+              <option value="operations">Operations</option>
+              <option value="engineering">Engineering</option>
+            </select>
+          </label>
+
+          <button class="zazoo-switch" id="zazoo-switch" type="button" role="switch" aria-checked="false">
+            <span class="switch-track" aria-hidden="true"><span></span></span>
+            <span>See how Zazoo helps</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="model-workspace" aria-labelledby="journey-heading">
+        <h2 id="journey-heading" class="sr-only">The five-stage journey</h2>
+
+        <div class="stage-rail" role="tablist" aria-label="Choose a maturity level">
+          <button class="stage-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="stage-panel" data-stage="0">
+            <span class="stage-number">01</span>
+            <strong>Ask</strong>
+            <small>Task help</small>
+          </button>
+          <button class="stage-tab" type="button" role="tab" aria-selected="false" aria-controls="stage-panel" data-stage="1" tabindex="-1">
+            <span class="stage-number">02</span>
+            <strong>Direct</strong>
+            <small>Managed AI</small>
+          </button>
+          <button class="stage-tab" type="button" role="tab" aria-selected="false" aria-controls="stage-panel" data-stage="2" tabindex="-1">
+            <span class="stage-number">03</span>
+            <strong>Multiply</strong>
+            <small>Reusable capability</small>
+          </button>
+          <button class="stage-tab" type="button" role="tab" aria-selected="false" aria-controls="stage-panel" data-stage="3" tabindex="-1">
+            <span class="stage-number">04</span>
+            <strong>Extend</strong>
+            <small>Shared capability</small>
+          </button>
+          <button class="stage-tab" type="button" role="tab" aria-selected="false" aria-controls="stage-panel" data-stage="4" tabindex="-1">
+            <span class="stage-number">05</span>
+            <strong>Reinvent</strong>
+            <small>Competitive model</small>
+          </button>
+        </div>
+
+        <article class="stage-panel" id="stage-panel" role="tabpanel" aria-live="polite">
+          <div class="panel-context">
+            <span id="panel-level">Level 1</span>
+            <span class="context-divider" aria-hidden="true"></span>
+            <span id="panel-context">Without Zazoo</span>
+          </div>
+          <h2 class="panel-stage-title" id="panel-stage-title">Doing the Same Work Differently</h2>
+          <div class="panel-content" id="panel-content">
+            <h3 id="panel-headline">AI improves the work in front of one person</h3>
+            <ul id="panel-points">
+              <li>A general-purpose LLM, enterprise search tool, and document repository are combined to support research, drafting, analysis, and everyday decisions. Relevant context is assembled manually and every output is checked before use.</li>
+              <li>The stack scales access to immediate assistance, while every connection, update, permission, exception, and failure path remains a separate operating responsibility.</li>
+              <li>Progress is measured through time saved, output quality, adoption, and the amount of rework required.</li>
+            </ul>
+          </div>
+          <div class="panel-actions">
+            <button class="journey-action" id="previous-stage" type="button" disabled>Previous level</button>
+            <p id="journey-progress">Level 1 of 5</p>
+            <button class="journey-action" id="next-stage" type="button">Next level</button>
+          </div>
+        </article>
+      </section>
+
+      <aside class="model-cta">
+        <div>
+          <strong>Find your custom path to AI-native</strong>
+          <span>Discover your maturity level, biggest constraint, and next move.</span>
+        </div>
+        <a class="btn btn-md btn-accent" href="../index.html?brief=open">
+          <span>Get My Business AI Infra Evaluation</span>
+          <small>Takes less than 2 mins</small>
+        </a>
+      </aside>
+    </div>
+  </main>
+
+  <script src="../assets/zazoo.js"></script>
+  <script src="../assets/maturity-model-data.js"></script>
+  <script src="../assets/maturity-model.js"></script>
+</body>
+</html>

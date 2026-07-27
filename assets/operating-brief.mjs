@@ -173,6 +173,9 @@ function initBrief() {
   });
 
   paintStep();
+  if (new URLSearchParams(window.location.search).get("brief") === "open") {
+    openBrief();
+  }
 }
 
 if (typeof document !== "undefined") {
