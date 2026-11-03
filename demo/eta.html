@@ -127,7 +127,10 @@ const reviews = [
   [deals[10].name, 'Search forum', 'Pass', 'Seller wants to leave in 30 days'],
   [deals[3].name, 'Advisor call', 'Pursue', 'Check the payroll software contract'],
 ].map(([deal, to, verdict, q], i) => ({ id: 'r' + i, deal, to, verdict, q, date: add(-int(2, 50)), by: pick(['Jules Moreno (advisor)', 'Cohort peers', 'Sam Achebe (advisor)']) }))
-const advisors = [['Jules Moreno', 'SBA lending', 4], ['Sam Achebe', 'Accounting firm deals', 12], ['Leah Kim', 'Purchase agreements', 30], ['Ravi Shah', 'Quality of earnings', 9]].map(([name, spec, d], i) => ({ id: 'av' + i, name, spec, last: add(-d), email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
+const BRK = [['Dana Whitfield', 'Ledgerline Practice Brokers', 'Practice broker', 9, 'Warm', 2], ['Marcus Lee', 'CPA Transitions Group', 'Practice broker', 6, 'Warm', 5], ['Ruth Ambrose', 'Keystone Accounting Brokers', 'Practice broker', 5, 'Warm', 1], ['Owen Clarke', 'Harbor Business Advisors', 'Business broker', 3, 'New', 9], ['Nina Patel', 'Practice Exchange', 'Marketplace', 4, 'New', 14], ['Greg Toll', 'Ledgerline Practice Brokers', 'Practice broker', 2, 'Cold', 33], ['Alma Ruiz', 'Midstate M&A Advisors', 'M&A adviser', 1, 'Cold', 41]]
+const brokers = BRK.map(([name, firm, kind, sent, warmth, d], i) => ({ id: 'br' + i, name, firm, kind, sent, deals: deals.filter((x) => x.src === firm).length, warmth, last: add(-d), email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
+const PPL = [['Walter Morrow', 'Seller', 'Morrow & Pike CPAs', 3], ['Jules Moreno', 'Lender', 'Heartland SBA Lending', 1], ['Leah Kim', 'Attorney', 'Kim Deal Law', 4], ['Ravi Shah', 'QofE', 'Shah Diligence Partners', 2], ['Sam Achebe', 'Advisor', 'Search network', 12], ['Tom Becker', 'Investor', 'Becker Capital', 1], ['Joan Pike', 'Seller', 'Morrow & Pike CPAs', 6], ['Ellen Ford', 'Landlord', 'Ford Properties', 15], ['Ana Duarte', 'Peer', 'Searching: HVAC, Texas', 8], ['Chris Ng', 'Peer', 'Searching: dental labs', 19], ['Mia Halden', 'Seller', 'Halden CPA Group', 0], ['Pete Olsen', 'Insurance', 'Olsen Insurance', 27]]
+const contacts = PPL.map(([name, role, firm, d], i) => ({ id: 'p' + i, name, role, firm, last: add(-d), email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
 
 // after the close: five years, quarter by quarter, with clients leaving in year one
 const fq = Array.from({ length: 20 }, (_, i) => {
@@ -283,9 +286,29 @@ const tables = {
       { k: 'date', label: 'Day', kind: 'date', src: 'Calendar' },
       { k: 'by', label: 'Reviewer', src: 'Calendar' },
     ] },
-  advisors: { name: 'Advisors', one: 'advisor', title: 'name', rows: advisors, sort: ['last', 'desc'], view: 'table',
-    sub: (r) => `${Z.esc(r.spec)} · last call ${Z.day(r.last)}`,
-    fields: [{ k: 'name', label: 'Advisor', src: 'Your search network' }, { k: 'spec', label: 'Advises on', src: 'Your search network' }, { k: 'last', label: 'Last call', kind: 'date', src: 'Calendar' }, { k: 'email', label: 'Email', hide: true, src: 'Gmail' }] },
+  brokers: { name: 'Brokers', one: 'broker', title: 'name', rows: brokers, sort: ['sent', 'desc'], view: 'table', board: 'warmth', date: 'last',
+    lists: [{ name: 'Gone cold', tone: 'warn', where: (r) => r.warmth === 'Cold', tip: 'No touch in a month' }],
+    sub: (r) => `${Z.esc(r.firm)} · ${r.sent} listings sent you`,
+    links: [{ t: 'deals', label: 'Their deals', by: (r, x) => x.src === r.firm, show: ['fit', 'stage'] }],
+    fields: [
+      { k: 'name', label: 'Broker', src: 'Email signature' },
+      { k: 'firm', label: 'Firm', src: 'Email signature' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Practice broker', 'Business broker', 'Marketplace', 'M&A adviser'], tones: { 'Practice broker': 'acc', 'Business broker': 'o1', Marketplace: 'o3', 'M&A adviser': 'o5' }, src: 'You' },
+      { k: 'warmth', label: 'Relationship', kind: 'choice', choices: ['Warm', 'New', 'Cold'], tones: { Warm: 'good', New: 'o1', Cold: 'warn' }, computed: true, src: 'Computed: touches in the last month' },
+      { k: 'sent', label: 'Listings sent you', kind: 'number', src: 'Deal mail sorter' },
+      { k: 'deals', label: 'Deals in your list', kind: 'number', computed: true, src: 'Computed from Deals' },
+      { k: 'last', label: 'Last touch', kind: 'date', src: 'Gmail and calls' },
+      { k: 'email', label: 'Email', hide: true, src: 'Gmail' },
+    ] },
+  contacts: { name: 'Contacts', one: 'contact', title: 'name', rows: contacts, sort: ['last', 'desc'], view: 'table', board: 'role', date: 'last',
+    sub: (r) => `${Z.esc(r.role)} · ${Z.esc(r.firm)}`,
+    fields: [
+      { k: 'name', label: 'Name', src: 'Email signature or you' },
+      { k: 'role', label: 'Role', kind: 'choice', choices: ['Seller', 'Lender', 'Attorney', 'QofE', 'Advisor', 'Investor', 'Peer', 'Landlord', 'Insurance'], tones: { Seller: 'acc', Lender: 'good', Attorney: 'o3', QofE: 'o5', Advisor: 'o1', Investor: 'good', Peer: 'o8', Landlord: 'warn', Insurance: 'o8' }, src: 'You' },
+      { k: 'firm', label: 'Firm', src: 'Email signature' },
+      { k: 'last', label: 'Last touch', kind: 'date', src: 'Gmail and calls' },
+      { k: 'email', label: 'Email', hide: true, src: 'Gmail' },
+    ] },
   fq: { name: 'Quarters', one: 'quarter', title: 'q', rows: fq, sort: null, view: 'table',
     sub: (r) => (r.note ? Z.esc(r.note) : `DSCR ${r.dscr}`),
     fields: [
@@ -317,6 +340,23 @@ const tables = {
     ] },
 }
 
+Object.assign(tables, Z.library('k', [
+  ['CIM: Morrow & Pike CPAs', 'CIM', 'Morrow & Pike CPAs · 34 pages, read by the Document reader', add(-21), 'Deal mail sorter'],
+  ['Signed LOI: Morrow & Pike CPAs', 'LOI', 'Morrow & Pike CPAs · exclusivity 60 days', add(-22), 'Priya Nair'],
+  ['NDA: Halden CPA Group', 'NDA', 'Halden CPA Group · signed', add(-9), 'Priya Nair'],
+  ['CIM: Halden CPA Group', 'CIM', 'Halden CPA Group · 34 pages', add(0), 'Deal mail sorter'],
+  ['SBA term sheet, draft', 'Term sheet', 'Heartland SBA Lending · 10 years at 10.5%', add(-3), 'Deal mail sorter'],
+  ['QofE engagement letter', 'Engagement', 'Shah Diligence Partners · fixed fee', add(-2), 'Deal mail sorter'],
+  ['Office lease', 'Lease', 'Morrow & Pike CPAs · ends 14 months after close', add(-12), 'Exports reader'],
+  ['Personal financial statement (SBA Form 413)', 'Form', 'For the lender', add(-6), 'Priya Nair'],
+  ['Teaser: Port Hadley CPAs', 'Teaser', 'Port Hadley CPAs · 2 pages', add(-30), 'Deal mail sorter'],
+], [
+  ['Monthly investor update, October', 'Investor update', '22 deals in review, 8 fit the thesis. Morrow & Pike in diligence: books tie in 11 of 12 months; 4 flags open. Next: QofE fieldwork, SBA term sheet, lease option.', add(-2), 'Priya Nair'],
+  ['Deal one-pager: Ashby Advisory Partners', 'One-pager', 'Revenue $2.1M, SDE $690K, asking 1.12×. DSCR 1.62, 1.26 if 15% of clients leave. Open question: is the advisory work recurring?', add(-1), 'Session prep'],
+  ['Diligence summary: Morrow & Pike CPAs', 'Diligence', 'Twelve months tie to the bank but February (a prepayment). A third of clients deal only with the seller: a two-year transition is the cover. Lease and two key staff to settle before exclusivity ends.', add(-4), 'Books checker'],
+  ['Weekly pipeline', 'Pipeline', 'New this week: 3 listings, 1 fits. Halden CIM in. Port Hadley re-priced to 1.05×. Two brokers gone cold.', add(-1), 'Source reader'],
+  ['Five-year forecast after close', 'Forecast', 'DSCR lowest in year one as clients leave, above 1.25 every quarter; seller note paid off in year five.', add(-5), 'Forecaster'],
+]))
 const levels = {
   A: { name: 'Runs on its own', tone: 'good', words: 'Reads listings, files mail, works out figures. Never writes to anyone.' },
   B: { name: 'You approve', tone: 'warn', words: 'Drafts to brokers and sellers, NDAs and questions; nothing goes without you.' },
@@ -415,7 +455,8 @@ const overview = {
   },
   network: (Z) => {
     const rs = Z.rows('reviews')
-    return `<div class="counts">${Z.count(rs.length, 'deals reviewed', 'Reviews', 'data-act="tab" data-k="reviews"')}${Z.count(rs.filter((r) => r.verdict === 'Pursue').length, 'said pursue')}${Z.count(Z.rows('advisors').length, 'advisors')}${Z.count('In 8 days', 'next search forum')}</div>
+    return `<div class="counts">${Z.count(rs.length, 'deals reviewed', 'Reviews', 'data-act="tab" data-k="reviews"')}${Z.count(Z.rows('brokers').length, 'brokers', 'Brokers', 'data-act="tab" data-k="brokers"')}${Z.count(Z.rows('contacts').length, 'other contacts')}${Z.count('In 8 days', 'next search forum')}</div>
+    <div class="cols2">${Z.box('Listings sent you, by broker', Z.chart.hbar(Z.rows('brokers').map((b) => ({ label: b.name, value: b.sent, tone: { Warm: 'good', New: 'o1', Cold: 'warn' }[b.warmth], row: ['brokers', b.id] })), { fmt: (v) => v }), '', 'Brokers who send you deals first are worth a call a month')}${Z.box('Contacts by role', Z.chart.hbar([...new Set(Z.rows('contacts').map((c) => c.role))].map((k) => ({ label: k, value: Z.rows('contacts').filter((c) => c.role === k).length })), { fmt: (v) => v }), `<button class="btn sm ghost" data-act="tab" data-k="contacts">Contacts</button>`)}</div>
     ${Z.box('What reviewers said', Z.chart.hbar(['Pursue', 'Re-price', 'More diligence', 'Pass'].map((v) => ({ label: v, value: rs.filter((r) => r.verdict === v).length, tone: { Pursue: 'good', 'Re-price': 'warn', 'More diligence': 'o1', Pass: 'bad' }[v] })), { fmt: (v) => v }), '', 'Your peers and advisors, on the deals you brought them')}`
   },
   forecast: (Z) => {
@@ -455,9 +496,9 @@ Z.boot({
     { id: 'crm', name: 'CRM', icon: 'address-book', tables: ['leads', 'mail'], overview: overview.crm },
     { id: 'accounting', name: 'Accounting', icon: 'calculator', tables: ['clients', 'books', 'flags'], overview: overview.accounting },
     { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['fq'], overview: overview.forecast },
-    { id: 'network', name: 'Search network', icon: 'users-three', tables: ['reviews', 'advisors'], overview: overview.network },
+    { id: 'network', name: 'Network', icon: 'users-three', tables: ['brokers', 'contacts', 'reviews'], overview: overview.network },
     { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['events'] },
-    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb', 'kdocs', 'kreports'] },
   ],
   notes, connections, runsOn: "Priya's own computer", brainLinks: [['deals', 'crm'], ['crm', 'accounting'], ['accounting', 'forecast'], ['deals', 'network'], ['calendar', 'crm'], ['kb', 'deals']],
   after: (Z) => refresh(Z.rows('deals')),

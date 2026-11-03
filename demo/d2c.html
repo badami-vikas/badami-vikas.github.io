@@ -376,6 +376,19 @@ const connections = [
   { name: 'Accountant\'s exports', icon: 'file-xls', what: 'Six monthly exports, read once', state: 'Needs you' },
 ]
 
+Object.assign(tables, Z.library('d', [
+  ['GST return, October (GSTR-3B)', 'GST return', 'Filed by the accountant', add(-12), 'Books checker'],
+  ['Purchase order: ashwagandha root, 400 kg', 'Purchase order', 'To the Rajasthan supplier', add(-5), 'Founder'],
+  ['Supplier certificate of analysis: brahmi', 'Lab report', 'Batch 2610, within limits', add(-9), 'Founder'],
+  ['FSSAI licence', 'Licence', 'Renews March 2027', add(-300), 'Founder'],
+  ['Warehouse rental agreement', 'Agreement', 'Two years, from April', add(-210), 'Founder'],
+  ['Diwali offer terms', 'Policy', 'Bundles, free shipping above ₹999', add(-14), 'Founder']
+], [
+  ['Monthly books, October', 'Monthly', 'Every figure checked to its cell; margin by pack from its formula.', add(-2), 'Books checker'],
+  ['Diwali forecast', 'Forecast', 'Orders up 2.4× in the two weeks before Diwali; herbs reordered to cover it.', add(-4), 'Forecaster'],
+  ['Weekly orders', 'Weekly', 'WhatsApp orders 38% of the week, Hindi and English read alike.', add(-1), 'WhatsApp order taker'],
+  ['Stock cover', 'Stock', 'Days of cover by herb; brahmi below 20 days.', add(-1), 'Stock planner']
+]))
 Z.boot({
   id: 'd2c', today: TODAY, currency: 'INR', findHint: 'customer, an order, a herb',
   brand: { name: 'Vanya Herbals', sub: 'Herbal personal care', mark: 'VH' },
@@ -389,7 +402,7 @@ Z.boot({
     { id: 'accounting', name: 'Accounting', icon: 'calculator', roles: ['founder'], tables: ['books', 'achecks', 'bench'], overview: overview.accounting },
     { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['dforecast'], overview: overview.forecast },
     { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['devents'] },
-    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['dkb'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['dkb', 'ddocs', 'dreports'] },
   ],
   notes, connections, runsOn: "The workshop's own computer", brainLinks: [['orders', 'products'], ['orders', 'accounting'], ['products', 'forecast'], ['orders', 'forecast'], ['calendar', 'orders'], ['calendar', 'products'], ['kb', 'orders']],
   after: refresh,

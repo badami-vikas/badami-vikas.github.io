@@ -516,6 +516,20 @@ const connections = [
   { name: 'Client portal', icon: 'globe', what: 'Uploads from clients', state: 'Needs you' },
 ]
 
+Object.assign(tables, Z.library('l', [
+  ['Engagement letter template', 'Template', 'Contingency fee, signed at intake', add(-90), 'Partner'],
+  ['Physician questionnaire: mental health', 'Form', 'Sent to treating physicians', add(-60), 'Partner'],
+  ['ERISA appeal checklist', 'Checklist', '180 days from the denial', add(-45), 'Partner'],
+  ['Trust account policy', 'Policy', 'Nothing posts to trust until the bank confirms', add(-150), 'Finance'],
+  ['Insurer addresses and fax numbers', 'Reference', 'For every carrier the firm sees', add(-30), 'Mail reader'],
+  ['Fee agreement: back benefits', 'Template', 'Percentage of back benefits recovered', add(-120), 'Partner']
+], [
+  ['Weekly deadlines', 'Weekly', 'Insurer requests due this week and appeals due within 30 days, by attorney.', add(-1), 'Mail reader'],
+  ['Trust reconciliation, October', 'Monthly', 'Every check matched or waiting; one unmatched check held.', add(-2), 'Check matcher'],
+  ['Intake, October', 'Monthly', 'Leads by source, called back within an hour, signed.', add(-2), 'Lead router'],
+  ['Fee forecast', 'Forecast', 'Fees expected from approved claims and settlements, next twelve months.', add(-5), 'Forecaster'],
+  ['Team workload', 'Weekly', 'Open matters and points by person.', add(-1), 'Workload balancer']
+]))
 Z.boot({
   id: 'law', today: TODAY, currency: 'USD', findHint: 'client, a request',
   brand: { name: 'Calder & Rhee', sub: 'Disability law', mark: 'CR' },
@@ -532,7 +546,7 @@ Z.boot({
     { id: 'documents', name: 'Documents', icon: 'tray', tables: ['docs'], overview: moreOverview.documents },
     { id: 'team', name: 'Team', icon: 'users-three', roles: ['atty', 'fin'], tables: ['staff', 'measures'], overview: moreOverview.team },
     { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['events'] },
-    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb', 'ldocs', 'lreports'] },
     { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', roles: ['atty', 'fin'], tables: ['forecast'], overview: moreOverview.forecast },
   ],
   notes, connections, runsOn: "A server in the firm's office", brainLinks: [['intake', 'clients'], ['documents', 'clients'], ['documents', 'claims'], ['claims', 'litigation'], ['finance', 'clients'], ['team', 'clients'], ['calendar', 'claims'], ['calendar', 'litigation'], ['forecast', 'finance'], ['kb', 'claims']],

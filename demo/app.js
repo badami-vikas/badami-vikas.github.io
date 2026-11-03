@@ -121,6 +121,16 @@ Z.chart = {
     return `<div class="hbars">${rows.map((r, i) => `<div class="hb" ${r.row ? `data-act="row" data-t="${r.row[0]}" data-id="${r.row[1]}" style="cursor:pointer"` : ''} data-tip="${esc(r.tip || `${r.label}: ${f(r.value)}`)}"><span class="ell">${esc(r.label)}</span><span class="tr"><i style="width:${Math.min(100, (r.value / max) * 100)}%;background:${r.color || (r.tone ? toneColor(r.tone) : Z.PAL[i % 8])}"></i>${r.mark != null ? `<b style="left:${(r.mark / max) * 100}%"></b>` : ''}</span><em>${esc(f(r.value))}${r.note ? ` <small class="mute3">${esc(r.note)}</small>` : ''}</em></div>`).join('')}</div>`
   },
 }
+// a knowledge base's documents and reports, from rows a demo gives: [title, kind, about, day, by]
+Z.library = (pre, docs, reports) => ({
+  [pre + 'docs']: { name: 'Documents', one: 'document', title: 'title', rows: docs.map(([title, kind, about, date, by], i) => ({ id: pre + 'd' + i, title, kind, about, date, by })), sort: ['date', 'desc'], view: 'table', board: 'kind', date: 'date',
+    sub: (r) => `${esc(r.kind)} · ${esc(r.about)}`,
+    fields: [{ k: 'title', label: 'Document', src: 'Filed by an agent or a person' }, { k: 'kind', label: 'Kind', kind: 'choice', choices: [...new Set(docs.map((d) => d[1]))], src: 'Read from the document' }, { k: 'about', label: 'About', src: 'Matched to its record' }, { k: 'date', label: 'Filed', kind: 'date', src: 'When it was filed' }, { k: 'by', label: 'Filed by', src: 'Who filed it' }] },
+  [pre + 'reports']: { name: 'Reports', one: 'report', title: 'title', rows: reports.map(([title, kind, about, date, by], i) => ({ id: pre + 'r' + i, title, kind, about, date, by })), sort: ['date', 'desc'], view: 'card', board: 'kind', date: 'date',
+    sub: (r) => `${esc(r.kind)} · ${Z.day(r.date)} · ${esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${esc(r.about)}</div><p class="mute3" style="font-size:12px">Every figure in it links back to the row it came from.</p>`,
+    fields: [{ k: 'title', label: 'Report', src: 'Made by an agent or a person' }, { k: 'kind', label: 'Kind', kind: 'choice', choices: [...new Set(reports.map((d) => d[1]))], src: 'Its schedule' }, { k: 'date', label: 'Made', kind: 'date', src: 'When it was made' }, { k: 'by', label: 'By', src: 'Who made it' }, { k: 'about', label: 'What it says', hide: true, src: 'The report' }] },
+})
 Z.box = (title, body, right = '', tip) => `<section class="box"><div class="box-h"><h2>${title}${tip ? ` <span class="mute3" data-tip="${esc(tip)}">${ic('info')}</span>` : ''}</h2>${right}</div><div class="box-b">${body}</div></section>`
 Z.count = (n, label, btn, act) => `<div class="count"><div class="t"><b>${n}</b><span>${label}</span></div>${btn ? `<button class="btn sm" ${act}><span class="dot" style="background:var(--ink-3)"></span>${esc(btn)}</button>` : ''}</div>`
 
@@ -184,14 +194,15 @@ const here = (at, mod) => S.route.at === at && (!mod || S.route.mod === mod)
 const rail = () => {
   const ri = (act, icon, label, cur, n = '', extra = '') => `<button class="ri" ${act} ${cur ? 'aria-current="page"' : ''} data-tip="${esc(label)}" data-tipside="r">${ic(icon)}<span class="ell">${esc(label)}</span>${n ? `<span class="n">${n}</span>` : ''}${extra}</button>`
   const tasksDue = tasksMine().filter((t) => t.state !== 'done' && t.state !== 'waiting' && Z.daysFrom(t.due) <= 0).length
-  const mods = D.modules.filter(roleOk).map((m) => ri(`data-act="mod" data-m="${m.id}"`, m.icon, m.name, here('module', m.id), Z.waiting(m.id) || '')).join('')
+  const modItem = (m) => ri(`data-act="mod" data-m="${m.id}"`, m.icon, m.name, here('module', m.id), Z.waiting(m.id) || ''), cal = D.modules.find((m) => m.id === 'calendar' && roleOk(m))
+  const mods = D.modules.filter((m) => roleOk(m) && m !== cal).map(modItem).join('')
   return `<aside class="rail" aria-label="Rail">
     <div class="rail-head"><button class="ws" data-act="wsmenu"><span class="mk">${esc(D.brand.mark)}</span><b class="ell">${esc(D.brand.name)}</b><span class="chev mute3">${ic('caret-down')}</span></button><button class="iconbtn" data-act="railfold" data-tip="Fold the rail (⌘\\)">${ic('sidebar-simple')}</button></div>
     <nav>
       ${ri('data-act="go" data-at="home"', 'house', 'Home', here('home'), needsOpen().length || '')}
       ${ri('data-act="go" data-at="agents"', 'robot', 'Agents', here('agents'))}
+      ${cal ? modItem(cal) : ''}
       ${ri('data-act="go" data-at="tasks"', 'list-checks', 'Tasks', here('tasks'), tasksDue || '')}
-      <div class="rail-sec">Modules</div>
       ${mods}
       ${ri('data-act="nomod"', 'plus', 'New module', false, '', '').replace('class="ri"', 'class="ri dim"')}
     </nav>
@@ -206,7 +217,7 @@ const bar = () => {
   if (r.at === 'home') mid = `<h1>${esc(D.greeting(S.role))} <small>${Z.wday(D.today)}</small></h1>`
   else if (r.at === 'module') {
     const m = D.modules.find((x) => x.id === r.mod)
-    const tabs = [...(m.overview ? [['overview', 'Overview', '']] : []), ...m.tables.map((t) => [t, D.tables[t].name, D.tables[t].rows.length]), ['agents', 'Agents and notes', '']]
+    const tabs = [...(m.overview ? [['overview', 'Overview', '']] : []), ...m.tables.map((t) => [t, D.tables[t].name, D.tables[t].rows.length])]
     mid = `<div class="tabs" role="tablist">${tabs.map(([k, l, c]) => `<button role="tab" aria-pressed="${r.tab === k}" data-act="tab" data-k="${k}">${esc(l)}${c !== '' ? `<span class="c">${c}</span>` : ''}</button>`).join('')}</div>`
   } else if (r.at === 'tasks') {
     const sets = taskLists(tasksMine())
@@ -378,14 +389,13 @@ const agentSay = (id, q) => {
 const modulePage = () => {
   const m = D.modules.find((x) => x.id === S.route.mod), tab = S.route.tab
   if (tab === 'overview') return `<div class="wrap">${m.map ? `<section class="box" style="margin-bottom:16px"><div class="box-h"><h2>${esc(D.tables[m.map].name)} on the map</h2><button class="btn sm ghost" data-act="tab" data-k="${m.map}">Open ${esc(D.tables[m.map].name.toLowerCase())}</button></div><div class="box-b">${VIEW.map(m.map, D.tables[m.map].rows)}</div></section>` : ''}${m.overview(Z)}${overviewFoot(m)}</div>`
-  if (tab === 'agents') return `<div class="wrap" style="max-width:none">${agentsPage(m.id)}<div style="height:16px"></div><div class="cols2">${notesBox(m)}${Z.box('Recent activity', `<ul class="lines">${S.journal.filter((j) => j.mod === m.id).slice(0, 8).map((j) => `<li><span class="who">${esc(j.who)}</span><span>${j.words}</span><time>${j.at}</time></li>`).join('') || '<li class="mute">Nothing yet.</li>'}</ul>`)}</div></div>`
   return `<div class="wrap" style="max-width:none">${tableArea(tab)}</div>`
 }
 
 const notesBox = (m) => Z.box('Notes', `<form class="noteform" data-note="${m.id}"><input name="q" data-keep="note-${m.id}" placeholder="Add a note for everyone on ${esc(m.name)}" autocomplete="off"><button class="btn sm">Add</button></form><ul class="notes">${S.notes.filter((n) => n.mod === m.id).map((n) => `<li><b>${esc(n.who)}</b><time>${esc(n.at)}</time><p>${esc(n.text)}</p></li>`).join('') || '<li class="mute">No notes yet.</li>'}</ul>`, '', 'Notes the team and the agents keep on this module. Agents read them before they run.')
 const overviewFoot = (m) => {
   const ags = D.agents.filter(roleOk).filter((a) => a.module === m.id)
-  return `<div class="cols2" style="margin-top:16px">${Z.box('Agents', ags.map((a) => `<div class="ag"><span class="dot" style="background:${S.on[a.id] ? 'var(--good)' : 'var(--edge)'}"></span><button class="nm ell" style="text-align:left" data-act="agent" data-id="${a.id}" data-tip="${esc(a.does)}">${esc(a.name)}<small>${esc(a.when)}</small></button><button class="switch" role="switch" aria-checked="${!!S.on[a.id]}" data-act="toggle" data-id="${a.id}"></button></div>`).join('') || '<p class="mute" style="font-size:13px">No agents on this module yet.</p>', `<button class="btn sm ghost" data-act="tab" data-k="agents">Agents and notes</button>`)}${notesBox(m)}</div>`
+  return `<div class="cols2" style="margin-top:16px">${Z.box('Agents', ags.map((a) => `<div class="ag"><span class="dot" style="background:${S.on[a.id] ? 'var(--good)' : 'var(--edge)'}"></span><button class="nm ell" style="text-align:left" data-act="agent" data-id="${a.id}" data-tip="${esc(a.does)}">${esc(a.name)}<small>${esc(a.when)}</small></button><button class="switch" role="switch" aria-checked="${!!S.on[a.id]}" data-act="toggle" data-id="${a.id}"></button></div>`).join('') || '<p class="mute" style="font-size:13px">No agents on this module yet.</p>', `<button class="btn sm ghost" data-act="go" data-at="agents">All agents</button>`)}${notesBox(m)}</div>`
 }
 
 // the state of one table's lists and view
@@ -693,7 +703,7 @@ const act = {
     Z.render()
   },
   tdone: (el) => { const t = S.tasks.find((x) => x.id === el.dataset.id); Z.change(Z.you(), `${t.state === 'done' ? 'reopened' : 'finished'}: ${esc(t.title)}`, () => (t.state = t.state === 'done' ? 'todo' : 'done')); Z.render() },
-  agent: (el) => { S.agent = el.dataset.id; if (S.route.at !== 'agents' && !(S.route.at === 'module' && S.route.tab === 'agents')) go('agents'); else Z.render() },
+  agent: (el) => { S.agent = el.dataset.id; if (S.route.at !== 'agents') go('agents'); else Z.render() },
   toggle: (el) => { const a = D.agents.find((x) => x.id === el.dataset.id); Z.change(Z.you(), `turned ${S.on[a.id] ? 'off' : 'on'} ${esc(a.name)}`, () => (S.on[a.id] = !S.on[a.id]), { mod: a.module }); Z.toast(`${esc(a.name)} is ${S.on[a.id] ? 'on: it runs ' + esc(a.when.toLowerCase()) : 'off'}`, true); Z.render() },
   run: (el) => runAgent(el.dataset.id),
   undo: () => { const j = S.journal.find((x) => x.snap && !x.undone); if (j) { restore(j.snap); j.undone = true; log(Z.you(), `undid: ${j.words}`); Z.toast('Undone. Everything is as it was.') } Z.render() },

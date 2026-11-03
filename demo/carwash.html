@@ -381,6 +381,21 @@ const connections = [
   { name: 'Town agendas', icon: 'newspaper', what: 'Seven towns\' planning agendas, weekly' },
 ]
 
+Object.assign(tables, Z.library('c', [
+  [`Survey: ${sites[2].addr}`, 'Survey', 'From the broker, 2025', add(-6), 'Listing scout'],
+  [`Phase I environmental: ${sites[17].addr}`, 'Environmental', 'Draft, no findings so far', add(-3), 'Mia Torres'],
+  [`LOI: ${sites[17].addr}`, 'LOI', 'Redlines with legal', add(-1), 'Grant Ellis'],
+  ['Fairmont zoning code, chapter 1143', 'Zoning code', 'Table of uses, read by the Zoning reader', add(-20), 'Zoning reader'],
+  ['North Hollis planning agenda, Nov 18', 'Agenda', 'Express tunnel wash application', add(-4), 'Competition watch'],
+  ['Site selection process, June 2026', 'Policy', 'The nine gates and the weights', add(-120), 'Grant Ellis'],
+  ['Store 4 lease', 'Lease', 'Renews 2029', add(-200), 'Grant Ellis']
+], [
+  ['Weekly pipeline', 'Pipeline', 'Three new listings, one passes every gate. Lakeview Pkwy waits for the CFO. A planned wash in North Hollis lowers two scores.', add(-1), 'Listing scout'],
+  [`Sign-off pack: ${best.addr}`, 'Sign-off', 'Gates, score, pro forma in three cases, and the low case on the first page.', add(-2), 'Pro forma builder'],
+  ['Stores, October', 'Monthly', 'Cars a day up 3% on September; Store 4 below plan two weeks running.', add(-2), 'Store pulse'],
+  ['Quarterly board: pipeline', 'Board', '48,210 parcels to 9 A sites to 1 LOI. Capex envelope for Q4.', add(-30), 'Grant Ellis'],
+  ['Forecast to May', 'Forecast', 'October within 1.3%. Winter dip as every year; the new site from April.', add(-2), 'Forecaster']
+]))
 Z.boot({
   id: 'carwash', today: TODAY, currency: 'USD', findHint: 'site, a store',
   brand: { name: 'Clearpoint Wash', sub: 'Express and full service', mark: 'CW' },
@@ -394,7 +409,7 @@ Z.boot({
     { id: 'stores', name: 'Stores', icon: 'drop', tables: ['stores'], map: 'stores', overview: overview.stores },
     { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['fcast'], overview: overview.forecast },
     { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['cevents'] },
-    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['ckb'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['ckb', 'cdocs', 'creports'] },
   ],
   notes, connections, runsOn: "Clearpoint's own server", brainLinks: [['sites', 'crm'], ['sites', 'stores'], ['sites', 'forecast'], ['stores', 'forecast'], ['calendar', 'sites'], ['calendar', 'crm'], ['kb', 'sites']],
   after: (Z) => refresh(Z.rows('sites')),
