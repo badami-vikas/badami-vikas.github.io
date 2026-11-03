@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disability law firm · Zazoo demo</title>
+<meta name="description" content="An interactive Zazoo prototype for a disability law firm, with made-up clients, claims and checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="demo.js"></script>
+<script>
+// A made-up disability law firm: long-term disability claims against made-up insurers.
+let s = 7
+const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+const pick = (a) => a[Math.floor(rnd() * a.length)]
+const int = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1))
+const TODAY = '2026-11-02'
+const add = (n) => new Date(new Date(TODAY + 'T12:00:00').getTime() + n * 864e5).toISOString().slice(0, 10)
+
+const FIRST = ['Maren', 'Theo', 'Priya', 'Owen', 'Lucia', 'Darius', 'Inez', 'Callum', 'Rosa', 'Felix', 'Hana', 'Jonah', 'Mira', 'Silas', 'Tess', 'Abel', 'Nadia', 'Rafe', 'Lena', 'Ivo', 'Greta', 'Emil', 'Wren', 'Otto']
+const LAST = ['Halvorsen', 'Quill', 'Marchetti', 'Okafor', 'Brandt', 'Ferreira', 'Lindqvist', 'Abara', 'Castell', 'Novak', 'Achterberg', 'Moreau', 'Pellegrini', 'Sato', 'Varga', 'Whitlow']
+const INSURERS = ['Northwind Life', 'Granite Mutual', 'Beacon Benefit', 'Meridian Assurance', 'Harborline']
+const CONSULTANTS = ['Dana Pryce', 'Leo Marsh', 'Ama Boateng', 'Ruth Calloway']
+const CONDITIONS = ['Lumbar fusion', 'Multiple sclerosis', 'Long COVID', 'Fibromyalgia', 'Major depression', 'Rheumatoid arthritis', 'Post-stroke', 'Crohn\'s disease', 'Migraine (chronic)']
+const STAGES = [['Intake', 4], ['Claim filed', 8], ['Approved, paid', 14], ['Denied, appeal', 7], ['Litigation', 3]]
+const weighted = (p) => { let r = rnd() * p.reduce((a, [, w]) => a + w, 0); for (const [v, w] of p) if ((r -= w) <= 0) return v; return p[0][0] }
+
+const clients = Array.from({ length: 36 }, (_, i) => {
+  const stage = weighted(STAGES)
+  const benefit = int(18, 62) * 100
+  return {
+    id: 'c' + i, name: `${pick(FIRST)} ${pick(LAST)}`, insurer: pick(INSURERS), stage,
+    condition: pick(CONDITIONS), consultant: CONSULTANTS[i % 4], benefit,
+    status: stage === 'Approved, paid' ? (rnd() < 0.18 ? 'Late' : 'Paid on time') : stage === 'Denied, appeal' || stage === 'Litigation' ? 'Terminated' : 'Not yet approved',
+    lastVisit: add(-int(10, 112)), risk: weighted([['None found', 6], ['Mental/nervous', 1], ['Self-reported symptoms', 2], ['Unresolved', 1]]),
+    opened: add(-int(40, 900)),
+  }
+})
+clients.forEach((c) => (c.gap = Math.round((new Date(TODAY) - new Date(c.lastVisit)) / 864e5) > 90))
+
+const reqs = clients.filter((c) => c.stage === 'Claim filed' || c.stage === 'Approved, paid').slice(0, 11).map((c, i) => ({
+  id: 'r' + i, client: c.name, cid: c.id, insurer: c.insurer, asked: pick(['Attending physician statement', 'Office notes, last 12 months', 'Claimant questionnaire', 'Pharmacy records', 'Proof of earnings (W-2)', 'Updated activities form']),
+  received: add(-int(2, 20)), due: add(int(-2, 26)), state: pick(['New', 'New', 'Records requested', 'Records requested', 'Ready to send', 'Sent']),
+}))
+reqs.forEach((r) => (r.state === 'Sent' ? (r.due = add(-int(1, 9))) : 0))
+Object.assign(reqs[0], { state: 'New', asked: 'Office notes, last 12 months', received: add(-21), due: add(9) })
+
+const appeals = clients.filter((c) => c.stage === 'Denied, appeal').map((c, i) => {
+  const denied = add(-int(40, 170))
+  return { id: 'a' + i, client: c.name, cid: c.id, insurer: c.insurer, denied, due: new Date(new Date(denied + 'T12:00:00').getTime() + 180 * 864e5).toISOString().slice(0, 10), stage: pick(['Gathering records', 'Physician questionnaire', 'Drafting brief', 'Attorney review']), args: int(1, 5) }
+})
+
+const checks = Array.from({ length: 12 }, (_, i) => {
+  const c = clients.filter((x) => x.stage === 'Approved, paid')[i % 8]
+  return { id: 'k' + i, payer: c.insurer, memo: i === 4 ? `Claim LTD-${int(10000, 99999)}` : `${c.name.split(' ')[1].toUpperCase()} ${c.name[0]}`, client: i === 4 ? null : c.name, cid: c.id, amount: i === 4 ? 14280 : c.benefit * (i % 5 === 0 ? 3 : 1), scanned: add(-int(0, 3)), match: i === 4 ? 'No match' : i % 6 === 2 ? 'Two possible' : 'Matched', bank: i < 5 ? 'Waiting for bank' : 'Deposited' }
+})
+
+const months = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+const recovered = [182, 196, 175, 210, 228, 219, 241, 236, 258, 271, 284].map((k) => k * 1000)
+const fees = recovered.map((v) => Math.round(v * 0.25))
+
+const T = {
+  clients: { name: 'Clients', one: 'client', title: 'name', rows: clients, sort: ['name', 'asc'],
+    cols: [
+      { k: 'name', label: 'Client', src: 'Your case system (imported nightly)' },
+      { k: 'stage', label: 'Stage', kind: 'choice', tones: { 'Denied, appeal': 'warn', Litigation: 'bad', 'Approved, paid': 'ok' }, src: 'Your case system' },
+      { k: 'insurer', label: 'Insurer', src: 'Policy on file' },
+      { k: 'status', label: 'Benefit status', kind: 'choice', tones: { Late: 'warn', Terminated: 'bad', 'Paid on time': 'ok' }, src: 'Check matcher, from scanned checks', help: 'Whether this month\'s benefit check arrived' },
+      { k: 'benefit', label: 'Monthly benefit', kind: 'money', src: 'Insurer approval letter' },
+      { k: 'consultant', label: 'Consultant', src: 'Assigned by intake' },
+      { k: 'lastVisit', label: 'Last doctor visit', kind: 'date', src: 'Medical records received by email' },
+      { k: 'gap', label: 'Visit gap', kind: 'bool', help: 'No doctor visit in 90 days: insurers read this as recovery', src: (r) => `Computed: ${Math.round((new Date(TODAY) - new Date(r.lastVisit)) / 864e5)} days since last visit, limit 90` },
+      { k: 'risk', label: 'Limited-pay risk', kind: 'choice', tones: { 'Mental/nervous': 'warn', 'Self-reported symptoms': 'warn', Unresolved: 'bad' }, src: 'Policy reader, from the policy PDF', help: 'Policy clauses that cap benefits, often at 24 months' },
+      { k: 'condition', label: 'Condition', hide: true, src: 'Intake form' },
+    ],
+    detail: (r) => {
+      const recs = reqs.filter((x) => x.cid === r.id), aps = appeals.filter((x) => x.cid === r.id)
+      return `<p class="muted" style="font-size:.86rem">${Z.esc(r.condition)} · client since ${Z.day(r.opened)} · ${Z.esc(r.consultant)}</p>
+      ${r.gap ? `<div class="callout" style="margin-top:12px"><b>Visit gap.</b> No doctor visit since ${Z.day(r.lastVisit)}. The Visit-note gap agent drafts a reminder; you choose whether to send it or call.</div>` : ''}
+      ${recs.length ? `<div class="box"><h3>Open insurer requests</h3>${Z.table('requests', { rows: recs, bare: true, cols: ['asked', 'due', 'state'] })}</div>` : ''}
+      ${aps.length ? `<div class="box"><h3>Appeal</h3>${Z.table('appeals', { rows: aps, bare: true, cols: ['denied', 'due', 'stage'] })}</div>` : ''}`
+    } },
+  requests: { name: 'Insurer requests', one: 'request', title: 'asked', rows: reqs, sort: ['due', 'asc'],
+    cols: [
+      { k: 'client', label: 'Client', src: 'Matched by the Mail reader from the claim number' },
+      { k: 'insurer', label: 'Insurer', src: 'Letter header' },
+      { k: 'asked', label: 'Insurer asked for', src: 'Read from the insurer\'s letter (page 1)' },
+      { k: 'received', label: 'Letter received', kind: 'date', src: 'Outlook, firm inbox' },
+      { k: 'due', label: 'Due', kind: 'date', due: true, src: 'Read from the letter: "within 30 days of the date of this letter"' },
+      { k: 'state', label: 'State', kind: 'choice', tones: { New: 'warn', 'Ready to send': 'accent', Sent: 'ok' }, src: 'Updated by the consultant or an agent' },
+    ] },
+  appeals: { name: 'Appeals', one: 'appeal', title: 'client', rows: appeals, sort: ['due', 'asc'],
+    cols: [
+      { k: 'client', label: 'Client', src: 'Your case system' },
+      { k: 'insurer', label: 'Insurer', src: 'Denial letter' },
+      { k: 'denied', label: 'Denial received', kind: 'date', src: 'Denial letter, date stamped on arrival' },
+      { k: 'due', label: 'Appeal deadline', kind: 'date', due: true, src: (r) => `Computed: 180 days after ${Z.day(r.denied)}, the plan's appeal window` },
+      { k: 'stage', label: 'Stage', kind: 'choice', tones: { 'Attorney review': 'accent' }, src: 'Updated by the team' },
+      { k: 'args', label: 'Arguments found', kind: 'number', src: 'Denial reader: reasons in the letter answered by records on file' },
+    ] },
+  checks: { name: 'Checks', one: 'check', title: 'memo', rows: checks, sort: ['scanned', 'desc'],
+    cols: [
+      { k: 'payer', label: 'Payer', src: 'Scanned check image' },
+      { k: 'memo', label: 'Memo line', src: 'Read from the scan' },
+      { k: 'client', label: 'Matched client', src: 'Check matcher: payer, memo and amount against approved claims' },
+      { k: 'amount', label: 'Amount', kind: 'money', src: 'Read from the scan, checked against the courtesy amount' },
+      { k: 'scanned', label: 'Scanned', kind: 'date', src: 'Front-desk scanner' },
+      { k: 'match', label: 'Match', kind: 'choice', tones: { Matched: 'ok', 'Two possible': 'warn', 'No match': 'bad' } },
+      { k: 'bank', label: 'Bank', kind: 'choice', tones: { Deposited: 'ok', 'Waiting for bank': 'warn' }, src: 'Bank feed (read-only)', help: 'A scan is not proof of deposit: the trust ledger moves only when the bank confirms' },
+    ] },
+}
+
+const count = (rows, k) => rows.reduce((m, r) => ((m[r[k]] = (m[r[k]] || 0) + 1), m), {})
+const usd = (v) => Z.money(v)
+
+const overview = (Z) => {
+  const cs = Z.rows('clients'), by = count(cs, 'stage')
+  const soon = [...Z.rows('requests').filter((r) => r.state !== 'Sent'), ...Z.rows('appeals')]
+  const weeks = [0, 1, 2, 3].map((w) => soon.filter((r) => { const n = Z.daysFrom(r.due); return n >= w * 7 && n < (w + 1) * 7 }).length)
+  const late = soon.filter((r) => Z.daysFrom(r.due) < 0).length
+  const load = CONSULTANTS.map((c) => ({ label: c, value: cs.filter((x) => x.consultant === c).length * 9 + Z.rows('requests').filter((r) => r.state !== 'Sent' && cs.find((x) => x.id === r.cid)?.consultant === c).length * 4, mark: 100, note: 'pts' }))
+  return `<div class="head"><div><h1>Firm overview</h1><p>Live from the firm's tables: approve a card or run an agent and these move.</p></div></div>
+  <div class="stats">
+    ${Z.stat(cs.length, 'Active clients')}
+    ${Z.stat(usd(cs.filter((c) => c.stage === 'Approved, paid').reduce((a, c) => a + c.benefit, 0)), 'Monthly benefits flowing', 'to clients being paid')}
+    ${Z.stat(`<span style="color:${late ? 'var(--bad)' : 'inherit'}">${late}</span>`, 'Deadlines missed', late ? 'open Insurer requests' : 'none this month')}
+    ${Z.stat(usd(fees[fees.length - 1]), 'Fees in October', '+5% on September', Z.chart.spark(fees))}
+  </div>
+  <div class="cols">
+    ${Z.panel('Clients by stage', Z.chart.donut(Object.entries(by).map(([label, value]) => ({ label, value })), { center: cs.length, sub: 'clients' }))}
+    ${Z.panel('Benefits recovered for clients', Z.chart.line([{ name: 'Recovered', values: recovered }, { name: 'Firm fees (25%)', values: fees, dash: true }], months, { fmt: (v) => '$' + Z.compact(v), area: true }))}
+  </div>
+  <div class="cols">
+    ${Z.panel('Deadlines in the next four weeks', Z.chart.bar(weeks.map((v, i) => ({ label: i ? `Week ${i + 1}` : 'This week', value: v, tone: i === 0 ? 'bad' : '' })), { fmt: (v) => v }) + `<small>Insurer requests not yet sent, and appeal deadlines. ${late} already late.</small>`)}
+    ${Z.panel('Workload by consultant', Z.chart.hbar(load, { max: 120, fmt: (v) => v }) + `<small>Points: 9 per client, 4 per open request. The line is 100, the load the firm agreed is a full week. Not a ranking of people.</small>`)}
+  </div>`
+}
+
+const levels = {
+  A: { name: 'Runs on its own', tone: 'ok', words: 'Reads, files and computes. Never writes to an insurer or a client.' },
+  B: { name: 'Staff approves', tone: 'warn', words: 'Drafts; a consultant reads it and sends it, or calls instead.' },
+  C: { name: 'Attorney or Finance approves', tone: 'bad', words: 'Legal statements and money. An attorney or Finance says yes first.' },
+}
+
+const cards = [
+  { id: 'c1', kind: 'needs', module: 'requests', level: 'B', roles: ['cc', 'atty'], icon: 'envelope-simple',
+    title: `${reqs[0].insurer} wants ${reqs[0].asked.toLowerCase()} for ${reqs[0].client}`, row: ['requests', 'r0'],
+    body: `Their letter of ${Z.day(reqs[0].received)} asks for it within 30 days, by ${Z.day(reqs[0].due)}. Dr. Ines Varga's office has it. Zazoo drafted the request.`,
+    why: 'The Mail reader matched the claim number on the letter to this client, read the due date from the letter\'s second paragraph and found Dr. Varga as the treating doctor in the last three visits.',
+    draft: `To: records@vargaclinic.example\nSubject: Records request for your patient, signed authorization attached\n\nPlease send office notes from Nov 2025 to date. The insurer\'s deadline is ${Z.day(reqs[0].due)}…`,
+    acts: [{ label: 'Send request', primary: true, run: (Z) => { Z.set('requests', 'r0', { state: 'Records requested' }); return `sent the records request to Dr. Varga's office for ${reqs[0].client}` } }, { label: 'I\'ll call the office', run: () => `will call Dr. Varga's office for ${reqs[0].client}; a call task is on their list`, doneWords: 'Call task added' }] },
+  { id: 'c2', kind: 'needs', module: 'appeals', level: 'C', roles: ['atty'], icon: 'scales',
+    title: 'Physician questionnaire ready for your review', row: ['appeals', 'a0'],
+    body: `For ${appeals[0]?.client}'s appeal against ${appeals[0]?.insurer}. Eight questions, each answering one reason in the denial letter. It goes to the treating doctor only after you approve.`,
+    why: 'The denial says the client "can perform sedentary work". The questionnaire asks the doctor about sitting tolerance, absences and medication side effects, each tied to a page of the records.',
+    draft: '1. In your opinion, how long can your patient sit continuously? (Denial, p. 2: "sedentary capacity")\n2. How many days a month would your patient be absent from work? …',
+    acts: [{ label: 'Approve and send', primary: true, run: (Z) => { Z.set('appeals', 'a0', { stage: 'Physician questionnaire' }); return `approved the physician questionnaire for ${appeals[0]?.client}` } },
+      { label: 'Approve this template for all', run: () => 'approved the questionnaire template: staff may now send it without an attorney each time', doneWords: 'Template approved: staff can send' },
+      { label: 'Edit first', run: () => 'opened the questionnaire to edit', doneWords: 'Opened in Word' }] },
+  { id: 'c3', kind: 'needs', module: 'finance', level: 'C', roles: ['fin'], icon: 'money',
+    title: 'A $14,280 check matches no client', row: ['checks', 'k4'],
+    body: 'From Granite Mutual, memo "Claim LTD-…". The amount is three months of a $4,760 benefit, which fits two clients. Zazoo won\'t guess.',
+    why: 'Memo has a claim number not in the case system. Two clients with Granite Mutual have a $4,760 monthly benefit. A wrong match would credit the wrong client\'s trust account.',
+    acts: [{ label: `It's ${clients.find((c) => c.insurer === 'Granite Mutual')?.name}`, primary: true, run: (Z) => { const c = clients.find((c) => c.insurer === 'Granite Mutual'); Z.set('checks', 'k4', { client: c.name, match: 'Matched' }); return `matched the $14,280 check to ${c.name}; it waits for the bank before the trust ledger moves` } }, { label: 'Ask the insurer', run: () => 'asked Granite Mutual which claim the $14,280 check is for', doneWords: 'Email drafted to the insurer' }] },
+  { id: 'c4', kind: 'needs', module: 'clients', level: 'B', roles: ['cc'], icon: 'stethoscope',
+    title: `${clients.filter((c) => c.gap).length} clients haven't seen a doctor in 90 days`,
+    body: 'Insurers read a gap in treatment as recovery. Zazoo drafted a friendly reminder for each one; a call is often better, and you decide.',
+    why: 'Computed from the last visit date in each client\'s medical records. The 90-day line is the firm\'s own rule.',
+    acts: [{ label: 'Send the reminders', primary: true, run: (Z) => `sent visit reminders to ${clients.filter((c) => c.gap).length} clients` }, { label: 'Make call tasks instead', run: () => `made call tasks for ${clients.filter((c) => c.gap).length} clients`, doneWords: 'Call tasks on your list' }] },
+  { id: 'd1', kind: 'done', module: 'requests', level: 'A', roles: ['cc', 'atty'], icon: 'tray', title: '14 insurer letters filed overnight', body: 'Read from the firm inbox, each attached to its client with its deadline. 3 became insurer requests.', done: true, doneWords: 'Filed' },
+  { id: 'd2', kind: 'done', module: 'finance', level: 'A', roles: ['fin', 'atty'], icon: 'receipt', title: '11 of 12 scanned checks matched', body: 'Each check matched by payer, memo and amount. They count as deposits only when the bank confirms: 5 are still waiting.', done: true, doneWords: 'Matched' },
+]
+
+const agents = [
+  { id: 'mail', name: 'Mail reader', module: 'requests', level: 'A', when: 'Every 15 minutes', reads: 'the firm inbox in Outlook', does: 'Reads each insurer letter, matches it to the client by claim number, reads what is asked and by when, and files it.',
+    steps: ['Connected to Outlook (read-only)', '3 new letters since 9:00', 'Letter 1: Meridian Assurance, claim LTD-48213 → matched', 'Reading the ask: "updated activities form", within 21 days', 'Letter 2: Beacon Benefit, payment notice → filed', 'Letter 3: newsletter → skipped'],
+    run: (Z) => {
+      const c = clients.find((x) => x.insurer === 'Meridian Assurance') || clients[0]
+      Z.rows('requests').unshift({ id: 'r-new', client: c.name, cid: c.id, insurer: 'Meridian Assurance', asked: 'Updated activities form', received: TODAY, due: Z.addDays(21), state: 'New' })
+      return { text: `filed 2 letters; 1 new insurer request for ${c.name}`, cards: [{ kind: 'needs', level: 'B', roles: ['cc'], icon: 'envelope-simple', title: `Meridian Assurance wants an activities form from ${c.name}`, body: `Due ${Z.day(Z.addDays(21))}. Zazoo filled what it knows from the last form; ${c.name.split(' ')[0]} needs to answer six questions.`, row: ['requests', 'r-new'], acts: [{ label: 'Send to client to finish', primary: true, run: (Z) => { Z.set('requests', 'r-new', { state: 'Records requested' }); return `sent the activities form to ${c.name}` } }, { label: 'Go through it on a call', run: () => `booked a call with ${c.name} to fill the form`, doneWords: 'Call booked' }] }] }
+    } },
+  { id: 'deadline', name: 'Deadline watcher', module: 'appeals', level: 'A', when: 'Every morning at 7:00', reads: 'Appeals and Insurer requests', does: 'Recomputes every appeal deadline from the denial date and flags anything within 14 days that is not moving.',
+    steps: [`Checked ${appeals.length} appeals and ${reqs.length} requests`, 'Appeal window: 180 days from the denial letter', 'Found 2 within 14 days'],
+    run: (Z) => {
+      const a = [...Z.rows('appeals')].sort((x, y) => (x.due > y.due ? 1 : -1))[0]
+      return { text: '2 deadlines within 14 days', cards: [{ kind: 'needs', level: 'A', roles: ['atty', 'cc'], icon: 'alarm', title: `${a.client}'s appeal is due ${Z.day(a.due)}`, body: `${Z.daysFrom(a.due)} days left. Stage: ${a.stage}. Nothing has moved on it for 9 days.`, why: `180 days after the denial letter received ${Z.day(a.denied)}. The plan document allows no extension.`, row: ['appeals', a.id], acts: [{ label: 'Move to attorney review', primary: true, run: (Z) => { Z.set('appeals', a.id, { stage: 'Attorney review' }); return `moved ${a.client}'s appeal to attorney review` } }] }] }
+    } },
+  { id: 'aps', name: 'Questionnaire drafter', module: 'appeals', level: 'C', when: 'When a denial is filed', reads: 'the denial letter and medical records', does: 'Turns each reason in a denial into questions for the treating doctor, each tied to a page of the records. An attorney approves before anything is sent.',
+    steps: ['Read the denial letter: 3 reasons', 'Matched reasons to 41 pages of records', 'Drafted 8 questions'], run: () => ({ text: 'a questionnaire waits for an attorney' }) },
+  { id: 'visit', name: 'Visit-note gap', module: 'clients', level: 'B', when: 'Every Monday', reads: 'medical visits', does: 'Finds clients with no doctor visit in 90 days and drafts a reminder. The consultant sends it or calls.',
+    steps: [`Checked ${clients.length} clients`, `${clients.filter((c) => c.gap).length} with a gap over 90 days`, 'Drafted reminders'], run: () => ({ text: `${clients.filter((c) => c.gap).length} reminders drafted` }) },
+  { id: 'checks', name: 'Check matcher', module: 'finance', level: 'C', when: 'After each scan batch', reads: 'scanned checks and the bank feed', does: 'Matches each check to a client by payer, memo and amount. Never guesses between two: Finance decides. The trust ledger moves only on the bank\'s confirmation.',
+    steps: ['12 checks in this batch', '11 matched on payer + memo + amount', '1 with no match → Finance', 'Bank feed: 7 confirmed, 5 waiting'], run: () => ({ text: '11 matched, 1 waits for Finance' }) },
+  { id: 'policy', name: 'Policy reader', module: 'clients', level: 'A', when: 'When a policy arrives', reads: 'policy PDFs', does: 'Finds clauses that cap benefits (mental/nervous, self-reported symptoms) and marks the client\'s limited-pay risk, with the page.',
+    steps: ['Read a 64-page policy', 'Found "Mental Illness Limitation", p. 31: 24 months', 'Marked limited-pay risk'], run: (Z) => { Z.set('clients', 'c5', { risk: 'Mental/nervous' }); return { text: `marked ${clients[5].name}: mental/nervous limit, 24 months (p. 31)` } } },
+]
+
+const ask = [
+  { q: 'Which deadlines could we miss this week?', keys: ['deadline', 'miss', 'week', 'due'], reads: 'Insurer requests and Appeals', a: (Z) => {
+    const rows = Z.rows('requests').filter((r) => r.state !== 'Sent' && Z.daysFrom(r.due) <= 7)
+    return `${rows.length} insurer requests are due within 7 days and not yet sent:<div class="mini">${Z.table('requests', { rows, bare: true, cols: ['client', 'asked', 'due', 'state'] })}</div>` } },
+  { q: 'Whose benefit check is late?', keys: ['late', 'check', 'benefit', 'paid'], reads: 'Clients and Checks', a: (Z) => {
+    const rows = Z.rows('clients').filter((c) => c.status === 'Late')
+    return `${rows.length} clients haven't had this month's check. The usual next step is a call to the insurer's claim manager.<div class="mini">${Z.table('clients', { rows, bare: true, cols: ['name', 'insurer', 'benefit', 'consultant'] })}</div>` } },
+  { q: 'How are appeals going this year?', keys: ['appeal', 'win', 'year', 'overturn'], reads: 'Appeals and closed appeals', a: (Z) => `Of 31 appeals decided this year, 19 were overturned (61%). Beacon Benefit overturns most, Granite Mutual least.${Z.chart.hbar(INSURERS.map((n, i) => ({ label: n, value: [71, 48, 80, 62, 55][i] })), { max: 100, fmt: (v) => v + '%' })}` },
+  { q: 'Who is overloaded?', keys: ['overload', 'workload', 'busy', 'capacity'], roles: ['atty'], reads: 'Clients and requests by consultant', a: (Z) => `Leo Marsh is at 112 points against the firm's 100. Moving two Claim-filed clients to Ruth Calloway (78) would even it out. Zazoo won't reassign anyone: that is your call.` },
+]
+
+Z.boot({
+  id: 'law', today: TODAY, currency: 'USD',
+  brand: { name: 'Calder & Rhee', sub: 'Disability law · demo', mark: 'CR', server: 'the firm\'s own server' },
+  persona: 'someone at the firm',
+  roles: [{ id: 'cc', name: 'Dana Pryce · Claim consultant' }, { id: 'atty', name: 'Marcus Rhee · Attorney' }, { id: 'fin', name: 'Priya Shah · Finance' }],
+  you: (r) => ({ cc: 'Dana Pryce', atty: 'Marcus Rhee', fin: 'Priya Shah' })[r],
+  greeting: (r) => `Good morning, ${({ cc: 'Dana', atty: 'Marcus', fin: 'Priya' })[r]}`,
+  homeLine: (r) => ({ cc: 'Your clients\' letters came in overnight. Here is what moved and what needs you.', atty: 'Legal decisions wait for you; routine work went ahead under the limits you set.', fin: 'Overnight checks are matched. Nothing reaches the trust ledger until the bank confirms.' })[r],
+  homeStats: (r) => {
+    const rq = Z.rows('requests').filter((x) => x.state !== 'Sent')
+    return Z.stat(rq.length, 'Open insurer requests') + Z.stat(rq.filter((x) => Z.daysFrom(x.due) <= 7).length, 'Due this week') + Z.stat(Z.rows('appeals').length, 'Appeals in progress') + Z.stat('6.5 h', 'Saved yesterday', 'letters filed, checks matched, drafts')
+  },
+  levels, tables: T, cards, agents, ask,
+  glossary: {},
+  tour: [
+    { key: 'card', text: 'Approve or redirect a card under <b>Needs you</b>.' },
+    { key: 'row', text: 'Open a client and see where each value came from.' },
+    { key: 'run:mail', text: 'Go to <b>Agents</b> and run the <b>Mail reader</b>.' },
+    { key: 'ask', text: 'Ask Zazoo a question, then switch role at the top left.' },
+  ],
+  whyHtml: `<p>Zazoo runs on a server in the firm's office (or the firm's own cloud account). Client files, medical records and checks never leave it.</p>
+    <ul style="margin:12px 0 0 18px;font-size:.9rem;line-height:1.7"><li>Your case system, Outlook and the scanner stay where they are; Zazoo reads them.</li><li>The AI model is called with only the text a task needs, under the firm's own agreement.</li><li>Zazoo's team updates and monitors the software; the firm never has to maintain it.</li><li>Every change is in Activity and can be undone.</li></ul>`,
+  journal: [{ who: 'Mail reader', words: 'filed 14 insurer letters', mod: 'requests' }, { who: 'Check matcher', words: 'matched 11 of 12 scanned checks', mod: 'finance' }],
+  modules: [
+    { id: 'firm', name: 'Firm', icon: 'buildings', roles: ['atty', 'fin'], pages: [{ id: 'overview', name: 'Firm overview', icon: 'chart-pie-slice', render: overview }] },
+    { id: 'clients', name: 'Client file', icon: 'users', pages: [{ id: 'all', name: 'Clients', icon: 'users', render: (Z) => `<div class="head"><div><h1>Clients</h1><p>One record per client from first call to litigation. Values from your case system update nightly; nothing is typed twice.</p></div></div>${Z.table('clients')}` }] },
+    { id: 'requests', name: 'Insurer requests', icon: 'envelope-simple', roles: ['cc', 'atty'], pages: [{ id: 'board', name: 'Requests', icon: 'kanban', render: (Z) => {
+      const lanes = ['New', 'Records requested', 'Ready to send', 'Sent']
+      return `<div class="head"><div><h1>Insurer requests</h1><p>Every ask from an insurer, read from its letter, with the deadline the letter sets.</p></div></div>
+      <div class="kanban">${lanes.map((l) => { const rs = Z.rows('requests').filter((r) => r.state === l); return `<div class="lane"><h3>${l}<span class="pill">${rs.length}</span></h3>${rs.map((r) => `<div class="item" data-act="row" data-t="requests" data-id="${r.id}"><b>${Z.esc(r.client)}</b>${Z.esc(r.asked)}<br>${Z.fmt(r.due, { kind: 'date', due: l !== 'Sent' })}</div>`).join('')}</div>` }).join('')}</div>
+      <h2 class="section-t">All requests</h2>${Z.table('requests')}` } }] },
+    { id: 'appeals', name: 'Appeals', icon: 'scales', roles: ['atty', 'cc'], pages: [{ id: 'all', name: 'Appeals', icon: 'scales', render: (Z) => `<div class="head"><div><h1>Appeals</h1><p>Each deadline is 180 days from the denial letter. Open one to see how it was worked out.</p></div></div>
+      ${Z.panel('Days left on each appeal', Z.chart.hbar(Z.rows('appeals').map((a) => ({ label: a.client, value: Math.max(0, Z.daysFrom(a.due)), tone: Z.daysFrom(a.due) < 21 ? 'bad' : Z.daysFrom(a.due) < 60 ? 'warn' : 'ok' })), { max: 180, fmt: (v) => v + ' days' }))}<br>${Z.table('appeals')}` }] },
+    { id: 'finance', name: 'Finance', icon: 'money', roles: ['fin', 'atty'], pages: [{ id: 'checks', name: 'Checks and trust', icon: 'receipt', render: (Z) => {
+      const ks = Z.rows('checks'), dep = ks.filter((k) => k.bank === 'Deposited').reduce((a, k) => a + k.amount, 0), wait = ks.filter((k) => k.bank !== 'Deposited').reduce((a, k) => a + k.amount, 0)
+      return `<div class="head"><div><h1>Checks and trust</h1><p>Scanned checks matched to clients. The trust ledger counts only what the bank has confirmed.</p></div></div>
+      <div class="callout"><b>Scanning is not proof of deposit.</b> ${usd(wait)} is scanned and matched but not yet confirmed by the bank, so it is not in the trust balance.</div>
+      <div class="cols">${Z.panel('This batch', Z.chart.donut([{ label: 'Deposited', value: dep, color: 'var(--ok)' }, { label: 'Waiting for bank', value: wait, color: '#b5832e' }], { center: ks.length, sub: 'checks', fmt: usd }))}
+      ${Z.panel('Fees earned, by month', Z.chart.bar(fees.slice(-6).map((v, i) => ({ label: months.slice(-6)[i], value: v })), { fmt: (v) => '$' + Z.compact(v) }))}</div>${Z.table('checks')}` } }] },
+  ],
+})
+</script>
+</body>
+</html>

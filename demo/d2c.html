@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herbal D2C brand · Zazoo demo</title>
+<meta name="description" content="An interactive Zazoo prototype for a small herbal personal-care brand selling on WhatsApp, its website and through retailers. Made-up data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="demo.css">
+<style>
+.wa{background:#e7f3e9;border-radius:12px 12px 12px 3px;padding:9px 12px;font-size:.84rem;white-space:pre-wrap}
+.wa small{display:block;color:var(--ink-2);font-size:.72rem;margin-top:4px}
+.prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px 18px}
+.prices label{display:flex;justify-content:space-between;align-items:center;font-size:.84rem;gap:8px}
+.prices input{width:90px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;text-align:right;background:#fff}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="demo.js"></script>
+<script>
+// A made-up herbal personal-care brand: tooth powders, hair oils and packs made from raw herbs,
+// sold on WhatsApp, its website and through retailers, with GST invoices.
+Z.currency = 'INR' // amounts are formatted before boot, in the cards below
+let s = 31
+const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+const pick = (a) => a[Math.floor(rnd() * a.length)]
+const int = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1))
+const TODAY = '2026-11-02'
+const add = (n) => new Date(new Date(TODAY + 'T12:00:00').getTime() + n * 864e5).toISOString().slice(0, 10)
+// Indian short amounts: ₹4.2K, ₹3.1L, ₹1.2Cr
+const inr = (v) => (v >= 1e7 ? `₹${(v / 1e7).toFixed(1)}Cr` : v >= 1e5 ? `₹${(v / 1e5).toFixed(1)}L` : v >= 1e3 ? `₹${(v / 1e3).toFixed(1)}K` : `₹${Math.round(v)}`)
+
+// ₹ per kg, and the days a supplier takes
+const MATS = {
+  neem: { name: 'Neem leaf powder', kg: 180, stock: 14, use: 1.1, lead: 6, supplier: 'Shree Herbs, Indore' },
+  clove: { name: 'Clove', kg: 1150, stock: 3.2, use: 0.22, lead: 10, supplier: 'Malabar Spice Co.' },
+  rocksalt: { name: 'Rock salt', kg: 40, stock: 22, use: 0.9, lead: 4, supplier: 'Local wholesaler' },
+  charcoal: { name: 'Activated charcoal', kg: 320, stock: 6, use: 0.4, lead: 7, supplier: 'Carbon Works, Surat' },
+  ginger: { name: 'Dry ginger', kg: 420, stock: 2.1, use: 0.35, lead: 9, supplier: 'Malabar Spice Co.' },
+  bhringraj: { name: 'Bhringraj', kg: 260, stock: 9, use: 0.6, lead: 8, supplier: 'Shree Herbs, Indore' },
+  amla: { name: 'Amla', kg: 210, stock: 11, use: 0.7, lead: 6, supplier: 'Shree Herbs, Indore' },
+  coconut: { name: 'Cold-pressed coconut oil', kg: 380, stock: 48, use: 3.4, lead: 5, supplier: 'Kerala Mills' },
+  sesame: { name: 'Sesame oil', kg: 290, stock: 12, use: 1.6, lead: 5, supplier: 'Kerala Mills' },
+  hibiscus: { name: 'Hibiscus', kg: 340, stock: 1.4, use: 0.3, lead: 12, supplier: 'Shree Herbs, Indore' },
+  shikakai: { name: 'Shikakai', kg: 230, stock: 8, use: 0.5, lead: 8, supplier: 'Shree Herbs, Indore' },
+  rose: { name: 'Rose petal', kg: 610, stock: 2.6, use: 0.12, lead: 10, supplier: 'Kannauj Attars' },
+}
+// grams of each material in one pack, plus jar, label and box
+const PRODUCTS = [
+  { id: 'p0', name: 'Neem tooth powder', size: '100 g', mrp: 150, gst: 12, f: { neem: 55, clove: 4, rocksalt: 30, rose: 1 }, pack: 14, sold: 412 },
+  { id: 'p1', name: 'Charcoal tooth powder', size: '100 g', mrp: 180, gst: 12, f: { charcoal: 40, neem: 25, clove: 5, rocksalt: 25 }, pack: 14, sold: 288 },
+  { id: 'p2', name: 'Ginger clove tooth powder', size: '100 g', mrp: 140, gst: 12, f: { ginger: 30, clove: 8, rocksalt: 40, neem: 15 }, pack: 14, sold: 196 },
+  { id: 'p3', name: 'Bhringraj hair oil', size: '200 ml', mrp: 340, gst: 18, f: { coconut: 140, bhringraj: 18, amla: 12, hibiscus: 6 }, pack: 26, sold: 351 },
+  { id: 'p4', name: 'Amla hair oil', size: '200 ml', mrp: 300, gst: 18, f: { coconut: 120, sesame: 40, amla: 22 }, pack: 26, sold: 244 },
+  { id: 'p5', name: 'Hibiscus hair pack', size: '150 g', mrp: 260, gst: 18, f: { hibiscus: 40, shikakai: 50, amla: 40, rose: 6 }, pack: 18, sold: 132 },
+  { id: 'p6', name: 'Shikakai hair wash powder', size: '200 g', mrp: 220, gst: 18, f: { shikakai: 110, amla: 50, neem: 30 }, pack: 16, sold: 175 },
+]
+const OPS = 18, SHIP = 22, RETAIL = 0.3
+// today's price is the stock table's, so undo puts prices and margins back together
+const price = (m) => { try { return Z.row('stock', m).kg } catch { return MATS[m].kg } }
+const unitCost = (p) => Object.entries(p.f).reduce((a, [m, g]) => a + (price(m) * g) / 1000, 0)
+const costing = (p) => {
+  const ex = p.mrp / (1 + p.gst / 100), mat = unitCost(p)
+  const total = mat + p.pack + OPS + SHIP
+  return { ex, mat, total, d2c: (ex - total) / ex, retail: (ex * (1 - RETAIL) - (total - SHIP)) / (ex * (1 - RETAIL)) }
+}
+const refreshP = (rows) => rows.forEach((r) => { const c = costing(r); Object.assign(r, { cost: Math.round(c.total), margin: Math.round(c.d2c * 100), rmargin: Math.round(c.retail * 100) }) })
+const products = PRODUCTS.map((p) => ({ ...p }))
+refreshP(products)
+
+const CITIES = [['Pune', 'MH'], ['Mumbai', 'MH'], ['Nashik', 'MH'], ['Bengaluru', 'KA'], ['Indore', 'MP'], ['Jaipur', 'RJ'], ['Hyderabad', 'TS'], ['Ahmedabad', 'GJ']]
+const FIRST = ['Anjali', 'Rohan', 'Meera', 'Kabir', 'Sneha', 'Arjun', 'Pooja', 'Vikram', 'Ishita', 'Nikhil', 'Kavya', 'Rahul', 'Divya', 'Sahil']
+const LAST = ['Kulkarni', 'Deshpande', 'Iyer', 'Shah', 'Rao', 'Joshi', 'Menon', 'Patil', 'Bhatt', 'Nair']
+const RETAILERS = ['Green Basket Organics', 'Ayur Mart', 'Nature\'s Shelf', 'Prakriti Stores', 'Desi Haat']
+const customers = [
+  ...Array.from({ length: 22 }, (_, i) => { const [city, st] = pick(CITIES); return { id: 'u' + i, name: `${pick(FIRST)} ${pick(LAST)}`, kind: 'Customer', city, st, orders: int(1, 7), spent: 0, due: 0, since: add(-int(20, 400)) } }),
+  ...RETAILERS.map((n, i) => { const [city, st] = CITIES[i]; return { id: 'rt' + i, name: n, kind: 'Retailer', city, st, orders: int(4, 14), spent: 0, due: [42000, 18500, 0, 63200, 9800][i], dueDays: [48, 22, 0, 71, 12][i], since: add(-int(200, 600)) } }),
+]
+const STATES = ['Draft', 'Confirmed', 'Packed', 'Shipped', 'Delivered']
+const orders = Array.from({ length: 26 }, (_, i) => {
+  const c = i % 5 === 0 ? customers[22 + (i % 5)] : customers[i % 22]
+  const ch = c.kind === 'Retailer' ? 'Retailer' : i % 3 === 0 ? 'Website' : 'WhatsApp'
+  const p = products[i % products.length], qty = c.kind === 'Retailer' ? int(12, 48) : int(1, 4)
+  const amount = Math.round(qty * p.mrp * (c.kind === 'Retailer' ? 1 - RETAIL : 1))
+  c.spent += amount
+  return { id: 'o' + i, no: `VH-${2400 + i}`, customer: c.name, cid: c.id, channel: ch, items: `${qty} × ${p.name}`, amount, placed: add(-int(0, 12)), state: STATES[Math.min(4, 1 + Math.floor(i / 6))], city: c.city, st: c.st }
+})
+
+const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+const byChannel = { WhatsApp: [1.9, 2.2, 2.4, 2.8, 3.3], Website: [0.8, 0.9, 1.1, 1.2, 1.4], Retailer: [1.4, 1.5, 1.4, 1.9, 2.1] }
+
+const T = {
+  orders: { name: 'Orders', one: 'order', title: 'no', rows: orders, sort: ['placed', 'desc'],
+    cols: [
+      { k: 'no', label: 'Order', src: 'Numbered by Zazoo' },
+      { k: 'customer', label: 'Customer', src: (r) => (r.channel === 'WhatsApp' ? 'Matched by phone number' : r.channel === 'Website' ? 'Website checkout' : 'Retailer account') },
+      { k: 'channel', label: 'Channel', kind: 'choice', tones: { WhatsApp: 'ok', Retailer: 'accent' } },
+      { k: 'items', label: 'Items', src: (r) => (r.channel === 'WhatsApp' ? 'Read from the WhatsApp message' : 'Order form') },
+      { k: 'amount', label: 'Amount', kind: 'money', src: 'MRP × quantity (retailers: less 30% margin)' },
+      { k: 'placed', label: 'Placed', kind: 'date' },
+      { k: 'state', label: 'State', kind: 'choice', tones: { Draft: 'warn', Delivered: 'ok' } },
+      { k: 'city', label: 'Ship to', src: 'Customer\'s address' },
+    ],
+    detail: (r) => {
+      const intra = r.st === 'MH', tax = Math.round(r.amount - r.amount / 1.12)
+      return `<div class="box"><h3>GST on this order</h3><p style="font-size:.86rem">${intra ? `Shipped within Maharashtra: CGST ${Z.money(tax / 2)} + SGST ${Z.money(tax / 2)}` : `Shipped to ${r.city} (${r.st}), another state: IGST ${Z.money(tax)}`}.</p><small>The Invoice maker picks CGST + SGST or IGST from the ship-to state, so you never have to.</small></div>`
+    } },
+  products: { name: 'Products', one: 'product', title: 'name', rows: products, sort: ['margin', 'asc'],
+    cols: [
+      { k: 'name', label: 'Product', src: 'Your product list' },
+      { k: 'size', label: 'Size' },
+      { k: 'mrp', label: 'MRP', kind: 'money', src: 'Printed on the pack' },
+      { k: 'gst', label: 'GST %', kind: 'number', src: 'HSN rate for the product' },
+      { k: 'cost', label: 'Cost to make and ship', kind: 'money', src: 'Herbs from the formula at today\'s prices + jar, label, labour and courier' },
+      { k: 'margin', label: 'Margin, direct', kind: 'pct', src: 'MRP less GST, less cost', help: 'Sold on WhatsApp or the website' },
+      { k: 'rmargin', label: 'Margin, retailer', kind: 'pct', src: 'After the retailer\'s 30%, no courier', help: 'Sold through a shop' },
+      { k: 'sold', label: 'Sold in Oct', kind: 'number', src: 'Orders' },
+    ],
+    detail: (r) => {
+      const c = costing(r), mats = Object.entries(r.f).map(([m, g]) => ({ label: `${MATS[m].name} · ${g} g`, value: (price(m) * g) / 1000 }))
+      return `<p class="muted" style="font-size:.86rem">${r.size} · MRP ${Z.money(r.mrp)} · GST ${r.gst}%</p>
+      <div class="box"><h3>Where the ${Z.money(r.mrp)} goes</h3>${Z.chart.hbar([{ label: 'GST', value: r.mrp - c.ex, color: '#8a8f9c' }, { label: 'Herbs and oils', value: c.mat, color: Z.PAL[0] }, { label: 'Jar, label, box', value: r.pack, color: Z.PAL[3] }, { label: 'Making (labour)', value: OPS, color: Z.PAL[4] }, { label: 'Courier', value: SHIP, color: Z.PAL[2] }, { label: 'Yours to keep', value: c.ex - c.total, color: 'var(--ok)' }], { max: r.mrp, fmt: (v) => Z.money(v) })}</div>
+      <div class="box"><h3>The formula, at today's prices</h3>${Z.chart.hbar(mats, { fmt: (v) => Z.money(v) })}<small>Change a herb's price in Costing and every product that uses it updates.</small></div>`
+    } },
+  customers: { name: 'Customers and retailers', one: 'customer', title: 'name', rows: customers, sort: ['spent', 'desc'],
+    cols: [
+      { k: 'name', label: 'Name', src: 'WhatsApp contact or website account' },
+      { k: 'kind', label: 'Type', kind: 'choice', tones: { Retailer: 'accent' } },
+      { k: 'city', label: 'City' },
+      { k: 'orders', label: 'Orders', kind: 'number' },
+      { k: 'spent', label: 'Bought', kind: 'money', src: 'Sum of their orders' },
+      { k: 'due', label: 'Owes you', kind: 'money', src: 'Invoices less payments received (UPI and bank)' },
+      { k: 'since', label: 'Customer since', kind: 'date' },
+    ] },
+  stock: { name: 'Raw materials', one: 'material', title: 'name', rows: Object.entries(MATS).map(([id, m]) => ({ id, ...m, days: Math.floor(m.stock / m.use) })), sort: ['days', 'asc'],
+    cols: [
+      { k: 'name', label: 'Material', src: 'Your materials list' },
+      { k: 'stock', label: 'In stock', kind: 'number', unit: 'kg', src: 'Last count, less what was made since' },
+      { k: 'use', label: 'Used a day', kind: 'number', unit: 'kg', src: 'Average of the last 30 days of making' },
+      { k: 'days', label: 'Days left', kind: 'number', src: 'In stock ÷ used a day' },
+      { k: 'lead', label: 'Supplier takes', kind: 'number', unit: 'days', src: 'From past purchase orders' },
+      { k: 'kg', label: '₹ per kg', kind: 'money', src: 'Last supplier invoice' },
+      { k: 'supplier', label: 'Supplier' },
+    ] },
+}
+
+const overview = (Z) => {
+  const ps = Z.rows('products'), cs = Z.rows('customers')
+  const due = cs.filter((c) => c.kind === 'Retailer').reduce((a, c) => a + c.due, 0)
+  const lowMargin = ps.filter((p) => p.margin < 35)
+  return `<div class="head"><div><h1>Business overview</h1><p>From your orders, formulas and payments. Change a herb's price or approve an order and these move.</p></div></div>
+  <div class="stats">${Z.stat('₹6.8L', 'Sales in October', '+16% on September', Z.chart.spark([4.1, 4.6, 4.9, 5.9, 6.8]))}${Z.stat(Math.round(ps.reduce((a, p) => a + p.margin * p.sold, 0) / ps.reduce((a, p) => a + p.sold, 0)) + '%', 'Average margin, direct')}${Z.stat(inr(due), 'Retailers owe you', `${cs.filter((c) => c.dueDays > 45).length} over 45 days`)}${Z.stat('41%', 'Customers who reorder', 'within 60 days')}</div>
+  <div class="cols">${Z.panel('Sales by channel, ₹ lakh', Z.chart.line(Object.entries(byChannel).map(([name, values]) => ({ name, values })), months, { fmt: (v) => v.toFixed(1) }))}
+  ${Z.panel('Margin by product, sold direct', Z.chart.hbar(ps.map((p) => ({ label: p.name, value: p.margin, tone: p.margin < 35 ? 'bad' : p.margin < 45 ? 'warn' : 'ok', mark: 35 })), { max: 70, fmt: (v) => v + '%' }) + `<small>The line is 35%, the margin you said you won't go under. ${lowMargin.length ? lowMargin.length + ' below it.' : 'All above it.'}</small>`)}</div>
+  <div class="cols">${Z.panel('Who owes you, by age', Z.chart.bar([{ label: 'Under 30 days', value: 28300, tone: 'ok' }, { label: '30–45 days', value: 0 }, { label: '45–60 days', value: 42000, tone: 'warn' }, { label: 'Over 60 days', value: 63200, tone: 'bad' }], { fmt: inr }))}
+  ${Z.panel('October units, by product', Z.chart.donut(ps.map((p) => ({ label: p.name, value: p.sold })), { center: ps.reduce((a, p) => a + p.sold, 0), sub: 'units' }))}</div>`
+}
+
+const costPage = (Z) => `<div class="head"><div><h1>Costing</h1><p>The true cost of each pack, from its formula at today's herb prices. Change a price as a supplier would and see which products slip.</p></div></div>
+  <div class="box" style="margin-bottom:14px"><h3>Herb and oil prices, ₹ per kg</h3><div class="prices">${Object.entries(MATS).map(([k, m]) => `<label>${m.name}<input type="number" min="1" value="${price(k)}" data-mat="${k}"></label>`).join('')}</div></div>
+  ${Z.table('products')}`
+
+const stockPage = (Z) => {
+  const rs = Z.rows('stock')
+  return `<div class="head"><div><h1>Stock</h1><p>Days left for each herb at the rate you make, against how long its supplier takes.</p></div></div>
+  ${Z.panel('Days left vs supplier lead time', Z.chart.hbar(rs.map((r) => ({ label: r.name, value: r.days, mark: r.lead, tone: r.days <= r.lead ? 'bad' : r.days <= r.lead * 2 ? 'warn' : 'ok' })), { max: 40, fmt: (v) => v + ' d' }) + '<small>The line is the supplier\'s lead time. Red means it runs out before a new order would arrive.</small>')}<br>${Z.table('stock')}`
+}
+
+const levels = {
+  A: { name: 'Runs on its own', tone: 'ok', words: 'Reads, computes and files. Never messages a customer or spends money.' },
+  B: { name: 'You approve', tone: 'warn', words: 'Drafts an order, a message or a purchase; you check it and send.' },
+  C: { name: 'You approve, every time', tone: 'bad', words: 'Discounts and refunds: never sent from a template.' },
+}
+
+const waMsg = 'Hi, need 3 neem tooth powder and 2 amla oil. Same address as last time. Will pay on GPay 🙏'
+const cards = [
+  { id: 'w1', kind: 'needs', module: 'orders', level: 'B', icon: 'whatsapp-logo', title: `New WhatsApp order from ${customers[2].name}`,
+    body: `<div class="wa">${waMsg}<small>WhatsApp · 8:42 am</small></div><p style="margin-top:8px">Zazoo read it as <b>3 × Neem tooth powder, 2 × Amla hair oil</b>, ${Z.money(3 * 150 + 2 * 300)}, to ${customers[2].city}, the address on her last order. GST and invoice follow once you confirm.</p>`,
+    why: 'Matched by her phone number. "Amla oil" can only be Amla hair oil. "Same address" is her last order\'s.',
+    acts: [{ label: 'Confirm order', primary: true, run: (Z) => { const c = customers[2]; Z.rows('orders').unshift({ id: 'onew', no: 'VH-2426', customer: c.name, cid: c.id, channel: 'WhatsApp', items: '3 × Neem tooth powder, 2 × Amla hair oil', amount: 1050, placed: TODAY, state: 'Confirmed', city: c.city, st: c.st }); return `confirmed VH-2426 for ${c.name}; a UPI link and invoice went on WhatsApp` } }, { label: 'Ask her first', run: () => `asked ${customers[2].name} to check the order`, doneWords: 'Message sent' }] },
+  { id: 'w2', kind: 'needs', module: 'orders', level: 'B', icon: 'whatsapp-logo', title: 'An order Zazoo is not sure about',
+    body: `<div class="wa">bhaiya 2 wala red powder bhej do, aur hair wala bhi 1<small>WhatsApp · 9:05 am · ${customers[5].name}</small></div><p style="margin-top:8px">"Red powder" isn't a product name, and you sell three hair products. Zazoo won't guess: pick the right ones, and it will remember for next time.</p>`,
+    acts: [{ label: '2 Ginger clove + 1 Bhringraj oil', primary: true, run: () => `confirmed 2 × Ginger clove tooth powder, 1 × Bhringraj hair oil for ${customers[5].name}; "red powder" now means Ginger clove` }, { label: 'Ask the customer', run: () => 'sent: "Which hair product — oil, pack or wash?"', doneWords: 'Asked on WhatsApp' }] },
+  { id: 'w3', kind: 'needs', module: 'stock', level: 'B', icon: 'package', title: 'Hibiscus runs out in 4 days; the supplier takes 12',
+    body: 'Hibiscus is in the hair oil and the hair pack. Zazoo drafted a purchase order for 8 kg from Shree Herbs, Indore, at the last price (₹340/kg, ₹2,720).',
+    why: '1.4 kg in stock, 0.3 kg used a day over the last 30 days. 8 kg covers the lead time plus two weeks.',
+    acts: [{ label: 'Send purchase order', primary: true, run: (Z) => { Z.set('stock', 'hibiscus', { stock: 9.4, days: 31 }); return 'sent a purchase order for 8 kg of hibiscus to Shree Herbs' } }, { label: 'Order 5 kg', run: (Z) => { Z.set('stock', 'hibiscus', { stock: 6.4, days: 21 }); return 'sent a purchase order for 5 kg of hibiscus' } }] },
+  { id: 'w4', kind: 'needs', module: 'customers', level: 'B', icon: 'currency-inr', title: 'Prakriti Stores owes ₹63,200, now 71 days',
+    body: 'Two invoices, both past your 45-day terms. A polite reminder is drafted; for a retailer this old, a call may be better.',
+    draft: 'Namaste! A gentle reminder that invoices VH-2311 and VH-2340 (₹63,200) are due. Here is a UPI link for your convenience…',
+    acts: [{ label: 'Send reminder', primary: true, run: () => 'sent a payment reminder to Prakriti Stores' }, { label: 'I\'ll call them', run: () => 'will call Prakriti Stores about ₹63,200', doneWords: 'Call task added' }] },
+  { id: 'dn1', kind: 'done', module: 'orders', level: 'A', icon: 'receipt', title: '9 GST invoices made', body: 'For yesterday\'s confirmed orders: CGST + SGST within Maharashtra, IGST for the rest. Sent with each order\'s WhatsApp update.', done: true, doneWords: 'Sent' },
+  { id: 'dn2', kind: 'done', module: 'customers', level: 'A', icon: 'check-circle', title: '6 UPI payments matched to orders', body: 'From the bank\'s statement, by amount and the order number in the note.', done: true, doneWords: 'Matched' },
+]
+
+const agents = [
+  { id: 'wa', name: 'WhatsApp order taker', module: 'orders', level: 'B', when: 'As messages arrive', reads: 'your WhatsApp Business inbox', does: 'Reads each message (Hindi, English or both), finds the products and the customer, and drafts the order. You confirm; it never guesses between two products.',
+    steps: ['2 new messages', 'Message 1: "5 charcoal powder for the shop" from Ayur Mart', 'Matched: retailer, 5 × Charcoal tooth powder at 30% off', 'Message 2: "thank you, received 🙏" → no order'],
+    run: (Z) => ({ text: '1 draft order from Ayur Mart', cards: [{ kind: 'needs', icon: 'whatsapp-logo', title: 'Ayur Mart wants 5 Charcoal tooth powder', body: `<div class="wa">5 charcoal powder for the shop, usual rate<small>WhatsApp · just now</small></div><p style="margin-top:8px">At the retailer rate: 5 × ₹126 = ₹630. Ayur Mart owes ₹18,500 already, inside your 45 days.</p>`, acts: [{ label: 'Confirm order', primary: true, run: (Z) => { Z.rows('orders').unshift({ id: 'onew2', no: 'VH-2427', customer: 'Ayur Mart', cid: 'rt1', channel: 'Retailer', items: '5 × Charcoal tooth powder', amount: 630, placed: TODAY, state: 'Confirmed', city: 'Mumbai', st: 'MH' }); return 'confirmed VH-2427 for Ayur Mart' } }] }] }) },
+  { id: 'inv', name: 'Invoice maker', module: 'orders', level: 'A', when: 'When an order is confirmed', reads: 'orders and HSN rates', does: 'Makes the GST invoice (CGST + SGST or IGST from the ship-to state) and sends it with a UPI link.',
+    steps: ['Order VH-2426: Pune, MH → CGST 6% + SGST 6%', 'Invoice PDF made', 'Sent on WhatsApp with a UPI link'], run: () => ({ text: 'invoice sent for VH-2426' }) },
+  { id: 'stock', name: 'Stock planner', module: 'stock', level: 'B', when: 'Every evening', reads: 'raw materials and making log', does: 'Compares each herb\'s days left with its supplier\'s lead time and drafts a purchase order before it runs out.',
+    steps: ['12 materials checked', 'Hibiscus: 4 days left, supplier takes 12', 'Dry ginger: 6 days left, supplier takes 9', 'Drafted 2 purchase orders'], run: () => ({ text: '2 purchase orders drafted' }) },
+  { id: 'margin', name: 'Margin watch', module: 'products', level: 'A', when: 'When a supplier invoice arrives', reads: 'supplier invoices and formulas', does: 'Updates herb prices from each supplier invoice and flags any product whose margin falls under your 35%.',
+    steps: ['Invoice from Malabar Spice Co.', 'Clove: ₹1,150 → ₹1,420 per kg', 'Recomputed 3 products that use clove'],
+    run: (Z) => { Z.set('stock', 'clove', { kg: 1420 }); refreshP(Z.rows('products')); const p = Z.row('products', 'p2'); return { text: `clove up 23%; Ginger clove tooth powder now ${p.margin}%`, cards: [{ kind: 'needs', level: 'B', icon: 'trend-down', title: 'Clove went up 23%', body: `Ginger clove tooth powder's direct margin is now ${p.margin}%. That is under your 35%. Raising the MRP from ₹140 to ₹160 brings it back to ${costing({ ...p, mrp: 160 }).d2c * 100 | 0}%.`, row: ['products', 'p2'], acts: [{ label: 'Raise MRP to ₹160', primary: true, run: (Z) => { Z.set('products', 'p2', { mrp: 160 }); refreshP(Z.rows('products')); return 'raised Ginger clove tooth powder to ₹160' } }, { label: 'Keep the price', run: () => 'kept the price of Ginger clove tooth powder', doneWords: 'Kept' }] }] } } },
+  { id: 'chase', name: 'Payment chaser', module: 'customers', level: 'B', when: 'Every Monday', reads: 'invoices and payments', does: 'Finds retailers past your 45-day terms and drafts a polite reminder. You choose to send it or call.',
+    steps: ['5 retailers', '2 past 45 days: Prakriti Stores, Green Basket Organics', 'Drafted 2 reminders'], run: () => ({ text: '2 reminders drafted' }) },
+  { id: 'reorder', name: 'Reorder nudge', module: 'customers', level: 'C', when: 'Every day', reads: 'orders', does: 'Finds customers whose tooth powder should be running out (about 45 days) and drafts a reorder message. Any discount needs your yes every time.',
+    steps: ['22 customers', '6 last bought tooth powder 40–50 days ago', 'Drafted 6 reorder messages, no discount'], run: () => ({ text: '6 reorder messages drafted' }) },
+]
+
+const ask = [
+  { q: 'Which product makes me the least money?', keys: ['least', 'margin', 'money', 'profit'], reads: 'Products and formulas', a: (Z) => { const p = [...Z.rows('products')].sort((a, b) => a.margin - b.margin)[0]; return `${p.name}: ${p.margin}% sold direct, ${p.rmargin}% through a shop. Its herbs and oils cost ${Z.money(Math.round(costing(p).mat))} a pack. Open it in Costing to see where the ₹${p.mrp} goes.` } },
+  { q: 'Who owes me money?', keys: ['owe', 'due', 'payment', 'pending'], reads: 'Invoices and payments', a: (Z) => { const rows = Z.rows('customers').filter((c) => c.due > 0); return `${inr(rows.reduce((a, c) => a + c.due, 0))} across ${rows.length} retailers:<div class="mini">${Z.table('customers', { rows, bare: true, cols: ['name', 'city', 'due'] })}</div>` } },
+  { q: 'What will run out this week?', keys: ['run out', 'stock', 'week', 'reorder'], reads: 'Raw materials', a: (Z) => { const rows = Z.rows('stock').filter((r) => r.days <= 7); return `${rows.length} herbs run out within 7 days:<div class="mini">${Z.table('stock', { rows, bare: true, cols: ['name', 'days', 'lead', 'supplier'] })}</div>` } },
+  { q: 'Is WhatsApp worth more than the website?', keys: ['whatsapp', 'website', 'channel'], reads: 'Orders', a: () => `Yes, and growing faster: ₹3.3L in October against ₹1.4L, up 74% since June. WhatsApp customers also reorder more (48% against 31%). ${Z.chart.line(Object.entries(byChannel).map(([name, values]) => ({ name, values })), months, { fmt: (v) => v.toFixed(1), h: 160 })}` },
+]
+
+Z.boot({
+  id: 'd2c', today: TODAY, currency: 'INR',
+  brand: { name: 'Vanya Herbals', sub: 'Herbal personal care · demo', mark: 'VH', server: 'the shop\'s own computer' },
+  persona: 'the founder',
+  you: () => 'Ritu (founder)',
+  greeting: () => 'Good morning, Ritu',
+  homeLine: () => 'Overnight: WhatsApp orders read, invoices sent, payments matched. Here is what needs you.',
+  homeStats: () => Z.stat(Z.waiting('orders'), 'Orders to confirm') + Z.stat(inr(Z.rows('customers').reduce((a, c) => a + c.due, 0)), 'Retailers owe you') + Z.stat(Z.rows('stock').filter((r) => r.days <= r.lead).length, 'Herbs to reorder') + Z.stat('3 h', 'Saved yesterday', 'orders typed, invoices, payments'),
+  levels, tables: T, cards, agents, ask,
+  tour: [
+    { key: 'card', text: 'Confirm the WhatsApp order under <b>Needs you</b>.' },
+    { key: 'view:products/cost', text: 'Open <b>Costing</b> and raise a herb\'s price.' },
+    { key: 'run:margin', text: 'Run <b>Margin watch</b> and see what a supplier\'s price rise does.' },
+    { key: 'ask', text: 'Ask Zazoo which product makes the least money.' },
+  ],
+  whyHtml: `<p>Zazoo runs on the shop's own computer. Your customers' numbers, formulas and sales never leave it.</p><ul style="margin:12px 0 0 18px;font-size:.9rem;line-height:1.7"><li>WhatsApp Business, the website and your bank statement stay where they are; Zazoo reads them.</li><li>Your formulas are your recipes: they are never sent anywhere.</li><li>Zazoo's team keeps it running and updated; you never maintain software.</li></ul>`,
+  journal: [{ who: 'Invoice maker', words: 'sent 9 GST invoices', mod: 'orders' }, { who: 'Payment matcher', words: 'matched 6 UPI payments to orders', mod: 'customers' }],
+  acts: {},
+  modules: [
+    { id: 'overview', name: 'Business', icon: 'chart-line-up', pages: [{ id: 'all', name: 'Overview', icon: 'chart-line-up', render: overview }] },
+    { id: 'orders', name: 'Orders', icon: 'shopping-bag', pages: [{ id: 'board', name: 'Orders', icon: 'kanban', render: (Z) => `<div class="head"><div><h1>Orders</h1><p>From WhatsApp, the website and retailers, in one place. Open one to see its GST.</p></div></div>
+      <div class="kanban">${STATES.map((st) => { const xs = Z.rows('orders').filter((o) => o.state === st); return `<div class="lane"><h3>${st}<span class="pill">${xs.length}</span></h3>${xs.slice(0, 6).map((o) => `<div class="item" data-act="row" data-t="orders" data-id="${o.id}"><b>${o.no} · ${Z.esc(o.customer)}</b>${Z.esc(o.items)}<br>${Z.money(o.amount)} · ${o.channel}</div>`).join('')}${xs.length > 6 ? `<small class="muted">+${xs.length - 6} more</small>` : ''}</div>` }).join('')}</div>
+      <h2 class="section-t">All orders</h2>${Z.table('orders')}` }] },
+    { id: 'products', name: 'Products', icon: 'flask', pages: [{ id: 'cost', name: 'Costing', icon: 'calculator', render: costPage }] },
+    { id: 'stock', name: 'Stock', icon: 'package', pages: [{ id: 'all', name: 'Raw materials', icon: 'leaf', render: stockPage }] },
+    { id: 'customers', name: 'Customers', icon: 'users', pages: [{ id: 'all', name: 'Customers and retailers', icon: 'users', render: (Z) => `<div class="head"><div><h1>Customers and retailers</h1><p>Everyone who buys, with what they owe you.</p></div></div>${Z.table('customers')}` }] },
+  ],
+})
+// a herb's price, typed in Costing, flows through every product that uses it
+document.addEventListener('change', (e) => {
+  const k = e.target.dataset?.mat
+  if (!k) return
+  const v = +e.target.value
+  Z.change('Ritu (founder)', `changed ${MATS[k].name} to ₹${v}/kg`, () => { Z.set('stock', k, { kg: v }); refreshP(Z.rows('products')) })
+  const hit = Z.rows('products').filter((p) => p.f[k] && p.margin < 35)
+  Z.toast(hit.length ? `${hit.map((p) => p.name).join(', ')} now under your 35% margin` : `${MATS[k].name} updated; every margin still over 35%`, true)
+  Z.tick('cost')
+  Z.render()
+})
+</script>
+</body>
+</html>
