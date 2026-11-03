@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ETA: buying an accounting firm · Zazoo demo</title>
+<meta name="description" content="An interactive Zazoo prototype for an entrepreneurship-through-acquisition founder searching for an accounting firm to buy, with made-up listings, brokers and books.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+// A made-up ETA founder (entrepreneurship through acquisition) searching for one accounting firm to
+// buy with an SBA loan, then run. Every listing is measured against her thesis; the firm under LOI
+// is checked from its seller's QuickBooks exports.
+let s = 31
+const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+const int = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1))
+const pick = (a) => a[Math.floor(rnd() * a.length)]
+const TODAY = '2026-11-02'
+const add = (n) => new Date(new Date(TODAY + 'T12:00:00').getTime() + n * 864e5).toISOString().slice(0, 10)
+const n0 = (v) => Math.round(v).toLocaleString()
+const K = (v) => '$' + Z.compact(v)
+
+// the region: a home city and the towns within a 90-minute drive
+const HOME = [38.95, -92.33]
+const TOWNS = [['Ashby', 38.95, -92.33], ['Millbrook', 38.58, -92.17], ['Crane Falls', 39.21, -92.86], ['Ellsworth', 38.71, -93.23], ['Port Hadley', 39.12, -91.62], ['Linwood', 38.36, -92.62], ['Oak Bend', 39.43, -92.31], ['Sumner', 38.62, -91.48]]
+const SOURCES = [['Ledgerline Practice Brokers', 'Practice broker', 'Accounting practices, four states', 'Working'], ['CPA Transitions Group', 'Practice broker', 'CPA firms, nationwide', 'Working'], ['Keystone Accounting Brokers', 'Practice broker', 'Tax and bookkeeping, the region', 'Working'], ['Harbor Business Advisors', 'Business broker', 'Main street businesses, the region', 'Working'], ['MarketBiz listings', 'Marketplace', 'Every business for sale, filtered to accounting', 'Working'], ['DealFlow Aggregator', 'Aggregator', 'Listings from 40 brokers', 'Needs your sign-in'], ['Practice Exchange', 'Marketplace', 'Accounting practices, nationwide', 'Working'], ['Owner letters', 'Person', 'Firms you wrote to, not for sale', 'Working']]
+const sources = SOURCES.map(([name, kind, coverage, state], i) => ({ id: 'so' + i, name, kind, coverage, state, on: i === 5 ? 'Off' : 'On', last: add(i === 5 ? -9 : 0), found: 0, fresh: 0 }))
+
+// the thesis and the financing, as she wrote them
+const TH = { revLo: 750000, revHi: 3000000, margin: 28, mult: 1.25, dscr: 1.5, stressed: 1.25, miles: 75, recurring: 60 }
+const FIN = { injection: 0.1, note: 0.1, noteRate: 0.06, noteYears: 5, sbaRate: 0.105, sbaYears: 10, pay: 110000, loss: 0.15 }
+const pmt = (p, r, y) => (p * (r / 12)) / (1 - Math.pow(1 + r / 12, -y * 12)) * 12
+const figures = (d) => {
+  const price = d.price, loan = price * (1 - FIN.injection - FIN.note), note = price * FIN.note
+  const ds = pmt(loan, FIN.sbaRate, FIN.sbaYears) + pmt(note, FIN.noteRate, FIN.noteYears)
+  const dscr = (d.sde - FIN.pay) / ds, stressed = (d.sde - FIN.pay - d.rev * FIN.loss * 0.4) / ds
+  return { loan, note, injection: price * FIN.injection, ds, dscr: Math.round(dscr * 100) / 100, stressed: Math.round(stressed * 100) / 100, margin: Math.round((d.sde / d.rev) * 1000) / 10, mult: Math.round((price / d.rev) * 100) / 100, multSde: Math.round((price / d.sde) * 100) / 100, after: d.sde - ds }
+}
+const checks = (d) => {
+  const f = figures(d)
+  return [
+    { name: 'Revenue $750K to $3M', v: K(d.rev), ok: d.rev >= TH.revLo && d.rev <= TH.revHi },
+    { name: 'SDE margin 28%+', v: f.margin + '%', ok: f.margin >= TH.margin },
+    { name: 'Price at most 1.25× revenue', v: f.mult + '×', ok: f.mult <= TH.mult },
+    { name: 'DSCR 1.5+ at the asking price', v: f.dscr, ok: f.dscr >= TH.dscr },
+    { name: 'DSCR 1.25+ if 15% of clients leave', v: f.stressed, ok: f.stressed >= TH.stressed },
+    { name: 'Recurring work 60%+', v: d.recurring + '%', ok: d.recurring >= TH.recurring },
+    { name: 'Within 90 minutes of Ashby', v: d.miles + ' mi', ok: d.miles <= TH.miles },
+  ]
+}
+const fitOf = (d) => { const miss = checks(d).filter((c) => !c.ok).length; return miss === 0 ? 'Fits your thesis' : miss === 1 ? 'One miss' : 'Outside your thesis' }
+const STAGES = ['New', 'Pending questions', 'CIM requested', 'CIM reviewed', 'Call', 'LOI sent', 'Diligence', 'Closed', 'Passed']
+const NAMES = ['Morrow & Pike CPAs', 'Linwood Tax & Books', 'Crane Falls Accounting', 'Halden CPA Group', 'Oak Bend Tax Service', 'Sumner Bookkeeping Co.', 'Ellsworth & Vance', 'Port Hadley CPAs', 'Riverside Payroll & Tax', 'Ashby Advisory Partners', 'Greer Accounting', 'North County CPAs', 'Pruitt & Associates', 'Millbrook Tax Pros', 'Westgate Accounting', 'Caldwell CPA', 'Fenwick Books', 'Tri-County Tax', 'Hollis & Grant CPAs', 'Bluestem Accounting', 'Kessler Tax Group', 'Meadowlark CPAs']
+const STAGE_OF = [6, 0, 3, 4, 1, 0, 2, 5, 0, 4, 8, 0, 1, 3, 0, 8, 2, 0, 1, 0, 2, 0]
+const deals = NAMES.map((name, i) => {
+  const [town, la, ln] = TOWNS[i % TOWNS.length], rev = int(7, 28) * 100000, margin = 0.27 + rnd() * 0.13
+  const d = { id: 'd' + i, name, town, lat: la + (rnd() - 0.5) * 0.12, lng: ln + (rnd() - 0.5) * 0.14, src: SOURCES[i % 7][0], sid: 'so' + (i % 7), listing: `${['LL', 'CT', 'KA', 'HB', 'MB', 'DF', 'PX'][i % 7]}-${int(1000, 9999)}`,
+    rev, sde: Math.round(rev * margin / 1000) * 1000, price: Math.round(rev * (0.82 + rnd() * 0.4) / 5000) * 5000, staff: int(3, 16), clients: int(180, 1400), recurring: int(54, 88),
+    miles: int(4, 95), stage: STAGES[STAGE_OF[i]], status: i === 15 ? 'Sold' : i === 10 ? 'Under LOI' : 'Listed', found: add(-int(1, 110)) }
+  return d
+})
+// the firm under LOI, and one that looks good but fails the stress test
+Object.assign(deals[0], { town: 'Ashby', lat: 38.97, lng: -92.3, rev: 1240000, sde: 436000, price: 1290000, staff: 9, clients: 640, recurring: 78, miles: 6, status: 'Under LOI' })
+Object.assign(deals[7], { rev: 1580000, sde: 540000, price: 1940000, recurring: 71, miles: 44 })
+Object.assign(deals[3], { rev: 980000, sde: 372000, price: 1010000, recurring: 74, miles: 58 })
+Object.assign(deals[9], { rev: 2100000, sde: 690000, price: 2350000, recurring: 81, miles: 12 })
+;[1, 5, 11].forEach((i, k) => (deals[i].found = add(-2 - k * 2)))
+const refresh = (rows) => rows.forEach((d) => { const f = figures(d); Object.assign(d, { margin: f.margin, mult: f.mult, dscr: f.dscr, stressed: f.stressed, ds: Math.round(f.ds), loan: Math.round(f.loan), fit: fitOf(d) }) })
+refresh(deals)
+sources.forEach((so) => { so.found = deals.filter((d) => d.sid === so.id).length * 3 + int(0, 6); so.fresh = int(0, 2) })
+sources[7].found = 4
+
+// the CRM: the firms she is talking to, a search's stages from sourced to closed
+const PHASES = ['Sourced', 'First contact', 'NDA signed', 'CIM / info review', 'Management call', 'IOI', 'LOI', 'Due diligence', 'Closing', 'Closed', 'Passed']
+const BROKERS = [['Dana Whitfield', 'Ledgerline Practice Brokers'], ['Marcus Lee', 'CPA Transitions Group'], ['Ruth Ambrose', 'Keystone Accounting Brokers'], ['Owen Clarke', 'Harbor Business Advisors']]
+const LEAD_OF = [[0, 'Due diligence'], [7, 'LOI'], [9, 'Management call'], [3, 'CIM / info review'], [13, 'CIM / info review'], [2, 'NDA signed'], [16, 'NDA signed'], [12, 'First contact'], [4, 'First contact'], [18, 'Sourced'], [10, 'Passed'], [15, 'Passed']]
+const NEXT = ['QofE fieldwork', 'Seller answers on staff', 'Second call with the seller', 'Model the client list', 'Questions to the broker', 'Ask for the CIM', 'Read the CIM', 'Intro call', 'Sign the NDA', 'Owner letter', '—', '—']
+const leads = LEAD_OF.map(([di, phase], i) => {
+  const d = deals[di], f = figures(d), [broker, firm] = BROKERS[i % 4]
+  return { id: 'l' + i, did: d.id, company: d.name, phase, broker: di === 4 || di === 18 ? 'Owner, direct' : broker, firm: di === 4 || di === 18 ? 'Owner letters' : firm, next: NEXT[i], nextDate: add([3, 1, 2, 5, -2, 4, 6, 1, 0, 8, 0, 0][i]), price: d.price, rev: d.rev, sde: d.sde,
+    offer: ['Due diligence', 'LOI'].includes(phase) ? Math.round(d.price * 0.93 / 5000) * 5000 : null, walk: ['Due diligence', 'LOI', 'Management call'].includes(phase) ? Math.round(d.rev * 1.08 / 5000) * 5000 : null, dscr: f.dscr, stressed: f.stressed,
+    excl: phase === 'Due diligence' ? add(38) : null, email: broker.toLowerCase().replace(/ /g, '.') + '@example.com' }
+})
+const MKINDS = ['New listing', 'Teaser', 'NDA to sign', 'CIM or data room', 'Questions', 'Seller answers', 'Call', 'LOI', 'Lender', 'Attorney', 'Under LOI elsewhere']
+const mail = Array.from({ length: 26 }, (_, i) => {
+  const l = leads[i % leads.length], kind = MKINDS[(i * 7) % MKINDS.length]
+  return { id: 'm' + i, subject: `${kind === 'New listing' ? 'New: accounting practice, ' + deals[(i + 5) % 22].town : kind + ' · ' + l.company}`, from: l.email, received: add(-int(0, 21)), kind, lead: l.company, lid: l.id,
+    did: kind === 'New listing' ? 'Read the listing into Deals' : kind === 'CIM or data room' ? 'Filed the CIM on the deal; Document reader read it' : kind === 'NDA to sign' ? 'Waiting for your signature' : 'Filed on the lead', state: kind === 'NDA to sign' || kind === 'Questions' ? 'Waiting for you' : 'Filed' }
+})
+
+// the firm in diligence: its clients and its books, from the seller's QuickBooks exports
+const target = deals[0]
+const IND = ['Construction', 'Medical practice', 'Restaurant', 'Farm', 'Retail', 'Trucking', 'Individual', 'Nonprofit', 'Real estate', 'Dental']
+const SERV = ['Tax', 'Tax and books', 'Monthly books', 'Payroll', 'Advisory']
+const CLN = ['Hartley Construction', 'Pine Valley Dental', 'Beck Family Farms', 'Ruiz Trucking', 'Ashby Medical Group', 'Corner Table Bistro', 'Larkin Realty', 'St. Brigid Food Pantry', 'Wexler Hardware', 'Delgado Roofing', 'Monroe Orthodontics', 'Tallgrass Farms', 'Kim & Sons Market', 'Bower Electric', 'Grain Haul LLC', 'Riverbend Clinic', 'Sato Family (individual)', 'Patel Holdings', 'Oak Street Cafe', 'Hughes Plumbing', 'Cedar Ridge Rentals', 'Ng Family (individual)', 'Foster Feed & Seed', 'Brightside Daycare']
+const clients = CLN.map((name, i) => {
+  const serv = SERV[i % 5], fees = [62000, 48000, 41000, 39000, 36000][i] || int(6, 30) * 1000
+  return { id: 'c' + i, name, industry: IND[i % IND.length], serv, fees, years: int(1, 22), seller: i % 3 === 0 ? 'Yes' : 'No', risk: i === 0 || i === 4 ? 'High' : i % 3 === 0 ? 'Watch' : 'Low', since: String(2026 - int(1, 22)) }
+})
+const MONTHS = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+const SEASON = [0.78, 0.82, 1.18, 1.42, 1.62, 1.48, 0.82, 0.74, 0.72, 0.76, 0.92, 0.74]
+const books = MONTHS.map((m, i) => {
+  const rev = Math.round(target.rev / 12 * SEASON[i] / 100) * 100, pay = Math.round((52000 + (i >= 2 && i <= 5 ? 9000 : 0)) / 100) * 100, rent = 4200, other = Math.round(rev * 0.07 / 100) * 100
+  return { id: 'b' + i, month: m, rev, pay, rent, other, owner: 15000, sde: rev - pay - rent - other + 1250, check: i === 3 ? 'Flag' : 'Ties', cell: `P&L by month · col ${String.fromCharCode(66 + i)}`, note: i === 3 ? 'Revenue $14,200 above the bank deposits: a client prepaid next year' : '' }
+})
+const flags = [
+  ['Top client is 5% of fees, top five 18%', 'Concentration', 'Info', 'Within your thesis (no client above 10%)'],
+  ['A third of clients deal only with the seller', 'Retention', 'Open', '8 of 24 named clients; ask for a two-year transition'],
+  ['February revenue $14,200 above deposits', 'Books', 'Open', 'A prepayment booked as revenue; QofE to adjust'],
+  ['Owner pays a family member $15,000 a year', 'Add-back', 'Accepted', 'Added back to SDE; no role after the sale'],
+  ['Lease ends 14 months after close', 'Lease', 'Open', 'Ask the landlord for a five-year option before LOI exclusivity ends'],
+  ['Two staff hold the only payroll know-how', 'Staff', 'Open', 'Stay bonuses in the purchase agreement'],
+].map(([title, kind, state, note], i) => ({ id: 'f' + i, title, kind, state, note, raised: add(-int(1, 12)) }))
+
+// the search network: deals she brought to peers and advisors, and their verdicts
+const reviews = [
+  [deals[0].name, 'Search forum', 'Pursue', 'Retention plan for the seller-only clients'],
+  [deals[7].name, 'Advisor call', 'Re-price', 'Stressed DSCR under 1.25 at the ask'],
+  [deals[9].name, 'Peers', 'More diligence', 'Is the advisory work recurring?'],
+  [deals[10].name, 'Search forum', 'Pass', 'Seller wants to leave in 30 days'],
+  [deals[3].name, 'Advisor call', 'Pursue', 'Check the payroll software contract'],
+].map(([deal, to, verdict, q], i) => ({ id: 'r' + i, deal, to, verdict, q, date: add(-int(2, 50)), by: pick(['Jules Moreno (advisor)', 'Cohort peers', 'Sam Achebe (advisor)']) }))
+const advisors = [['Jules Moreno', 'SBA lending', 4], ['Sam Achebe', 'Accounting firm deals', 12], ['Leah Kim', 'Purchase agreements', 30], ['Ravi Shah', 'Quality of earnings', 9]].map(([name, spec, d], i) => ({ id: 'av' + i, name, spec, last: add(-d), email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
+
+// after the close: five years, quarter by quarter, with clients leaving in year one
+const fq = Array.from({ length: 20 }, (_, i) => {
+  const y = Math.floor(i / 4), keep = i < 4 ? 1 - FIN.loss * ((i + 1) / 4) * 0.6 : 1 - FIN.loss * 0.6, grow = Math.pow(1.06, y)
+  const rev = Math.round(target.rev / 4 * keep * grow), sde = Math.round(rev * 0.35 - FIN.pay / 4), ds = Math.round(figures(target).ds / 4)
+  return { id: 'q' + i, q: `Y${y + 1} Q${(i % 4) + 1}`, rev, sde, ds, dscr: Math.round((sde / ds) * 100) / 100, cash: 0, note: i === 0 ? 'Seller in transition, 2 days a week' : i === 4 ? 'Seller leaves; advisory line starts' : i === 19 ? 'Seller note paid off' : '' }
+})
+fq.reduce((a, q) => (q.cash = a + q.sde - q.ds), 0)
+
+const events = [
+  ['QofE fieldwork starts: ' + target.name, add(3), 'Diligence', 'Priya Nair'], ['Search forum: deal reviews', add(8), 'Network', 'Priya Nair'], ['Call with the seller of ' + deals[9].name, add(2), 'Call', 'Priya Nair'],
+  ['Lender: SBA term sheet due', add(6), 'Lender', 'Jules Moreno'], ['LOI exclusivity ends: ' + target.name, add(38), 'LOI', 'Priya Nair'], ['Investor update', add(13), 'Investor', 'Tom Becker'],
+  ['Landlord meeting: lease option', add(10), 'Diligence', 'Priya Nair'], ['Advisor call: purchase agreement', add(16), 'Network', 'Leah Kim'], ['NDA back to Keystone', add(0), 'NDA', 'Priya Nair'],
+  ['Read the CIM: ' + deals[13].name, add(4), 'Deal', 'Priya Nair'], ['Staff meeting with the seller', add(21), 'Diligence', 'Priya Nair'], ['Lender site visit', add(24), 'Lender', 'Jules Moreno'],
+].map(([title, date, kind, who], i) => ({ id: 'ev' + i, title, date, kind, who }))
+const kb = [
+  ['My thesis', 'Thesis', 'One accounting firm within 90 minutes of Ashby: $750K to $3M revenue, 28%+ SDE margin, 60%+ recurring work, no client above 10% of fees. I run it myself.'],
+  ['How I finance it', 'Financing', '10% my own cash, 10% seller note over 5 years at 6%, the rest an SBA 7(a) loan over 10 years at 10.5%. I pay myself $110,000 before debt service.'],
+  ['Why the 15% stress test', 'Method', 'Practices lose 10 to 20% of clients in the first year after a sale, most of them clients who dealt only with the seller. I want DSCR 1.25 even then.'],
+  ['What a CPA practice sells for', 'Market', '0.9 to 1.25 times revenue, often with an earn-out on retained clients. Tax-only practices sit at the low end; monthly books and payroll at the high end.'],
+  ['First call with a seller', 'Playbook', 'Why sell, why now; who the clients call; what staff know; will they stay two years; what happens in tax season if they are gone.'],
+  ['LOI: what I always ask for', 'Template', 'Exclusivity 60 days, a two-year seller transition, a retention-based earn-out on 10% of the price, stay bonuses for key staff, a lease option.'],
+  ['Diligence list for an accounting firm', 'Checklist', 'Client list with fees and tenure, engagement letters, staff and their certifications, software and licenses, three years of returns, the lease, malpractice claims.'],
+].map(([title, kind, body], i) => ({ id: 'k' + i, title, kind, body, updated: add(-int(2, 80)), by: pick(['Priya Nair', 'Librarian (agent)']) }))
+
+const fitTone = { 'Fits your thesis': 'good', 'One miss': 'warn', 'Outside your thesis': 'bad' }
+const stTone = { New: 'o8', 'Pending questions': 'o1', 'CIM requested': 'o1', 'CIM reviewed': 'o3', Call: 'o3', 'LOI sent': 'acc', Diligence: 'acc', Closed: 'good', Passed: 'bad' }
+const phTone = { Sourced: 'o8', 'First contact': 'o1', 'NDA signed': 'o1', 'CIM / info review': 'o3', 'Management call': 'o3', IOI: 'o5', LOI: 'acc', 'Due diligence': 'acc', Closing: 'good', Closed: 'good', Passed: 'bad' }
+const tables = {
+  deals: { name: 'Deals', one: 'deal', title: 'name', rows: deals, sort: ['dscr', 'desc'], view: 'map', board: 'stage', date: 'found',
+    lists: [{ name: 'Fits your thesis', tone: 'good', where: (r) => r.fit === 'Fits your thesis', tip: 'Passes all seven checks' }, { name: 'One miss', tone: 'warn', where: (r) => r.fit === 'One miss' }, { name: 'New this week', tone: 'acc', where: (r) => Z.daysFrom(r.found) >= -7 }, { name: 'Passed', where: (r) => r.stage === 'Passed' }],
+    sub: (r) => `${Z.esc(r.town)} · ${Z.esc(r.src)} · ${Z.esc(r.listing)} · asking ${Z.money(r.price)}`,
+    map: { lat: 'lat', lng: 'lng', color: 'fit', size: 'rev', tip: ['fit', 'price', 'dscr', 'stage'], bounds: { s: 38.2, n: 39.6, w: -93.5, e: -91.3 },
+      base: (p) => { const [x, y] = p(HOME[0], HOME[1]), [, y2] = p(HOME[0] + TH.miles / 69, HOME[1]); return `<circle cx="${x}" cy="${y}" r="${Math.abs(y - y2)}" fill="var(--ink)" fill-opacity=".04" stroke="var(--ink)" stroke-opacity=".2" stroke-dasharray="4 4"/>` },
+      layers: (p) => TOWNS.map(([n, la, ln]) => { const [x, y] = p(la + 0.07, ln); return `<text x="${x}" y="${y}" text-anchor="middle" font-size="11" font-weight="500" fill="#6f6857" stroke="#fffdf9" stroke-width="3" paint-order="stroke" pointer-events="none">${n}</text>` }).join('') + (() => { const [x, y] = p(HOME[0], HOME[1]); return `<g data-tip="Ashby: home, with the two-hour line"><rect x="${x - 8}" y="${y - 8}" width="16" height="16" rx="4" fill="var(--ink)"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">H</text></g>` })(),
+      legend: '<span><i style="background:var(--ink);border-radius:3px"></i>Home, 90-minute line</span>' },
+    detail: (r, Z) => {
+      const c = checks(r), f = figures(r), miss = c.filter((x) => !x.ok)
+      return `${miss.length ? `<div class="callout ${miss.length > 1 ? 'bad' : 'warn'}"><b>${miss.length === 1 ? 'One miss' : miss.length + ' misses'} against your thesis.</b> ${miss.map((x) => `${x.name}: ${x.v}`).join('; ')}.</div>` : ''}
+      <div class="sec-t">Your thesis <span class="mute3" style="font-weight:400">· ${7 - miss.length} of 7</span></div><div class="gates">${c.map((x) => `<div class="gate ${x.ok ? 'ok' : 'no'}"><b>${x.ok ? '✓' : '✕'} ${x.v}</b>${x.name}</div>`).join('')}</div>
+      <div class="sec-t">At the asking price</div><div class="counts" style="grid-template-columns:repeat(2,1fr);margin:0 0 8px">${Z.count(K(f.injection), 'your cash, 10%')}${Z.count(K(f.loan), 'SBA loan, 80%')}${Z.count(K(f.ds), 'debt service a year')}${Z.count(K(f.after), 'SDE after debt service')}</div>
+      <div class="sec-t">DSCR as clients leave</div>${Z.chart.hbar([0, 5, 10, 15, 20, 25].map((l) => { const v = Math.round(((r.sde - FIN.pay - r.rev * (l / 100) * 0.4) / f.ds) * 100) / 100; return { label: `${l}% of clients leave`, value: Math.max(0, v), note: v.toFixed(2), tone: v >= 1.5 ? 'good' : v >= 1.25 ? 'warn' : 'bad' } }), { max: 3, fmt: (v) => v.toFixed(2) })}
+      <p class="mute3" style="font-size:12px">SDE less your $110,000 pay, over a year of SBA and seller-note payments. Lenders ask 1.25; your thesis asks 1.5, and 1.25 after losing 15% of clients.</p>`
+    },
+    fields: [
+      { k: 'name', label: 'Firm', src: (r) => `The listing on ${r.src}` },
+      { k: 'fit', label: 'Against your thesis', kind: 'choice', choices: ['Fits your thesis', 'One miss', 'Outside your thesis'], tones: fitTone, computed: true, src: 'Computed: your seven checks' },
+      { k: 'stage', label: 'Stage', kind: 'choice', choices: STAGES, tones: stTone, src: 'Moved by you' },
+      { k: 'status', label: 'At the source', kind: 'choice', choices: ['Listed', 'Under LOI', 'On hold', 'Sold', 'Gone'], tones: { 'Under LOI': 'warn', Sold: 'bad', Gone: 'bad' }, src: (r) => `${r.src}, read today` },
+      { k: 'price', label: 'Asking', kind: 'money', src: 'The listing' },
+      { k: 'rev', label: 'Revenue', kind: 'money', src: (r) => (['Diligence', 'CIM reviewed', 'Call', 'LOI sent'].includes(r.stage) ? 'The CIM, latest full year (Document reader)' : 'The listing') },
+      { k: 'sde', label: 'SDE', kind: 'money', src: (r) => (['Diligence', 'CIM reviewed', 'Call', 'LOI sent'].includes(r.stage) ? 'The CIM, with add-backs (Document reader)' : 'The listing') },
+      { k: 'dscr', label: 'DSCR', kind: 'number', computed: true, help: 'At the asking price, after your pay', src: 'Computed: Deal figures, by your financing' },
+      { k: 'stressed', label: 'DSCR, 15% leave', kind: 'number', computed: true, src: 'Computed: Deal figures' },
+      { k: 'mult', label: '× revenue', kind: 'number', computed: true, src: 'Computed: asking over revenue' },
+      { k: 'margin', label: 'SDE margin', kind: 'pct', computed: true, src: 'Computed: SDE over revenue' },
+      { k: 'town', label: 'Town', src: 'The listing' },
+      { k: 'src', label: 'Source', src: 'The reader that found it' },
+      { k: 'listing', label: 'Listing ID', hide: true, src: 'The source; a firm listed twice is merged on it' },
+      { k: 'clients', label: 'Clients', kind: 'number', hide: true, src: 'The listing or the CIM' },
+      { k: 'staff', label: 'Staff', kind: 'number', hide: true, src: 'The listing or the CIM' },
+      { k: 'recurring', label: 'Recurring work', kind: 'number', unit: '%', hide: true, src: 'The CIM: books, payroll and returned tax clients' },
+      { k: 'miles', label: 'From Ashby', kind: 'number', unit: 'mi', hide: true, src: 'Computed from the town' },
+      { k: 'found', label: 'Found', kind: 'date', hide: true, src: 'The source reader' },
+    ] },
+  sources: { name: 'Sources', one: 'source', title: 'name', rows: sources, sort: ['found', 'desc'], view: 'table', board: 'state',
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.esc(r.coverage)}`,
+    links: [{ t: 'deals', label: 'Deals found', by: (r, x) => x.sid === r.id, show: ['fit', 'stage'] }],
+    fields: [
+      { k: 'name', label: 'Source', src: 'Your list of sources' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Practice broker', 'Business broker', 'Marketplace', 'Aggregator', 'Person'], tones: { 'Practice broker': 'acc', 'Business broker': 'o1', Marketplace: 'o3', Aggregator: 'o5', Person: 'o8' }, src: 'Your list of sources' },
+      { k: 'on', label: 'On', kind: 'choice', choices: ['On', 'Off'], tones: { On: 'good', Off: 'o8' }, src: 'You' },
+      { k: 'state', label: 'Last read', kind: 'choice', choices: ['Working', 'Needs your sign-in', 'Blocked'], tones: { Working: 'good', 'Needs your sign-in': 'warn', Blocked: 'bad' }, help: 'A sign-in wall is never got around', src: 'Its reader' },
+      { k: 'found', label: 'Deals found', kind: 'number', src: 'Its reader, in all' },
+      { k: 'fresh', label: 'New last time', kind: 'number', src: 'Its reader' },
+      { k: 'last', label: 'Last checked', kind: 'date', src: 'Its reader' },
+      { k: 'coverage', label: 'Coverage', hide: true, src: 'You' },
+    ] },
+  leads: { name: 'Leads', one: 'lead', title: 'company', rows: leads, sort: ['nextDate', 'asc'], view: 'board', board: 'phase', date: 'nextDate',
+    lists: [{ name: 'Overdue', tone: 'bad', where: (r) => Z.daysFrom(r.nextDate) < 0 && !['Closed', 'Passed'].includes(r.phase) }, { name: 'At LOI or later', tone: 'acc', where: (r) => ['LOI', 'Due diligence', 'Closing'].includes(r.phase) }, { name: 'Direct to owners', where: (r) => r.firm === 'Owner letters' }],
+    sub: (r) => `${Z.esc(r.broker)} · ${Z.esc(r.firm)} · next: ${Z.esc(r.next)}`,
+    links: [{ t: 'deals', label: 'Deal', by: (r, x) => x.id === r.did, show: ['fit', 'dscr'] }, { t: 'mail', label: 'Deal mail', by: (r, x) => x.lid === r.id, show: ['kind', 'received'] }],
+    fields: [
+      { k: 'company', label: 'Company', src: 'The deal it came from' },
+      { k: 'phase', label: 'Stage', kind: 'choice', choices: PHASES, tones: phTone, src: 'Moved by you' },
+      { k: 'broker', label: 'Broker', src: 'Email signature' },
+      { k: 'next', label: 'Next step', src: 'You, or the Deal mail sorter' },
+      { k: 'nextDate', label: 'Due', kind: 'date', src: 'You, or the Deal mail sorter' },
+      { k: 'price', label: 'Asking', kind: 'money', src: 'The listing' },
+      { k: 'offer', label: 'Your offer', kind: 'money', src: 'Your LOI' },
+      { k: 'walk', label: 'Walk-away', kind: 'money', help: 'Set before talking price', src: 'You' },
+      { k: 'dscr', label: 'DSCR', kind: 'number', computed: true, src: 'Computed: Deal figures' },
+      { k: 'stressed', label: 'DSCR, 15% leave', kind: 'number', computed: true, src: 'Computed: Deal figures' },
+      { k: 'excl', label: 'Exclusivity ends', kind: 'date', src: 'The signed LOI' },
+      { k: 'firm', label: 'Broker firm', hide: true, src: 'Email signature' },
+      { k: 'rev', label: 'Revenue', kind: 'money', hide: true, src: 'The CIM' },
+      { k: 'sde', label: 'SDE', kind: 'money', hide: true, src: 'The CIM' },
+      { k: 'email', label: 'Broker email', hide: true, src: 'Gmail' },
+    ] },
+  mail: { name: 'Deal mail', one: 'email', title: 'subject', rows: mail, sort: ['received', 'desc'], view: 'table', board: 'kind', date: 'received',
+    lists: [{ name: 'Waiting for you', tone: 'warn', where: (r) => r.state === 'Waiting for you' }],
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.day(r.received)} · ${Z.esc(r.did)}`,
+    fields: [
+      { k: 'subject', label: 'Subject', src: 'Gmail' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: MKINDS, tones: { 'New listing': 'o1', 'NDA to sign': 'warn', 'CIM or data room': 'acc', LOI: 'good', 'Under LOI elsewhere': 'bad' }, src: 'Deal mail sorter' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['Filed', 'Waiting for you', 'Ignored'], tones: { 'Waiting for you': 'warn', Filed: 'good' }, src: 'Deal mail sorter' },
+      { k: 'lead', label: 'Lead', src: 'Matched on the listing ID or the broker' },
+      { k: 'received', label: 'Received', kind: 'date', src: 'Gmail' },
+      { k: 'did', label: 'What Zazoo did', src: 'Deal mail sorter' },
+      { k: 'from', label: 'From', hide: true, src: 'Gmail' },
+    ] },
+  clients: { name: 'Their clients', one: 'client', title: 'name', rows: clients, sort: ['fees', 'desc'], view: 'table', board: 'risk',
+    lists: [{ name: 'Seller-only', tone: 'warn', where: (r) => r.seller === 'Yes', tip: 'Deal only with the seller: the clients most likely to leave' }, { name: 'High risk', tone: 'bad', where: (r) => r.risk === 'High' }],
+    sub: (r) => `${Z.esc(r.industry)} · ${Z.esc(r.serv)} · client since ${r.since}`,
+    fields: [
+      { k: 'name', label: 'Client', src: `${target.name}: Sales by customer export` },
+      { k: 'fees', label: 'Fees a year', kind: 'money', src: 'Sales by customer, last 12 months (cell traced)' },
+      { k: 'serv', label: 'Work', kind: 'choice', choices: SERV, tones: { Tax: 'o1', 'Tax and books': 'o3', 'Monthly books': 'acc', Payroll: 'o5', Advisory: 'good' }, src: 'Mapped from the invoice lines' },
+      { k: 'risk', label: 'Retention risk', kind: 'choice', choices: ['Low', 'Watch', 'High'], tones: { Low: 'good', Watch: 'warn', High: 'bad' }, computed: true, src: 'Computed: seller-only, tenure and share of fees' },
+      { k: 'seller', label: 'Seller-only', kind: 'choice', choices: ['Yes', 'No'], tones: { Yes: 'warn', No: 'o8' }, src: 'The seller, on the management call' },
+      { k: 'years', label: 'Years a client', kind: 'number', src: 'First invoice in the exports' },
+      { k: 'industry', label: 'Industry', src: 'The client file' },
+      { k: 'since', label: 'Since', hide: true, src: 'First invoice' },
+    ] },
+  books: { name: 'Their books', one: 'month', title: 'month', rows: books, sort: null, view: 'table', board: 'check',
+    sub: (r) => `${r.check}${r.note ? ' · ' + Z.esc(r.note) : ''}`,
+    fields: [
+      { k: 'month', label: 'Month', src: 'P&L by month export' },
+      { k: 'rev', label: 'Revenue', kind: 'money', src: (r) => `${r.cell}, row 8` },
+      { k: 'pay', label: 'Payroll', kind: 'money', src: (r) => `${r.cell}, row 14` },
+      { k: 'rent', label: 'Rent', kind: 'money', src: (r) => `${r.cell}, row 19` },
+      { k: 'other', label: 'Other costs', kind: 'money', src: (r) => `${r.cell}, rows 15 to 31 less payroll and rent` },
+      { k: 'sde', label: 'SDE', kind: 'money', computed: true, src: 'Computed: revenue less costs, owner pay and the family wage added back' },
+      { k: 'check', label: 'Check', kind: 'choice', choices: ['Ties', 'Flag'], tones: { Ties: 'good', Flag: 'bad' }, src: 'Books checker: P&L against bank deposits' },
+      { k: 'note', label: 'Note', src: 'Books checker' },
+    ] },
+  flags: { name: 'Diligence flags', one: 'flag', title: 'title', rows: flags, sort: ['raised', 'desc'], view: 'board', board: 'state',
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.esc(r.note)}`,
+    fields: [
+      { k: 'title', label: 'Flag', src: 'Books checker or you' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Concentration', 'Retention', 'Books', 'Add-back', 'Lease', 'Staff'], tones: { Retention: 'warn', Books: 'bad', 'Add-back': 'good', Lease: 'o3', Staff: 'o5', Concentration: 'o1' }, src: 'Books checker' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['Open', 'Accepted', 'Info'], tones: { Open: 'warn', Accepted: 'good', Info: 'o8' }, src: 'You' },
+      { k: 'note', label: 'What to do', src: 'Books checker, then you' },
+      { k: 'raised', label: 'Raised', kind: 'date', src: 'Books checker' },
+    ] },
+  reviews: { name: 'Deal reviews', one: 'review', title: 'deal', rows: reviews, sort: ['date', 'desc'], view: 'table', board: 'verdict', date: 'date',
+    sub: (r) => `${Z.esc(r.to)} · ${Z.esc(r.q)}`,
+    fields: [
+      { k: 'deal', label: 'Deal', src: 'You' },
+      { k: 'verdict', label: 'Verdict', kind: 'choice', choices: ['Pursue', 'Re-price', 'More diligence', 'Pass'], tones: { Pursue: 'good', 'Re-price': 'warn', 'More diligence': 'o1', Pass: 'bad' }, src: 'The reviewers' },
+      { k: 'to', label: 'Brought to', kind: 'choice', choices: ['Search forum', 'Advisor call', 'Peers'], tones: { 'Search forum': 'acc', 'Advisor call': 'o3', Peers: 'o1' }, src: 'You' },
+      { k: 'q', label: 'Open question', src: 'Your notes from the session' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'Calendar' },
+      { k: 'by', label: 'Reviewer', src: 'Calendar' },
+    ] },
+  advisors: { name: 'Advisors', one: 'advisor', title: 'name', rows: advisors, sort: ['last', 'desc'], view: 'table',
+    sub: (r) => `${Z.esc(r.spec)} · last call ${Z.day(r.last)}`,
+    fields: [{ k: 'name', label: 'Advisor', src: 'Your search network' }, { k: 'spec', label: 'Advises on', src: 'Your search network' }, { k: 'last', label: 'Last call', kind: 'date', src: 'Calendar' }, { k: 'email', label: 'Email', hide: true, src: 'Gmail' }] },
+  fq: { name: 'Quarters', one: 'quarter', title: 'q', rows: fq, sort: null, view: 'table',
+    sub: (r) => (r.note ? Z.esc(r.note) : `DSCR ${r.dscr}`),
+    fields: [
+      { k: 'q', label: 'Quarter', src: 'After the close' },
+      { k: 'rev', label: 'Revenue', kind: 'money', src: 'Forecaster: their books, 15% of clients lost over year one, then 6% a year' },
+      { k: 'sde', label: 'SDE after your pay', kind: 'money', src: 'Forecaster: 35% margin, less your pay' },
+      { k: 'ds', label: 'Debt service', kind: 'money', src: 'SBA loan and seller note at your terms' },
+      { k: 'dscr', label: 'DSCR', kind: 'number', computed: true, src: 'Computed' },
+      { k: 'cash', label: 'Cash after debt, to date', kind: 'money', computed: true, src: 'Computed' },
+      { k: 'note', label: 'Note', src: 'You' },
+    ] },
+  events: { name: 'Events', one: 'event', title: 'title', rows: events, sort: ['date', 'asc'], view: 'calendar', board: 'kind', date: 'date',
+    sub: (r) => `${Z.day(r.date)} · ${Z.esc(r.who)}`,
+    fields: [
+      { k: 'title', label: 'Event', src: 'From the module it belongs to' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'From the module it belongs to' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Diligence', 'Network', 'Call', 'Lender', 'LOI', 'Investor', 'NDA', 'Deal'], tones: { Diligence: 'acc', Network: 'o3', Call: 'o1', Lender: 'o5', LOI: 'bad', Investor: 'good', NDA: 'warn', Deal: 'o8' }, src: 'Scheduler' },
+      { k: 'who', label: 'Who', src: 'Scheduler' },
+    ] },
+  kb: { name: 'Articles', one: 'article', title: 'title', rows: kb, sort: ['updated', 'desc'], view: 'card', board: 'kind', date: 'updated',
+    sub: (r) => `${Z.esc(r.kind)} · updated ${Z.day(r.updated)} by ${Z.esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${Z.esc(r.body)}</div><p class="mute3" style="font-size:12px">Agents read this before they run. Change it and they follow the new words.</p>`,
+    fields: [
+      { k: 'title', label: 'Title', src: 'You' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Thesis', 'Financing', 'Method', 'Market', 'Playbook', 'Template', 'Checklist'], tones: { Thesis: 'acc', Financing: 'good', Method: 'o1', Market: 'o3', Playbook: 'o5', Template: 'warn', Checklist: 'o8' }, src: 'You' },
+      { k: 'by', label: 'Written by', src: 'You, or the Librarian from a decision' },
+      { k: 'updated', label: 'Updated', kind: 'date', src: 'Last edit' },
+      { k: 'body', label: 'Text', hide: true, src: 'You' },
+    ] },
+}
+
+const levels = {
+  A: { name: 'Runs on its own', tone: 'good', words: 'Reads listings, files mail, works out figures. Never writes to anyone.' },
+  B: { name: 'You approve', tone: 'warn', words: 'Drafts to brokers and sellers, NDAs and questions; nothing goes without you.' },
+  C: { name: 'Investor signs off', tone: 'bad', words: 'An LOI or a price: your investor signs too.' },
+}
+const fT = figures(target), d7 = deals[7], f7 = figures(d7), d3 = deals[3]
+const needs = [
+  { id: 'n1', agent: 'Document reader', module: 'deals', level: 'B', roles: ['srch'], date: 'Today', row: ['deals', 'd3'],
+    title: `The CIM for ${d3.name} is in: it fits your thesis`, sub: `Revenue ${K(d3.rev)}, SDE ${K(d3.sde)}, asking ${d3.mult}× revenue. DSCR ${d3.dscr}, and ${d3.stressed} if 15% of clients leave.`,
+    why: 'Read from the CIM the broker sent this morning; every figure cites its page. Seven of seven checks pass.', quote: 'Recurring revenue: 74% (monthly bookkeeping, payroll and returning tax clients).', quoteFrom: 'CIM, page 6',
+    acts: [{ label: 'Ask for a call with the seller', pri: true, run: (Z) => { Z.set('deals', 'd3', { stage: 'Call' }); return `asked ${BROKERS[2][0]} for a call with the seller of ${d3.name}` }, done: 'Asked' },
+      { label: 'Send questions first', run: () => 'drafted 6 questions for the broker', done: 'Questions drafted', tasks: () => [{ title: `Questions to the broker on ${d3.name}`, row: ['deals', 'd3'], roles: ['srch'] }] }] },
+  { id: 'n2', agent: 'Deal figures', module: 'crm', level: 'C', roles: ['srch', 'inv'], date: 'Today', row: ['deals', 'd7'],
+    title: `Offer ${K(Math.round(d7.rev * 1.05 / 5000) * 5000)} for ${d7.name}?`, sub: `At the asking ${K(d7.price)} the DSCR is ${d7.dscr}, and ${d7.stressed} if 15% of clients leave: under your 1.25. At 1.05× revenue it clears both.`,
+    why: 'Your search forum said re-price; your walk-away is 1.08× revenue. An LOI needs your investor too.',
+    acts: [{ label: 'Draft the LOI at 1.05×', pri: true, run: (Z) => { Z.set('deals', 'd7', { stage: 'LOI sent', price: Math.round(d7.rev * 1.05 / 5000) * 5000 }); refresh([Z.row('deals', 'd7')]); return `drafted an LOI for ${d7.name} at 1.05× revenue` }, done: 'Drafted' },
+      { label: 'Pass on it', run: (Z) => { Z.set('deals', 'd7', { stage: 'Passed' }); return `passed on ${d7.name}` }, done: 'Passed' }] },
+  { id: 'n3', agent: 'Books checker', module: 'accounting', level: 'A', roles: ['srch', 'inv'], date: 'Today', row: ['books', 'b3'],
+    title: `${target.name}: February revenue is $14,200 above the bank deposits`, sub: 'A client prepaid next year and it was booked as revenue. Taken out, SDE falls by $14,200 and the DSCR stays above 1.5.',
+    why: 'P&L by month, column E, row 8, against the bank statement for February.',
+    acts: [{ label: 'Send to the QofE firm', pri: true, run: () => 'sent the February finding to the QofE firm', done: 'Sent' }, { label: 'Ask the seller first', run: () => 'drafted a question to the seller', done: 'Drafted' }] },
+  { id: 'n4', agent: 'Source reader', module: 'deals', level: 'A', roles: ['srch'], date: 'Mon', row: ['sources', 'so5'],
+    title: 'DealFlow Aggregator wants your sign-in', sub: 'Its listings sit behind a login. Zazoo never gets around a sign-in wall; sign in once and it reads as you.',
+    acts: [{ label: 'I signed in', pri: true, run: (Z) => { Z.set('sources', 'so5', { state: 'Working', on: 'On' }); return 'signed in to DealFlow Aggregator' }, done: 'Reading again' }, { label: 'Leave it off', run: () => 'left DealFlow Aggregator off', done: 'Left off' }] },
+]
+const tasks = [
+  { id: 't1', title: `Send the LOI redlines for ${target.name} to the attorney`, row: ['leads', 'l0'], due: add(1), state: 'doing', roles: ['srch'] },
+  { id: 't2', title: 'Sign the NDA from Keystone', row: ['leads', 'l5'], due: add(0), state: 'todo', by: 'Deal mail sorter', roles: ['srch'] },
+  { id: 't3', title: 'SBA term sheet from the lender', due: add(-1), state: 'waiting', on: 'the lender', chase: 'Chase', roles: ['srch', 'inv'] },
+  { id: 't4', title: 'Approve the QofE engagement letter', row: ['deals', 'd0'], due: add(2), state: 'todo', roles: ['inv'] },
+  { id: 't5', title: 'Ask the landlord for a five-year option', row: ['flags', 'f4'], due: add(6), state: 'todo', by: 'Books checker', roles: ['srch'] },
+  { id: 't6', title: `Prepare ${deals[9].name} for the search forum`, row: ['deals', 'd9'], due: add(7), state: 'todo', by: 'Session prep', roles: ['srch'] },
+  { id: 't7', title: 'Monthly investor update', due: add(13), state: 'todo', roles: ['srch', 'inv'] },
+  { id: 't8', title: 'Map their client list by retention risk', row: ['clients', 'c0'], due: add(-3), state: 'done', roles: ['srch'] },
+  { id: 't9', title: `Second call with the seller of ${deals[9].name}`, row: ['leads', 'l2'], due: add(2), state: 'todo', roles: ['srch'] },
+  { id: 't10', title: 'Personal financial statement for the SBA', due: add(-6), state: 'done', roles: ['srch'] },
+]
+
+const agents = [
+  { id: 'src', name: 'Source reader', module: 'deals', group: 'Finding deals', level: 'A', when: 'Every morning at 6:00', reads: '7 broker and marketplace sites', does: 'Reads each source while it is On, keeps one row per firm on its listing ID, and runs every listing through your thesis. A sign-in wall is never got around.',
+    steps: ['Read 6 sources; DealFlow wants your sign-in', '4 listings, 1 new', 'The new one: Northgate Tax & Books, Ashby', 'Measured against your thesis: fits'],
+    run: (Z) => {
+      if (Z.row('deals', 'dnew')) return { text: 'nothing new since the last read' }
+      const r = { id: 'dnew', name: 'Northgate Tax & Books', town: 'Ashby', lat: 39.02, lng: -92.38, src: SOURCES[0][0], sid: 'so0', listing: 'LL-4471', rev: 860000, sde: 301000, price: 880000, staff: 6, clients: 520, recurring: 69, miles: 5, stage: 'New', status: 'Listed', found: TODAY }
+      refresh([r]); Z.rows('deals').push(r)
+      return { text: `1 new deal fits: Northgate Tax & Books, DSCR ${r.dscr}`, row: 'dnew', needs: [{ roles: ['srch'], level: 'B', row: ['deals', 'dnew'], title: 'Northgate Tax & Books fits your thesis', sub: `Ashby, 5 miles. Revenue ${K(r.rev)}, asking ${r.mult}× revenue, DSCR ${r.dscr}. Ask the broker for the CIM?`, acts: [{ label: 'Ask for the CIM', pri: true, run: (Z) => { Z.set('deals', 'dnew', { stage: 'CIM requested' }); return 'asked Ledgerline for the Northgate CIM' }, done: 'Asked' }, { label: 'Not for me', run: (Z) => { Z.set('deals', 'dnew', { stage: 'Passed' }); return 'passed on Northgate' }, done: 'Passed' }] }] }
+    } },
+  { id: 'doc', name: 'Document reader', module: 'deals', group: 'Finding deals', level: 'A', when: 'When a teaser or CIM arrives', reads: "teasers, CIMs and practice profiles on a deal's row", does: 'Reads a deal\'s documents into its figures, each figure citing its page, and keeps the listing\'s figure beside it when they differ.',
+    steps: [`CIM for ${d3.name}, 34 pages`, 'Revenue, SDE and add-backs from pages 6 to 9', 'Client count and recurring share from page 6', 'Listing said SDE $355K; the CIM says $372K'], run: () => ({ text: `${d3.name} read from its CIM` }) },
+  { id: 'fig', name: 'Deal figures', module: 'deals', group: 'Deciding', level: 'A', when: 'When a deal\'s figures change', reads: 'each deal, your thesis and your financing', does: 'Works out the multiples, the SBA loan, debt service and DSCR, and DSCR if 15% of clients leave, for every deal.',
+    steps: ['22 deals', 'SBA 80% over 10 years at 10.5%; seller note 10% over 5 at 6%', 'Your pay $110,000 before debt service', `${deals.filter((d) => d.fit === 'Fits your thesis').length} fit, ${deals.filter((d) => d.fit === 'One miss').length} miss one check`], run: () => ({ text: 'figures up to date' }) },
+  { id: 'mail', name: 'Deal mail sorter', module: 'crm', group: 'Talking to sellers', level: 'B', when: 'As mail arrives', reads: 'Gmail', does: 'Files each search email onto its lead by listing ID or broker, puts documents on the deal, and marks what waits for you. Drafts replies; you send.',
+    steps: ['Read 9 emails', '1 CIM → filed on the deal, read', '1 NDA to sign → waiting for you', '1 under LOI elsewhere → deal marked'], run: (Z) => { Z.set('deals', 'd13', { status: 'Under LOI' }); return { text: `${deals[13].name} went under LOI elsewhere` } } },
+  { id: 'out', name: 'Outreach', module: 'crm', group: 'Talking to sellers', level: 'B', when: 'Every Monday', reads: 'firms in your region not for sale', does: 'Finds owners near retirement in your region and drafts a short letter from you. Nothing is sent without you.',
+    steps: ['State CPA board: 41 firms in the region', 'Owners licensed 35+ years: 12', 'Drafted 3 letters'], run: () => ({ text: '3 owner letters drafted', needs: [{ roles: ['srch'], level: 'B', title: 'Three owner letters are drafted', sub: 'Owners licensed 35+ years in Crane Falls, Oak Bend and Sumner. Each letter says who you are and that you want to run the firm, not merge it.', acts: [{ label: 'Send all three', pri: true, run: () => 'sent 3 owner letters', done: 'Sent' }, { label: 'Read them first', run: () => 'opened the letters', done: 'Opened' }] }] }) },
+  { id: 'exp', name: 'Exports reader', module: 'accounting', group: 'Diligence', level: 'A', when: 'When the seller sends exports', reads: "the seller's QuickBooks exports", does: 'Reads the P&L, balance sheet, A/R aging and sales by customer, and maps each account label to a standard account. You approve the mapping.',
+    steps: ['6 exports from the data room', '214 ledger lines, 24 clients', '3 account labels new: mapped, waiting for you'], run: () => ({ text: '6 exports read' }) },
+  { id: 'chk', name: 'Books checker', module: 'accounting', group: 'Diligence', level: 'A', when: 'After each export', reads: 'their books and bank statements', does: 'Ties each month to the bank, finds add-backs, and raises a flag for anything a QofE would ask about: concentration, prepayments, family wages, the lease.',
+    steps: ['12 months against 12 bank statements', '11 tie; February $14,200 over', 'Family wage $15,000: add-back', 'A third of clients deal only with the seller'], run: () => ({ text: '1 new flag: February' }) },
+  { id: 'fore', name: 'Forecaster', module: 'forecast', group: 'Deciding', level: 'A', when: 'When a deal reaches LOI', reads: 'their books, your financing and your stress test', does: 'Forecasts five years after the close quarter by quarter, with clients leaving in year one, and the cash left after debt service.',
+    steps: [`${target.name}: 12 months of books`, '15% of clients leave over year one', 'Growth 6% a year from year two', 'Seller note paid off in year five'], run: () => ({ text: 'five years forecast' }) },
+  { id: 'prep', name: 'Session prep', module: 'network', group: 'Deciding', level: 'B', when: 'Two days before a session', reads: 'your deals and the network\'s calendar', does: 'Prepares a one-page deal summary for a search forum or advisor call, with the open questions. You bring it.',
+    steps: [`${deals[9].name}: one page`, 'Open question: is the advisory work recurring?', 'Waiting for you to read it'], run: () => ({ text: 'one-pager ready' }) },
+  { id: 'sched', name: 'Scheduler', module: 'calendar', group: 'Talking to sellers', level: 'A', when: 'Every evening', reads: 'LOIs, lenders and the network', does: 'Puts exclusivity dates, lender deadlines, calls and sessions on one calendar.',
+    steps: ['LOI exclusivity ends in 38 days', 'SBA term sheet due in 6 days', 'Search forum in 8 days'], run: () => ({ text: '3 dates checked' }) },
+  { id: 'lib', name: 'Librarian', module: 'kb', group: 'Deciding', level: 'A', when: 'After each decision', reads: 'your decisions and notes', does: 'Turns what you decide into an article the agents read before they run.',
+    steps: ['Read this week\'s decisions', 'Walk-away at 1.08× revenue: added to the LOI template'], run: () => ({ text: 'LOI template updated' }) },
+]
+
+const ask = [
+  { q: `Why does ${d7.name} miss when its revenue is so good?`, keys: ['miss', 'why', d7.name.split(' ')[0].toLowerCase()], reads: 'deals and your thesis', a: (Z) => { const r = Z.row('deals', 'd7'); return `At ${r.mult}× revenue the debt service is ${K(r.ds)} a year, so the DSCR is ${r.dscr}, and ${r.stressed} if 15% of clients leave. Your thesis asks 1.5 and 1.25. At 1.05× revenue it clears both.` } },
+  { q: 'Which deals should I look at this week?', keys: ['week', 'look', 'which'], reads: 'deals and leads', a: (Z) => { const rows = Z.rows('deals').filter((r) => r.fit === 'Fits your thesis' && !['Passed', 'Closed'].includes(r.stage)).sort((a, b) => b.dscr - a.dscr).slice(0, 5); return `These fit every check, best DSCR first:<div class="mini"><table><tbody>${rows.map((r) => `<tr data-act="row" data-t="deals" data-id="${r.id}" style="cursor:pointer"><td>${Z.esc(r.name)}</td><td>${Z.esc(r.stage)}</td><td class="n">${r.dscr}</td><td class="n">${K(r.price)}</td></tr>`).join('')}</tbody></table></div>` } },
+  { q: `What if 25% of ${target.name}'s clients leave?`, keys: ['25', 'leave', 'retention'], reads: 'deal figures', a: () => { const v = (target.sde - FIN.pay - target.rev * 0.25 * 0.4) / fT.ds; return `DSCR falls to ${v.toFixed(2)}: under the lender's 1.25. The seller-only clients are ${K(clients.filter((c) => c.seller === 'Yes').reduce((a, c) => a + c.fees, 0))} of fees; a two-year transition and a retention earn-out are the cover.` } },
+  { q: 'How much cash do I need to close?', keys: ['cash', 'close', 'injection'], reads: 'your financing', a: () => `${K(fT.injection)} of your own (10%), plus about $45K of closing costs and $60K of working capital the lender will want to see. The SBA lends ${K(fT.loan)}; the seller carries ${K(fT.note)}.` },
+]
+
+const overview = {
+  deals: (Z) => {
+    const ds = Z.rows('deals'), open = ds.filter((d) => !['Passed', 'Closed'].includes(d.stage)), fit = open.filter((d) => d.fit === 'Fits your thesis')
+    const funnel = [['Listings read', 1840], ['Accounting firms', 212], ['In your region', 22], ['Fit your thesis', fit.length], ['CIM reviewed', ds.filter((d) => ['CIM reviewed', 'Call', 'LOI sent', 'Diligence'].includes(d.stage)).length], ['LOI', ds.filter((d) => ['LOI sent', 'Diligence'].includes(d.stage)).length]]
+    return `<div class="counts">${Z.count(open.length, 'deals open', 'Open on the map', 'data-act="tab" data-k="deals"')}${Z.count(fit.length, 'fit your thesis')}${Z.count(ds.filter((d) => Z.daysFrom(d.found) >= -7).length, 'new this week')}${Z.count(Z.rows('sources').filter((s) => s.on === 'On').length + ' of ' + Z.rows('sources').length, 'sources read')}</div>
+    <div class="cols2">${Z.box('Best DSCR, open deals', Z.chart.hbar(open.slice().sort((a, b) => b.dscr - a.dscr).slice(0, 8).map((d) => ({ label: d.name, value: d.dscr, tone: fitTone[d.fit], row: ['deals', d.id] })), { max: 3, fmt: (v) => v.toFixed(2), ref: { value: 1.5, label: '1.5' } }), '', 'At the asking price, after your pay. Click one to open it.')}${Z.box('From every listing to an LOI', Z.chart.hbar(funnel.map(([label, value], i) => ({ label, value: Math.log10(value + 1), note: value.toLocaleString(), color: Z.PAL[i % 3] })), { max: 3.5, fmt: () => '' }), '', 'Since you started searching in May')}</div>
+    <div class="cols2">${Z.box('Deals by stage', Z.chart.bar(STAGES.map((st) => ({ label: st.replace('Pending questions', 'Questions'), value: ds.filter((d) => d.stage === st).length, tone: stTone[st] })), { fmt: (v) => v }))}${Z.box('Asking price against revenue', Z.chart.hbar(open.filter((d) => d.fit !== 'Outside your thesis').slice(0, 8).map((d) => ({ label: d.name, value: d.mult, tone: d.mult <= TH.mult ? 'good' : 'bad', row: ['deals', d.id] })), { max: 1.6, fmt: (v) => v.toFixed(2) + '×', ref: { value: 1.25, label: '1.25×' } }), '', 'Accounting firms sell near 0.9 to 1.25× revenue')}</div>`
+  },
+  crm: (Z) => {
+    const ls = Z.rows('leads'), m = Z.rows('mail'), live = ls.filter((l) => !['Closed', 'Passed'].includes(l.phase))
+    return `<div class="counts">${Z.count(live.length, 'firms in conversation', 'Open the board', 'data-act="tab" data-k="leads"')}${Z.count(ls.filter((l) => ['LOI', 'Due diligence', 'Closing'].includes(l.phase)).length, 'at LOI or later')}${Z.count(m.filter((x) => x.state === 'Waiting for you').length, 'emails wait for you')}${Z.count(live.filter((l) => Z.daysFrom(l.nextDate) < 0).length, 'next steps overdue')}</div>
+    <div class="cols2">${Z.box('Leads by stage', Z.chart.hbar(PHASES.map((p) => ({ label: p, value: ls.filter((l) => l.phase === p).length, tone: phTone[p] })), { fmt: (v) => v }), '', 'From sourced to closed or passed, as a search runs')}${Z.box('Deal mail by kind, 3 weeks', Z.chart.hbar(MKINDS.map((k) => ({ label: k, value: m.filter((x) => x.kind === k).length })).filter((x) => x.value).sort((a, b) => b.value - a.value), { fmt: (v) => v }), '', 'Sorted onto its lead by the Deal mail sorter')}</div>`
+  },
+  accounting: (Z) => {
+    const cs = Z.rows('clients'), bs = Z.rows('books'), fs = Z.rows('flags'), tot = cs.reduce((a, c) => a + c.fees, 0)
+    return `<p class="mute" style="margin:0 0 12px">${Z.esc(target.name)}, under LOI: their clients and books from the seller's QuickBooks exports, every figure traced to its cell.</p>
+    <div class="counts">${Z.count(K(bs.reduce((a, b) => a + b.rev, 0)), 'revenue, last 12 months', 'Their books', 'data-act="tab" data-k="books"')}${Z.count(K(bs.reduce((a, b) => a + b.sde, 0)), 'SDE, with add-backs')}${Z.count(bs.filter((b) => b.check === 'Ties').length + ' of 12', 'months tie to the bank')}${Z.count(fs.filter((f) => f.state === 'Open').length, 'flags open')}</div>
+    ${Z.box('Revenue and SDE by month', Z.chart.line([{ name: 'Revenue', values: bs.map((b) => b.rev), color: '#2f7a55' }, { name: 'SDE', values: bs.map((b) => b.sde), color: '#c4602f' }], bs.map((b) => b.month), { fmt: K, h: 200 }), '', 'Tax season carries the year: February to April is 40% of revenue')}
+    <div class="cols2">${Z.box('Fees by work, 24 largest clients', Z.chart.hbar(SERV.map((sv) => ({ label: sv, value: cs.filter((c) => c.serv === sv).reduce((a, c) => a + c.fees, 0) })), { fmt: K }), '', `${Math.round((cs.filter((c) => c.serv !== 'Tax').reduce((a, c) => a + c.fees, 0) / tot) * 100)}% recurring beyond tax season`)}${Z.box('Fees by retention risk, 24 largest', Z.chart.hbar(['High', 'Watch', 'Low'].map((k) => ({ label: k, value: cs.filter((c) => c.risk === k).reduce((a, c) => a + c.fees, 0), tone: { High: 'bad', Watch: 'warn', Low: 'good' }[k] })), { fmt: K }), `<button class="btn sm ghost" data-act="tab" data-k="clients">Clients</button>`, 'Seller-only clients are the ones most likely to leave')}</div>`
+  },
+  network: (Z) => {
+    const rs = Z.rows('reviews')
+    return `<div class="counts">${Z.count(rs.length, 'deals reviewed', 'Reviews', 'data-act="tab" data-k="reviews"')}${Z.count(rs.filter((r) => r.verdict === 'Pursue').length, 'said pursue')}${Z.count(Z.rows('advisors').length, 'advisors')}${Z.count('In 8 days', 'next search forum')}</div>
+    ${Z.box('What reviewers said', Z.chart.hbar(['Pursue', 'Re-price', 'More diligence', 'Pass'].map((v) => ({ label: v, value: rs.filter((r) => r.verdict === v).length, tone: { Pursue: 'good', 'Re-price': 'warn', 'More diligence': 'o1', Pass: 'bad' }[v] })), { fmt: (v) => v }), '', 'Your peers and advisors, on the deals you brought them')}`
+  },
+  forecast: (Z) => {
+    const q = Z.rows('fq')
+    return `<p class="mute" style="margin:0 0 12px">${Z.esc(target.name)} after the close, if your LOI terms hold: 15% of clients lost over year one, then 6% growth a year.</p>
+    <div class="counts">${Z.count(q[3].dscr, 'DSCR at the end of year one', 'Quarters', 'data-act="tab" data-k="fq"')}${Z.count(Math.min(...q.map((x) => x.dscr)).toFixed(2), 'lowest quarter')}${Z.count(K(q[19].cash), 'cash after debt, five years')}${Z.count('Year 5', 'seller note paid off')}</div>
+    ${Z.box('SDE after your pay, against debt service', Z.chart.line([{ name: 'SDE after your pay', values: q.map((x) => x.sde), color: '#2f7a55' }, { name: 'Debt service', values: q.map((x) => x.ds), color: '#c4602f', dash: true }], q.map((x) => x.q), { fmt: K, h: 220 }), '', 'The gap is what you keep; it narrows in year one as clients leave')}
+    <div class="cols2">${Z.box('DSCR by quarter', Z.chart.bar(q.map((x) => ({ label: x.q.replace(' ', ''), value: x.dscr, tone: x.dscr >= 1.5 ? 'good' : x.dscr >= 1.25 ? 'warn' : 'bad' })), { fmt: (v) => v.toFixed(2), ref: { value: 1.25, label: 'Lender 1.25' } }))}${Z.box('Cash after debt, to date', Z.chart.line([{ name: 'Cash', values: q.map((x) => x.cash) }], q.map((x) => x.q), { fmt: K, area: true, h: 170 }))}</div>`
+  },
+}
+
+const notes = [
+  { mod: 'deals', who: 'Priya Nair', text: 'Tax-only practices: only if under 1× revenue. I want monthly work to carry the summer.' },
+  { mod: 'crm', who: 'Priya Nair', text: 'Dana at Ledgerline sends listings to her buyers a week before they post. Stay on her list.' },
+  { mod: 'accounting', who: 'Tom Becker', text: 'No LOI past exclusivity without the QofE draft in hand.' },
+  { mod: 'forecast', who: 'Tom Becker', text: 'Show me the 25% case too before we sign.' },
+  { mod: 'network', who: 'Priya Nair', text: 'Sam has bought two firms himself; ask him about the earn-out.' },
+]
+const connections = [
+  { name: 'Gmail', icon: 'envelope-simple', what: 'Broker and seller mail, read-only; drafts for you to send' },
+  { name: 'Broker and marketplace sites', icon: 'globe', what: '7 sources, read each morning; a sign-in wall is never got around' },
+  { name: 'Data room', icon: 'folder-open', what: "The seller's CIM, exports and documents" },
+  { name: 'QuickBooks exports', icon: 'table', what: "The seller's P&L, balance sheet, agings and sales by customer" },
+  { name: 'Google Calendar', icon: 'calendar-blank', what: 'Calls, sessions and deadlines' },
+]
+
+Z.boot({
+  id: 'eta', today: TODAY, currency: 'USD', findHint: 'deal, a broker, a client',
+  brand: { name: 'Nair Search', sub: 'ETA: buying an accounting firm', mark: 'NA' },
+  roles: [{ id: 'srch', name: 'Priya Nair · Founder, searching' }, { id: 'inv', name: 'Tom Becker · Investor' }],
+  you: (r) => ({ srch: 'Priya Nair', inv: 'Tom Becker' })[r],
+  greeting: (r) => `Good morning, ${({ srch: 'Priya', inv: 'Tom' })[r]}`,
+  brief: (Z, r) => `<b>Morning.</b> ${({ srch: `You are searching for one accounting firm to buy and run. Overnight the Source reader read 6 sources; the CIM for ${d3.name} came in and fits your thesis. ${target.name} is in diligence, ${Z.rows('flags').filter((f) => f.state === 'Open').length} flags open.`, inv: `${d7.name} needs your sign-off on a re-priced LOI, and ${target.name}'s books tie in 11 of 12 months.` })[r]}<br><br><span class="mute3">Try: open <b>Deals</b> for the map of every listing against the thesis · drag a lead across the <b>CRM</b> board · open <b>Accounting</b> for the firm in diligence · run an agent from <b>Agents</b> · click any value to see where it came from.</span>`,
+  tables, levels, needs, tasks, agents, ask,
+  modules: [
+    { id: 'deals', name: 'Deals', icon: 'magnifying-glass', tables: ['deals', 'sources'], map: 'deals', overview: overview.deals },
+    { id: 'crm', name: 'CRM', icon: 'address-book', tables: ['leads', 'mail'], overview: overview.crm },
+    { id: 'accounting', name: 'Accounting', icon: 'calculator', tables: ['clients', 'books', 'flags'], overview: overview.accounting },
+    { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['fq'], overview: overview.forecast },
+    { id: 'network', name: 'Search network', icon: 'users-three', tables: ['reviews', 'advisors'], overview: overview.network },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['events'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb'] },
+  ],
+  notes, connections, runsOn: "Priya's own computer", brainLinks: [['deals', 'crm'], ['crm', 'accounting'], ['accounting', 'forecast'], ['deals', 'network'], ['calendar', 'crm'], ['kb', 'deals']],
+  after: (Z) => refresh(Z.rows('deals')),
+})
+</script>
+</body>
+</html>

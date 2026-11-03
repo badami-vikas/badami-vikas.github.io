@@ -255,6 +255,7 @@ tr.flash td{animation:flash 1.8s}
 .sec-t{font:600 13px var(--body);margin:18px 0 6px;display:flex;align-items:center;gap:8px}
 .callout{font-size:13px;background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:10px;padding:9px 12px;margin:12px 0}
 .callout.bad{background:var(--bad-soft);border-color:#eac2b8}
+.callout.warn{background:var(--warn-soft);border-color:#ead9b0}
 .gates{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .gate{border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;color:var(--ink-2)}
 .gate b{display:block;font-size:13px}
