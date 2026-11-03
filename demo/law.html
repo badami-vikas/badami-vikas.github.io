@@ -224,6 +224,298 @@ const overview = {
   },
 }
 
+// ---- the rest of the firm: intake, litigation, team, documents, calendar, knowledge base, forecast
+const BRANDS = ['Calder & Rhee', 'Ohio Disability Help']
+const leads = Array.from({ length: 28 }, (_, i) => {
+  const [city, lat, lng] = pick(CITIES), state = i < 3 ? 'New' : weighted([['Called back', 6], ['Agreement sent', 4], ['Signed', 5], ['Not a fit', 3]])
+  return { id: 'l' + i, name: `${pick(FIRST)} ${pick(LAST)}`, brand: pick(BRANDS), source: pick(['Web form', 'Phone', 'Referral', 'Chat', 'Web form']), condition: pick(CONDITIONS), insurer: pick(INSURERS), city, lat: lat + (rnd() - 0.5) * 0.2, lng: lng + (rnd() - 0.5) * 0.25, state, came: add(-int(0, 30)), waited: state === 'New' ? int(2, 5) : int(0, 3) + rnd() < 0.2 ? 6 : int(0, 3), assigned: CONSULTANTS[i % 4] }
+})
+Object.assign(leads[0], { came: TODAY, waited: 4 })
+const insurers = INSURERS.map((n, i) => ({ id: 'i' + i, name: n, contact: ['Gail Mercer', 'Tom Ruiz', 'Anita Holm', 'Ben Osei', 'Clara Voss'][i], clients: 0, pay: [6, 11, 4, 8, 9][i], overturn: [71, 48, 80, 62, 55][i], requests: [3.1, 4.4, 2.2, 3.6, 2.9][i] }))
+const PROVIDERS = ['Dr. Ines Varga', 'Riverside Neurology', 'OhioHealth Rheumatology', 'Dr. Paul Kemper', 'Summit Pain Clinic', 'Lakeview Behavioral']
+const visits = clients.flatMap((c, i) => Array.from({ length: 1 + (i % 3) }, (_, j) => ({ id: `v${i}-${j}`, client: c.name, cid: c.id, date: j ? add(-int(sinceVisit(c) + 20, 240)) : c.lastVisit, provider: PROVIDERS[(i + j) % 6], kind: pick(['Office visit', 'Specialist', 'Therapy', 'Office visit']), note: j > 0 || rnd() < 0.7 })))
+const records = clients.slice(0, 18).map((c, i) => ({ id: 'rr' + i, client: c.name, cid: c.id, provider: PROVIDERS[i % 6], asked: add(-int(3, 40)), follow: int(0, 3), state: pick(['Asked', 'Followed up', 'Followed up', 'Received']) }))
+const lawsuits = clients.filter((c) => c.stage === 'Litigation').concat(clients.filter((c) => c.stage === 'Denied, appeal').slice(0, 3)).map((c, i) => ({ id: 'ls' + i, client: c.name, cid: c.id, insurer: c.insurer, court: i % 2 ? 'N.D. Ohio' : 'S.D. Ohio', no: `2:26-cv-0${int(1000, 1999)}`, posture: ['Complaint filed', 'Administrative record', 'Cross-motions', 'Awaiting decision', 'Settlement talks'][i % 5], next: add(int(3, 70)), filed: add(-int(60, 400)) }))
+const approvals = [
+  { id: 'ap0', what: `Physician questionnaire for ${appeals[0]?.client || clients[3].name}`, client: appeals[0]?.client || clients[3].name, kind: 'Draft to a doctor', from: 'Questionnaire drafter', since: add(0), state: 'Waiting' },
+  { id: 'ap1', what: `Appeal deadline for ${appeals[1]?.client || clients[4].name}`, client: appeals[1]?.client || clients[4].name, kind: 'Deadline to verify', from: 'Deadline watcher', since: add(-1), state: 'Waiting' },
+  { id: 'ap2', what: `"Own occupation" term in ${clients[6].name}'s policy`, client: clients[6].name, kind: 'Policy term', from: 'Policy reader', since: add(-2), state: 'Waiting' },
+  { id: 'ap3', what: `Response to ${reqs[4].insurer} for ${reqs[4].client}`, client: reqs[4].client, kind: 'Draft to an insurer', from: 'Mail reader', since: add(-3), state: 'Approved' },
+  { id: 'ap4', what: `Letter of representation for ${clients[9].name}`, client: clients[9].name, kind: 'Draft to an insurer', from: 'Mail reader', since: add(-4), state: 'Sent back' },
+]
+const expected = paid.map((c, i) => ({ id: 'ex' + i, client: c.name, cid: c.id, insurer: c.insurer, amount: c.benefit, due: add(-int(0, 6)), state: c.status === 'Late' ? 'Late' : i % 5 === 4 ? 'Not yet' : 'Came' }))
+const transfers = Array.from({ length: 8 }, (_, i) => ({ id: 'tr' + i, date: add(-i * 7), amount: int(38, 92) * 1000, checks: int(9, 24), state: i === 0 ? 'Proposed' : 'Done', by: 'Priya Shah' }))
+const time = Array.from({ length: 22 }, (_, i) => { const c = clients[i % 12]; return { id: 'te' + i, who: ['Marcus Rhee', 'Dana Pryce', 'Leo Marsh'][i % 3], client: c.name, cid: c.id, date: add(-int(0, 20)), hours: Math.round((0.3 + rnd() * 3.5) * 10) / 10, kind: i % 4 ? 'Fee petition' : 'Hourly', rate: i % 3 ? 180 : 350 } })
+const STAFF = [['Marcus Rhee', 'Managing attorney', ''], ['Hana Calder', 'Attorney', 'Marcus Rhee'], ['Dana Pryce', 'Claim consultant', 'Hana Calder'], ['Leo Marsh', 'Claim consultant', 'Hana Calder'], ['Ama Boateng', 'Claim consultant', 'Hana Calder'], ['Ruth Calloway', 'Claim consultant', 'Hana Calder'], ['Priya Shah', 'Finance', 'Marcus Rhee'], ['Jonah Pell', 'Intake', 'Marcus Rhee']]
+const staff = STAFF.map(([name, role, to], i) => ({ id: 'st' + i, name, role, to, clients: CONSULTANTS.includes(name) ? clients.filter((c) => c.consultant === name).length : [6, 9, 0, 0, 0, 0, 0, 0][i], points: 0, state: '' }))
+const measures = [
+  { id: 'pm0', name: 'Insurer requests answered on time', base: 78, now: 96, target: 98, unit: '%' },
+  { id: 'pm1', name: 'Hours from a lead to a callback', base: 26, now: 3, target: 2, unit: 'h' },
+  { id: 'pm2', name: 'Checks matched without a person', base: 0, now: 86, target: 90, unit: '%' },
+  { id: 'pm3', name: 'Clients with a visit gap', base: 31, now: gapCount, target: 8, unit: '' },
+  { id: 'pm4', name: 'Appeal deadlines missed this year', base: 2, now: 0, target: 0, unit: '' },
+  { id: 'pm5', name: 'Documents filed without a person', base: 0, now: 74, target: 80, unit: '%' },
+]
+const DSRC = ['Outlook', 'Client portal', 'Scanner', 'Court (PACER)', 'Physician fax', 'PLAUD call notes']
+const docs = Array.from({ length: 30 }, (_, i) => { const c = clients[(i * 7) % clients.length], out = i < 2 ? 'Needs a person' : i % 6 === 3 ? 'Routed to a person' : 'Filed on its own'; return { id: 'd' + i, name: pick(['Denial letter', 'Visit note', 'Records request', 'Benefit statement', 'Court order', 'Signed authorization', 'Policy', 'Call note']) + ` · ${c.name}`, from: DSRC[i % 6], client: c.name, cid: c.id, received: add(-Math.floor(i / 6)), outcome: out, sure: out === 'Filed on its own' ? int(92, 99) : int(55, 84) } })
+const events = [
+  ...appeals.map((a) => ({ title: `Appeal due · ${a.client}`, date: a.due, kind: 'Appeal deadline', who: 'Marcus Rhee', client: a.client })),
+  ...reqs.filter((r) => r.state !== 'Sent').map((r) => ({ title: `${r.insurer}: ${r.asked.toLowerCase()} · ${r.client}`, date: r.due, kind: 'Insurer deadline', who: 'Dana Pryce', client: r.client })),
+  ...lawsuits.map((l) => ({ title: `${l.court} · ${l.posture.toLowerCase()} · ${l.client}`, date: l.next, kind: 'Court date', who: 'Marcus Rhee', client: l.client })),
+  ...clients.slice(0, 10).map((c, i) => ({ title: `Quarterly call · ${c.name}`, date: add(int(-10, 25)), kind: 'Client call', who: c.consultant, client: c.name })),
+  ...clients.filter((c) => sinceVisit(c) > 90).slice(0, 5).map((c, i) => ({ title: `Doctor visit booked · ${c.name}`, date: add(2 + i * 3), kind: 'Doctor visit', who: c.consultant, client: c.name })),
+  { title: 'Team meeting: caseloads', date: add(3), kind: 'Firm', who: 'Marcus Rhee', client: '' }, { title: 'Trust reconciliation', date: add(5), kind: 'Firm', who: 'Priya Shah', client: '' }, { title: 'Fee petition hearing prep', date: add(8), kind: 'Firm', who: 'Hana Calder', client: '' },
+].map((e, i) => ({ id: 'e' + i, ...e }))
+const kb = [
+  ['"Own occupation" vs "any occupation"', 'Policy term', 'Claims', 'Most policies pay for 24 months if the client cannot do their own job, then only if they cannot do any job. Mark the switch date on every client: it is when denials come.'],
+  ['Mental/nervous limitation', 'Policy term', 'Clients', 'Caps benefits for mental illness, usually at 24 months. Look for it in the definitions and the limitations section; the Policy reader cites the page.'],
+  ['How we answer an insurer request', 'How-to', 'Claims', 'One request, one obligation: list each deliverable, ask the providers the same day, send what is ready by the due date and say what follows. A partial answer never closes the rest.'],
+  ['Appeal checklist (ERISA)', 'How-to', 'Claims', 'Ask for the claim file in writing; build the page-cited chronology; answer every reason in the denial; physician questionnaire; vocational report if "any occupation"; file 10 days before the deadline.'],
+  ['Physician questionnaire', 'Template', 'Claims', 'Eight questions, each answering one reason in the denial and citing a page of the records. Approved as a template on 14 Oct: staff may send it.'],
+  ['Visit reminder', 'Template', 'Clients', 'Hi {first}, a quick check-in from Calder & Rhee. Insurers look for regular doctor visits; your last one was {date}. If booking is hard, call us and we will help.'],
+  ['Granite Mutual', 'Insurer note', 'Clients', 'Pays on the 3rd; requests come from Tom Ruiz. Two clients share a $4,760 benefit: match their checks by claim number, never by amount.'],
+  ['Northwind Life', 'Insurer note', 'Clients', 'Fastest to pay (6 days). Requests often ask for an activities form within 21 days.'],
+  ['Trust accounting rules', 'How-to', 'Finance', 'A check is not money until the bank confirms it. Transfers to operating only in batches Finance authorizes; every dollar traced to a client.'],
+  ['Fee petition basics', 'How-to', 'Litigation', 'Keep time entries the day the work is done; the court reads them line by line. Rate: $350 attorneys, $180 consultants.'],
+  ['Intake rotation', 'How-to', 'Intake', 'Leads go round the consultants in turn; a person calls back within 2 hours. Assignment and viewing never count as contact.'],
+  ['What the firm decided: 90-day visit gap', 'Decision', 'Clients', 'Marcus, 12 Sep: a client with no visit in 90 days gets a reminder; at 120 days, a call from the consultant.'],
+].map(([title, kind, area, body], i) => ({ id: 'kb' + i, title, kind, area, body, updated: add(-int(1, 60)), by: pick(['Marcus Rhee', 'Hana Calder', 'Dana Pryce', 'Librarian (agent)']) }))
+const FM = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr']
+const forecast = FM.map((m, i) => { const act = i < 6, f = Math.round(fees.slice(-6)[Math.min(i, 5)] * (act ? 1 : 1 + (i - 5) * 0.035)); return { id: 'f' + i, month: m + (i < 8 ? ' 2026' : ' 2027'), kind: act ? 'Actual' : 'Forecast', fees: f, low: act ? f : Math.round(f * (1 - (i - 5) * 0.03)), high: act ? f : Math.round(f * (1 + (i - 5) * 0.025)), checks: Math.round(f * 4), newClients: act ? int(4, 8) : 6 + (i % 3) } })
+
+Object.assign(tables, {
+  leads: { name: 'Leads', one: 'lead', title: 'name', rows: leads, sort: ['came', 'desc'], view: 'board', board: 'state', date: 'came',
+    lists: [{ name: 'Waiting for a call', tone: 'bad', where: (r) => r.state === 'New', tip: 'Nobody has spoken to them yet' }, { name: 'This week', where: (r) => Z.daysFrom(r.came) >= -7 }, { name: 'Signed', tone: 'good', where: (r) => r.state === 'Signed' }],
+    sub: (r) => `${Z.esc(r.condition)} · ${Z.esc(r.insurer)} · via ${Z.esc(r.brand)}, ${Z.esc(r.source.toLowerCase())}`,
+    map: { lat: 'lat', lng: 'lng', color: 'state', tip: ['state', 'condition'], bounds: { s: 38.35, n: 42.05, w: -84.9, e: -80.45 }, base: (p) => `<path d="M${OHIO.map(([la, ln]) => p(la, ln).join(' ')).join('L')}Z" fill="#fffdf9" stroke="#d8cfbf" stroke-width="1.5"/>` },
+    fields: [
+      { k: 'name', label: 'Name', src: 'Web form, phone or chat' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['New', 'Called back', 'Agreement sent', 'Signed', 'Not a fit'], tones: { New: 'bad', 'Called back': 'o1', 'Agreement sent': 'acc', Signed: 'good', 'Not a fit': 'o8' }, src: 'Contact attempts and the agreement' },
+      { k: 'assigned', label: 'Assigned to', kind: 'choice', choices: CONSULTANTS, tones: { 'Dana Pryce': 'o1', 'Leo Marsh': 'o3', 'Ama Boateng': 'o6', 'Ruth Calloway': 'o5' }, src: 'Lead router, by the rotation' },
+      { k: 'waited', label: 'Hours to a callback', kind: 'number', unit: 'h', help: 'A real call; assigning or viewing never counts', src: 'Phone system call log' },
+      { k: 'condition', label: 'Condition', src: 'What they told us' },
+      { k: 'insurer', label: 'Insurer', src: 'What they told us' },
+      { k: 'brand', label: 'Came through', kind: 'choice', choices: BRANDS, tones: { 'Calder & Rhee': 'acc', 'Ohio Disability Help': 'o3' }, src: 'Which website or number' },
+      { k: 'source', label: 'Source', src: 'Web form, phone, chat or referral' },
+      { k: 'came', label: 'Came in', kind: 'date', src: 'First contact' },
+      { k: 'city', label: 'City', hide: true, src: 'What they told us' },
+    ] },
+  insurers: { name: 'Insurers', one: 'insurer', title: 'name', rows: insurers, sort: ['overturn', 'desc'], view: 'card',
+    sub: (r) => `Your contact: ${Z.esc(r.contact)}`,
+    links: [{ t: 'clients', label: 'Clients', by: (r, x) => x.insurer === r.name, show: ['stage'] }],
+    fields: [
+      { k: 'name', label: 'Insurer', src: 'Policies on file' },
+      { k: 'contact', label: 'Person we deal with', src: 'Letters and calls' },
+      { k: 'clients', label: 'Clients', kind: 'number', computed: true, src: 'Computed: clients with this insurer' },
+      { k: 'pay', label: 'Days to pay', kind: 'number', unit: 'days', src: 'Computed: expected payments against checks, 12 months' },
+      { k: 'overturn', label: 'Appeals won', kind: 'pct', src: 'Closed appeals, this year' },
+      { k: 'requests', label: 'Requests a client a year', kind: 'number', src: 'Insurer requests, 12 months' },
+    ] },
+  visits: { name: 'Medical visits', one: 'visit', title: 'client', rows: visits, sort: ['date', 'desc'], view: 'table', board: 'kind', date: 'date',
+    sub: (r) => `${Z.esc(r.provider)} · ${Z.day(r.date)}`, links: [{ t: 'clients', label: 'Client', by: (r, x) => x.id === r.cid, show: ['stage'] }],
+    fields: [
+      { k: 'client', label: 'Client', src: 'Matched by name and date of birth' },
+      { k: 'date', label: 'Visit', kind: 'date', src: 'The visit note' },
+      { k: 'provider', label: 'Provider', src: 'The visit note letterhead' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Office visit', 'Specialist', 'Therapy'], tones: { 'Office visit': 'o8', Specialist: 'o1', Therapy: 'o5' }, src: 'The visit note' },
+      { k: 'note', label: 'Note on file', kind: 'bool', yes: 'good', src: 'Document intake' },
+    ] },
+  records: { name: 'Records requests', one: 'records request', title: 'client', rows: records, sort: ['asked', 'asc'], view: 'board', board: 'state', date: 'asked',
+    sub: (r) => `From ${Z.esc(r.provider)}, asked ${Z.day(r.asked)}`, links: [{ t: 'clients', label: 'Client', by: (r, x) => x.id === r.cid, show: ['stage'] }],
+    fields: [
+      { k: 'client', label: 'Client', src: 'Your case system' },
+      { k: 'provider', label: 'Provider', src: 'Treating providers on file' },
+      { k: 'asked', label: 'Asked', kind: 'date', src: 'The request sent' },
+      { k: 'follow', label: 'Follow-ups', kind: 'number', src: 'Each follow-up sent' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['Asked', 'Followed up', 'Received'], tones: { Asked: 'o1', 'Followed up': 'warn', Received: 'good' }, src: 'Document intake marks it received' },
+    ] },
+  approvals: { name: 'Approvals', one: 'approval', title: 'what', rows: approvals, sort: ['since', 'asc'], view: 'list', board: 'state', date: 'since',
+    sub: (r) => `${Z.esc(r.kind)} · from the ${Z.esc(r.from)}`,
+    detail: () => `<div class="callout">${Z.ic('scales')} Only an attorney decides these: drafts for an insurer or a court, deadlines and policy terms. Each comes with its sources.</div>`,
+    fields: [
+      { k: 'what', label: 'What', src: 'The agent that prepared it' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Draft to a doctor', 'Draft to an insurer', 'Deadline to verify', 'Policy term'], tones: { 'Draft to a doctor': 'o1', 'Draft to an insurer': 'acc', 'Deadline to verify': 'bad', 'Policy term': 'o5' }, src: 'The agent that prepared it' },
+      { k: 'client', label: 'Client', src: 'Your case system' },
+      { k: 'from', label: 'Prepared by', src: 'Agent' },
+      { k: 'since', label: 'Waiting since', kind: 'date', src: 'When it was prepared' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['Waiting', 'Approved', 'Sent back'], tones: { Waiting: 'warn', Approved: 'good', 'Sent back': 'bad' }, src: 'The attorney' },
+    ] },
+  lawsuits: { name: 'Lawsuits', one: 'lawsuit', title: 'client', rows: lawsuits, sort: ['next', 'asc'], view: 'board', board: 'posture', date: 'next', span: { start: 'filed', end: 'next' },
+    sub: (r) => `${Z.esc(r.court)} · ${r.no} · against ${Z.esc(r.insurer)}`, links: [{ t: 'clients', label: 'Client', by: (r, x) => x.id === r.cid, show: ['stage'] }],
+    fields: [
+      { k: 'client', label: 'Client', src: 'Your case system' },
+      { k: 'court', label: 'Court', kind: 'choice', choices: ['S.D. Ohio', 'N.D. Ohio'], tones: { 'S.D. Ohio': 'o1', 'N.D. Ohio': 'o3' }, src: 'PACER docket' },
+      { k: 'posture', label: 'Where it stands', kind: 'choice', choices: ['Complaint filed', 'Administrative record', 'Cross-motions', 'Awaiting decision', 'Settlement talks'], tones: { 'Complaint filed': 'o8', 'Administrative record': 'o1', 'Cross-motions': 'o3', 'Awaiting decision': 'warn', 'Settlement talks': 'good' }, src: 'PACER docket, read by the Court watcher' },
+      { k: 'next', label: 'Next date', kind: 'date', due: true, src: 'The court\'s scheduling order' },
+      { k: 'no', label: 'Case number', src: 'PACER' },
+      { k: 'insurer', label: 'Against', src: 'The complaint' },
+      { k: 'filed', label: 'Filed', kind: 'date', hide: true, src: 'PACER' },
+    ] },
+  expected: { name: 'Expected payments', one: 'expected payment', title: 'client', rows: expected, sort: ['state', 'asc'], view: 'table', board: 'state', date: 'due',
+    sub: (r) => `${Z.esc(r.insurer)} · ${Z.money(r.amount)} a month`,
+    fields: [
+      { k: 'client', label: 'Client', src: 'Approved claims' },
+      { k: 'insurer', label: 'Insurer', src: 'Approval letter' },
+      { k: 'amount', label: 'Monthly benefit', kind: 'money', src: 'Approval letter' },
+      { k: 'due', label: 'Expected by', kind: 'date', src: 'Computed from the insurer\'s pay day' },
+      { k: 'state', label: 'Came?', kind: 'choice', choices: ['Came', 'Not yet', 'Late'], tones: { Came: 'good', 'Not yet': 'o8', Late: 'bad' }, src: 'Check matcher' },
+    ] },
+  transfers: { name: 'Transfers', one: 'transfer', title: 'date', rows: transfers, sort: ['date', 'desc'], view: 'table', board: 'state', date: 'date',
+    sub: (r) => `${r.checks} checks · ${Z.money(r.amount)} to operating`,
+    fields: [
+      { k: 'date', label: 'Batch', kind: 'date', src: 'Finance' },
+      { k: 'amount', label: 'Fees to operating', kind: 'money', src: 'Computed: the firm\'s share of the batch\'s checks' },
+      { k: 'checks', label: 'Checks', kind: 'number', src: 'Bank-confirmed checks in the batch' },
+      { k: 'state', label: 'State', kind: 'choice', choices: ['Proposed', 'Authorized', 'Done'], tones: { Proposed: 'warn', Authorized: 'o1', Done: 'good' }, src: 'Finance authorizes; the bank confirms' },
+      { k: 'by', label: 'Authorized by', src: 'Finance' },
+    ] },
+  time: { name: 'Time entries', one: 'time entry', title: 'client', rows: time, sort: ['date', 'desc'], view: 'table', board: 'kind', date: 'date',
+    sub: (r) => `${Z.esc(r.who)} · ${r.hours} h`,
+    fields: [
+      { k: 'client', label: 'Matter', src: 'Timekeeper' },
+      { k: 'who', label: 'Who', src: 'Timekeeper' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'Timekeeper' },
+      { k: 'hours', label: 'Hours', kind: 'number', src: 'Timekeeper' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Fee petition', 'Hourly'], tones: { 'Fee petition': 'o1', Hourly: 'o3' }, src: 'The matter' },
+      { k: 'rate', label: 'Rate', kind: 'money', src: 'Firm rates' },
+    ] },
+  staff: { name: 'My team', one: 'person', title: 'name', rows: staff, sort: ['points', 'desc'], view: 'table', board: 'state',
+    sub: (r) => `${Z.esc(r.role)}${r.to ? ' · reports to ' + Z.esc(r.to) : ''}`,
+    fields: [
+      { k: 'name', label: 'Name', src: 'Your staff list' },
+      { k: 'role', label: 'Role', src: 'Your staff list' },
+      { k: 'state', label: 'Load', kind: 'choice', choices: ['Under', 'Full', 'Over'], tones: { Under: 'good', Full: 'o1', Over: 'bad' }, computed: true, src: 'Computed against the firm\'s 100 points' },
+      { k: 'points', label: 'Points', kind: 'number', computed: true, help: '7 a client, 4 an open request', src: 'Computed from clients and open requests' },
+      { k: 'clients', label: 'Clients', kind: 'number', computed: true, src: 'Computed from the client file' },
+      { k: 'to', label: 'Reports to', src: 'Your staff list' },
+    ] },
+  measures: { name: 'Pilot measures', one: 'measure', title: 'name', rows: measures, sort: ['name', 'asc'], view: 'card',
+    sub: (r) => `Before Zazoo ${r.base}${r.unit} · now ${r.now}${r.unit} · target ${r.target}${r.unit}`,
+    fields: [
+      { k: 'name', label: 'Measure', src: 'Agreed at the start of the pilot' },
+      { k: 'base', label: 'Before', kind: 'number', src: 'Measured in the month before' },
+      { k: 'now', label: 'Now', kind: 'number', src: 'Computed from this month\'s work' },
+      { k: 'target', label: 'Target', kind: 'number', src: 'Agreed with Marcus' },
+    ] },
+  docs: { name: 'Incoming documents', one: 'document', title: 'name', rows: docs, sort: ['received', 'desc'], view: 'table', board: 'outcome', date: 'received',
+    lists: [{ name: 'Needs a person', tone: 'bad', where: (r) => r.outcome === 'Needs a person' }, { name: 'Filed on its own', tone: 'good', where: (r) => r.outcome === 'Filed on its own' }],
+    sub: (r) => `From ${Z.esc(r.from)} · ${Z.day(r.received)}`,
+    fields: [
+      { k: 'name', label: 'Document', src: 'Read by the Document sorter' },
+      { k: 'from', label: 'Came from', kind: 'choice', choices: DSRC, tones: Object.fromEntries(DSRC.map((d, i) => [d, 'o' + (i + 1)])), src: 'Where it arrived' },
+      { k: 'client', label: 'Client', src: 'Matched by name, claim number and date of birth' },
+      { k: 'outcome', label: 'What Zazoo did', kind: 'choice', choices: ['Filed on its own', 'Routed to a person', 'Needs a person'], tones: { 'Filed on its own': 'good', 'Routed to a person': 'o1', 'Needs a person': 'bad' }, src: 'Document sorter' },
+      { k: 'sure', label: 'How sure', kind: 'pct', help: 'Under 90%, a person decides', src: 'Document sorter' },
+      { k: 'received', label: 'Received', kind: 'date', src: 'Arrival time' },
+    ] },
+  events: { name: 'Events', one: 'event', title: 'title', rows: events, sort: ['date', 'asc'], view: 'calendar', board: 'kind', date: 'date',
+    sub: (r) => `${Z.day(r.date)} · ${Z.esc(r.who)}`,
+    fields: [
+      { k: 'title', label: 'Event', src: 'From the module it belongs to' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'From the module it belongs to' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Court date', 'Appeal deadline', 'Insurer deadline', 'Client call', 'Doctor visit', 'Firm'], tones: { 'Court date': 'bad', 'Appeal deadline': 'warn', 'Insurer deadline': 'acc', 'Client call': 'o1', 'Doctor visit': 'o5', Firm: 'o8' }, src: 'Scheduler' },
+      { k: 'who', label: 'Who', src: 'Owner of the work' },
+      { k: 'client', label: 'Client', src: 'Your case system' },
+    ] },
+  kb: { name: 'Articles', one: 'article', title: 'title', rows: kb, sort: ['updated', 'desc'], view: 'card', board: 'kind', date: 'updated',
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.esc(r.area)} · updated ${Z.day(r.updated)} by ${Z.esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${Z.esc(r.body)}</div><p class="mute3" style="font-size:12px">Agents read this before they run. Change it and they follow the new words.</p>`,
+    fields: [
+      { k: 'title', label: 'Title', src: 'The firm' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Policy term', 'How-to', 'Template', 'Insurer note', 'Decision'], tones: { 'Policy term': 'o5', 'How-to': 'o1', Template: 'acc', 'Insurer note': 'o3', Decision: 'good' }, src: 'The firm' },
+      { k: 'area', label: 'Module', src: 'The firm' },
+      { k: 'by', label: 'Written by', src: 'The firm, or the Librarian from a decision' },
+      { k: 'updated', label: 'Updated', kind: 'date', src: 'Last edit' },
+      { k: 'body', label: 'Text', hide: true, src: 'The firm' },
+    ] },
+  forecast: { name: 'Months', one: 'month', title: 'month', rows: forecast, sort: null, view: 'table', board: 'kind',
+    sub: (r) => `${r.kind}${r.kind === 'Forecast' ? ` · between ${Z.money(r.low)} and ${Z.money(r.high)}` : ''}`,
+    fields: [
+      { k: 'month', label: 'Month', src: 'Calendar' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Actual', 'Forecast'], tones: { Actual: 'good', Forecast: 'o1' }, src: 'Past months are actual' },
+      { k: 'fees', label: 'Fees', kind: 'money', src: (r) => (r.kind === 'Actual' ? 'Transfers to operating' : 'Forecaster: approved clients × benefit × 25%, less expected closures, plus new clients at this year\'s rate') },
+      { k: 'low', label: 'Low', kind: 'money', computed: true, src: 'Forecaster: if appeals win at last year\'s worst rate' },
+      { k: 'high', label: 'High', kind: 'money', computed: true, src: 'Forecaster: if this year\'s intake holds' },
+      { k: 'checks', label: 'Checks through trust', kind: 'money', src: 'Expected payments' },
+      { k: 'newClients', label: 'New clients', kind: 'number', src: (r) => (r.kind === 'Actual' ? 'Signed agreements' : 'Forecaster: leads × this year\'s sign rate') },
+    ] },
+})
+
+const moreOverview = {
+  intake: (Z) => {
+    const ls = Z.rows('leads'), st = ['New', 'Called back', 'Agreement sent', 'Signed', 'Not a fit']
+    return `<div class="counts">${Z.count(ls.filter((l) => l.state === 'New').length, 'waiting for a call', 'Open the board', 'data-act="tab" data-k="leads"')}${Z.count(ls.filter((l) => Z.daysFrom(l.came) >= -30).length, 'leads this month')}${Z.count(Math.round((ls.filter((l) => l.state === 'Signed').length / ls.length) * 100) + '%', 'signed')}${Z.count((ls.reduce((a, l) => a + l.waited, 0) / ls.length).toFixed(1) + ' h', 'to a callback, on average')}</div>
+    <div class="cols2">${Z.box('From a lead to a client', Z.chart.hbar(st.map((s, i) => ({ label: s, value: ls.filter((l) => l.state === s).length, tone: ['bad', 'o1', 'acc', 'good', 'o8'][i] })), { fmt: (v) => v }))}${Z.box('Leads by where they came from', Z.chart.donut(['Web form', 'Phone', 'Referral', 'Chat'].map((s) => ({ label: s, value: ls.filter((l) => l.source === s).length })), { center: ls.length, sub: 'leads', fmt: (v) => v }))}</div>`
+  },
+  litigation: (Z) => {
+    const ls = Z.rows('lawsuits')
+    return `<div class="counts">${Z.count(ls.length, 'lawsuits open', 'Lawsuits', 'data-act="tab" data-k="lawsuits"')}${Z.count(ls.filter((l) => Z.daysFrom(l.next) <= 14).length, 'court dates in 2 weeks')}${Z.count(Z.rows('time').filter((t) => t.kind === 'Fee petition').reduce((a, t) => a + t.hours, 0).toFixed(1) + ' h', 'logged for fee petitions')}${Z.count('64%', 'won or settled, 3 years')}</div>
+    ${Z.box('Next court dates', Z.chart.hbar(ls.map((l) => ({ label: l.client, value: Math.max(0, Z.daysFrom(l.next)), tone: Z.daysFrom(l.next) < 14 ? 'bad' : 'o1', row: ['lawsuits', l.id], tip: `${l.client}: ${l.posture}, ${Z.day(l.next)}` })), { fmt: (v) => v + ' d' }))}`
+  },
+  team: (Z) => {
+    const st = Z.rows('staff').filter((s) => CONSULTANTS.includes(s.name))
+    return `<div class="counts">${Z.count(Z.rows('staff').length, 'people', 'My team', 'data-act="tab" data-k="staff"')}${Z.count(st.filter((s) => s.points > 100).length, 'over the line')}${Z.count(Z.rows('measures').filter((m) => m.name.includes('Hours') ? m.now <= m.target : m.now >= m.target).length + ' of ' + Z.rows('measures').length, 'pilot measures at target')}${Z.count('6.5 h', 'saved a person a week')}</div>
+    <div class="cols2">${Z.box('Workload by consultant', Z.chart.hbar(st.map((s) => ({ label: s.name, value: s.points, mark: 100, tone: s.points > 100 ? 'bad' : 'good', note: 'pts' })), { max: 160, fmt: (v) => v }), '', 'The line is a full week, as the firm agreed. Not a ranking of people.')}${Z.box('The pilot: before and now', Z.chart.hbar(Z.rows('measures').map((m) => ({ label: m.name, value: m.now, mark: m.target, tone: 'o1', note: `was ${m.base}${m.unit}` })), { fmt: (v) => v }), '', 'The line is the target')}</div>`
+  },
+  documents: (Z) => {
+    const ds = Z.rows('docs')
+    return `<div class="counts">${Z.count(ds.filter((d) => d.received === TODAY).length, 'documents today', 'Documents', 'data-act="tab" data-k="docs"')}${Z.count(Math.round((ds.filter((d) => d.outcome === 'Filed on its own').length / ds.length) * 100) + '%', 'filed without a person')}${Z.count(ds.filter((d) => d.outcome === 'Needs a person').length, 'need a person')}${Z.count('9 s', 'from arrival to filed')}</div>
+    <div class="cols2">${Z.box('Where documents come from', Z.chart.donut(DSRC.map((s) => ({ label: s, value: ds.filter((d) => d.from === s).length })), { center: ds.length, sub: 'this week', fmt: (v) => v }))}${Z.box('What Zazoo did with them', Z.chart.bar(['Filed on its own', 'Routed to a person', 'Needs a person'].map((o, i) => ({ label: o, value: ds.filter((d) => d.outcome === o).length, tone: ['good', 'o1', 'bad'][i] })), { fmt: (v) => v }), '', 'Under 90% sure, a person decides')}</div>`
+  },
+  forecast: (Z) => {
+    const fs = Z.rows('forecast'), act = fs.map((f) => (f.kind === 'Actual' ? f.fees : null)), fc = fs.map((f, i) => (f.kind === 'Forecast' || i === 5 ? f.fees : null))
+    return `<div class="counts">${Z.count(Z.money(fs.filter((f) => f.kind === 'Forecast').reduce((a, f) => a + f.fees, 0)), 'fees, next six months', 'Months', 'data-act="tab" data-k="forecast"')}${Z.count('+' + Math.round((fs[11].fees / fs[5].fees - 1) * 100) + '%', 'by April, on October')}${Z.count(fs.filter((f) => f.kind === 'Forecast').reduce((a, f) => a + f.newClients, 0), 'new clients expected')}${Z.count('±6%', 'how far off it was, last 6 months')}</div>
+    ${Z.box('Fees: actual, then forecast', Z.chart.line([{ name: 'Actual', values: act, color: '#2f7a55' }, { name: 'Forecast', values: fc, color: '#c4602f', dash: true }, { name: 'Low', values: fs.map((f, i) => (i >= 5 ? f.low : null)), color: '#d8b9a5', dash: true }, { name: 'High', values: fs.map((f, i) => (i >= 5 ? f.high : null)), color: '#d8b9a5', dash: true }], fs.map((f) => f.month.split(' ')[0]), { fmt: (v) => '$' + Z.compact(v), h: 230 }), '', 'Approved clients × benefit × 25%, less expected closures, plus new clients at this year\'s sign rate')}
+    <div class="cols2">${Z.box('New clients a month', Z.chart.bar(fs.map((f) => ({ label: f.month.split(' ')[0], value: f.newClients, tone: f.kind === 'Actual' ? 'good' : 'o1' })), { fmt: (v) => v }))}${Z.box('What moves the forecast', Z.chart.hbar([{ label: 'Appeals won', value: 38 }, { label: 'New clients signed', value: 27 }, { label: 'Benefits ending (24-month limits)', value: 21 }, { label: 'Late insurer payments', value: 14 }], { max: 50, fmt: (v) => v + '%' }), '', 'Share of the spread between low and high')}</div>`
+  },
+}
+
+agents.push(
+  { id: 'router', name: 'Lead router', module: 'intake', group: 'Intake', level: 'A', when: 'As a lead arrives', reads: 'web forms, the phone line and chat', does: 'Keeps one record a person across both brands, assigns each lead by the rotation, and flags any lead nobody has called within 2 hours.',
+    steps: ['1 new web form: Ohio Disability Help', 'Matched no earlier lead', 'Assigned to Ruth Calloway (next in rotation)', 'Call within 2 hours: reminder set'], run: (Z) => { Z.rows('leads').unshift({ id: 'lnew', name: 'Petra Lindqvist', brand: 'Ohio Disability Help', source: 'Web form', condition: 'Long COVID', insurer: 'Beacon Benefit', city: 'Dayton', lat: 39.76, lng: -84.19, state: 'New', came: TODAY, waited: 0, assigned: 'Ruth Calloway' }); return { text: 'a new lead, Petra Lindqvist, assigned to Ruth', row: 'lnew' } } },
+  { id: 'sorter', name: 'Document sorter', module: 'documents', group: 'Intake', level: 'A', when: 'As documents arrive', reads: 'Outlook, the portal, the scanner, PACER and faxes', does: 'Identifies each document, files it on the client when it is sure, and routes it to the right person when it is not.',
+    steps: ['6 new documents', '5 identified at 92% or more → filed', '1 fax, no name on page 1 → routed to Dana'], run: () => ({ text: '5 filed on their own, 1 routed to Dana' }) },
+  { id: 'court', name: 'Court watcher', module: 'litigation', group: 'Deadlines', level: 'A', when: 'Every morning at 6:30', reads: 'PACER dockets', does: 'Reads each lawsuit\'s docket, records new filings and orders, and puts every court date on the calendar.',
+    steps: [`${lawsuits.length} dockets read`, '1 new entry: scheduling order, S.D. Ohio', 'Cross-motions due in 45 days → on the calendar'], run: () => ({ text: '1 scheduling order; dates on the calendar' }) },
+  { id: 'balance', name: 'Workload balancer', module: 'team', group: 'Client care', level: 'B', when: 'Every Monday', reads: 'caseloads and open requests', does: 'Weighs each consultant\'s caseload against the firm\'s 100 points and suggests moves. It never reassigns anyone itself.',
+    steps: ['4 consultants weighed', 'One over the line', 'Suggested 2 moves'], run: () => ({ text: 'suggested 2 moves; you decide' }) },
+  { id: 'forecaster', name: 'Forecaster', module: 'forecast', group: 'Finance', level: 'A', when: 'On the 1st of each month', reads: 'expected payments, appeals and intake', does: 'Forecasts fees, checks and new clients for twelve months, with a low and a high case, and checks last month\'s forecast against what came.',
+    steps: ['October: forecast $71.0K, came $71.0K', 'Appeals won: 61% this year', 'Benefits ending: 3 clients hit 24 months by March', 'Forecast written to April'], run: () => ({ text: 'forecast updated to April; October within 1%' }) },
+  { id: 'librarian', name: 'Librarian', module: 'kb', group: 'Client care', level: 'A', when: 'After each decision', reads: 'approvals, notes and decisions', does: 'Turns what the firm decides into an article the agents read before they run, and keeps each one up to date.',
+    steps: ['Read 3 approvals from this week', 'One new decision: questionnaire template approved', 'Updated "Physician questionnaire"'], run: () => ({ text: 'updated 1 article from this week\'s decisions' }) },
+  { id: 'scheduler', name: 'Scheduler', module: 'calendar', group: 'Deadlines', level: 'B', when: 'Every evening', reads: 'every module\'s dates', does: 'Puts every deadline, court date and client call on one calendar, and proposes calls where a client has gone quiet.',
+    steps: ['Read deadlines from Claims and Litigation', 'Added 4 dates', 'Proposed 2 quarterly calls'], run: () => ({ text: '4 dates added, 2 calls proposed' }) },
+)
+needs.push({ id: 'n5', agent: 'Lead router', module: 'intake', level: 'B', roles: ['cc', 'atty'], date: 'Today', row: ['leads', 'l0'], title: `${leads[0].name} called 4 hours ago and nobody has called back`, sub: `${leads[0].condition}, ${leads[0].insurer}. Assigned to ${leads[0].assigned}; the firm's line is 2 hours.`, why: 'Assigning or viewing a lead never counts as contact; only a call in the phone log does.', acts: [{ label: 'I\'ll call now', pri: true, run: (Z) => { Z.set('leads', 'l0', { state: 'Called back' }); return `called ${leads[0].name}` }, done: 'Called' }, { label: 'Give to the next person', run: () => 'gave the lead to the next consultant in the rotation', done: 'Reassigned' }] })
+tasks.push(
+  { id: 't9', title: 'Prepare cross-motion outline', row: ['lawsuits', 'ls0'], due: add(4), state: 'doing', roles: ['atty'] },
+  { id: 't10', title: 'Authorize this week\'s transfer to operating', row: ['transfers', 'tr0'], due: add(0), state: 'todo', by: 'Check matcher', roles: ['fin'] },
+  { id: 't11', title: `Quarterly call with ${clients[2].name}`, row: ['clients', 'c2'], due: add(1), state: 'todo', by: 'Scheduler', roles: ['cc'] },
+  { id: 't12', title: 'Answer Meridian\'s activities form request', row: ['requests', 'r1'], due: add(-3), state: 'done', roles: ['cc'] },
+  { id: 't13', title: `Follow up records from ${PROVIDERS[1]}`, row: ['records', 'rr1'], due: add(2), state: 'doing', by: 'Mail reader', roles: ['cc'] },
+  { id: 't14', title: 'Review the October forecast', due: add(1), state: 'todo', by: 'Forecaster', roles: ['atty', 'fin'] },
+  { id: 't15', title: 'Sign the fee agreement batch', row: ['leads', 'l3'], due: add(-1), state: 'done', roles: ['atty'] },
+  { id: 't16', title: 'File the denial letter that came by fax', row: ['docs', 'd0'], due: add(0), state: 'todo', by: 'Document sorter', roles: ['cc'] },
+)
+const notes = [
+  { mod: 'clients', who: 'Marcus Rhee', text: 'At 120 days without a visit, the consultant calls; no more letters.' },
+  { mod: 'claims', who: 'Hana Calder', text: 'Granite Mutual has started asking for activities forms within 14 days, not 21. Watch the dates.' },
+  { mod: 'finance', who: 'Priya Shah', text: 'Bank feed is a day behind on Mondays; don\'t chase Monday deposits until Tuesday.' },
+  { mod: 'intake', who: 'Jonah Pell', text: 'Ohio Disability Help leads skew younger, more Long COVID. Ama has the most experience with those.' },
+  { mod: 'litigation', who: 'Marcus Rhee', text: 'Judge Okafor wants the administrative record bates-stamped. Do it before filing.' },
+  { mod: 'documents', who: 'Dana Pryce', text: 'PLAUD notes from client calls go on the client, not the claim.' },
+  { mod: 'forecast', who: 'Priya Shah', text: 'Use last year\'s worst appeal rate for the low case, not the average.' },
+]
+const connections = [
+  { name: 'Outlook', icon: 'envelope-simple', what: 'The firm inbox, read-only; drafts saved for a person to send' },
+  { name: 'Case system', icon: 'database', what: 'Clients and claims, imported nightly' },
+  { name: 'Front-desk scanner', icon: 'scan', what: 'Checks and paper mail, as they are scanned' },
+  { name: 'Bank feed', icon: 'bank', what: 'Deposits, read-only' },
+  { name: 'PACER', icon: 'gavel', what: 'Court dockets for open lawsuits' },
+  { name: 'Phone system', icon: 'phone', what: 'Call logs, to know who was called back' },
+  { name: 'Client portal', icon: 'globe', what: 'Uploads from clients', state: 'Needs you' },
+]
+
 Z.boot({
   id: 'law', today: TODAY, currency: 'USD', findHint: 'client, a request',
   brand: { name: 'Calder & Rhee', sub: 'Disability law', mark: 'CR' },
@@ -232,11 +524,23 @@ Z.boot({
   greeting: (r) => `Good morning, ${({ cc: 'Dana', atty: 'Marcus', fin: 'Priya' })[r]}`,
   tables, levels, needs, tasks, agents, ask,
   modules: [
-    { id: 'clients', name: 'Clients', icon: 'users', tables: ['clients'], overview: overview.clients },
-    { id: 'claims', name: 'Claims', icon: 'scales', roles: ['cc', 'atty'], tables: ['requests', 'appeals'], overview: overview.claims },
-    { id: 'finance', name: 'Finance', icon: 'bank', roles: ['fin', 'atty'], tables: ['checks'], overview: overview.finance },
+    { id: 'intake', name: 'Intake', icon: 'phone-incoming', roles: ['cc', 'atty'], tables: ['leads'], overview: moreOverview.intake },
+    { id: 'clients', name: 'Clients', icon: 'users', tables: ['clients', 'insurers', 'visits', 'records'], map: 'clients', overview: overview.clients },
+    { id: 'claims', name: 'Claims', icon: 'scales', roles: ['cc', 'atty'], tables: ['requests', 'appeals', 'approvals'], overview: overview.claims },
+    { id: 'litigation', name: 'Litigation', icon: 'gavel', roles: ['atty'], tables: ['lawsuits'], overview: moreOverview.litigation },
+    { id: 'finance', name: 'Finance', icon: 'bank', roles: ['fin', 'atty'], tables: ['checks', 'expected', 'transfers', 'time'], overview: overview.finance },
+    { id: 'documents', name: 'Documents', icon: 'tray', tables: ['docs'], overview: moreOverview.documents },
+    { id: 'team', name: 'Team', icon: 'users-three', roles: ['atty', 'fin'], tables: ['staff', 'measures'], overview: moreOverview.team },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['events'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['kb'] },
+    { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', roles: ['atty', 'fin'], tables: ['forecast'], overview: moreOverview.forecast },
   ],
-  after: (Z) => Z.rows('clients').forEach((c) => (c.gap = sinceVisit(c) > 90)),
+  notes, connections, runsOn: "A server in the firm's office", brainLinks: [['intake', 'clients'], ['documents', 'clients'], ['documents', 'claims'], ['claims', 'litigation'], ['finance', 'clients'], ['team', 'clients'], ['calendar', 'claims'], ['calendar', 'litigation'], ['forecast', 'finance'], ['kb', 'claims']],
+  after: (Z) => {
+    Z.rows('clients').forEach((c) => (c.gap = sinceVisit(c) > 90))
+    Z.rows('insurers').forEach((i) => (i.clients = Z.rows('clients').filter((c) => c.insurer === i.name).length))
+    Z.rows('staff').forEach((p) => { p.points = CONSULTANTS.includes(p.name) ? load(Z, p.name) : { 'Marcus Rhee': 92, 'Hana Calder': 88, 'Priya Shah': 70, 'Jonah Pell': 64 }[p.name]; p.state = p.points > 100 ? 'Over' : p.points >= 85 ? 'Full' : 'Under' })
+  },
   journal: [{ who: 'Check matcher', words: 'matched 12 of 14 scanned checks', mod: 'finance' }, { who: 'Mail reader', words: 'filed 14 insurer letters overnight', mod: 'claims' }],
   homeSide: (Z, r) => Z.box('Deadlines, next four weeks', Z.chart.bar([0, 1, 2, 3].map((w) => ({ label: w ? `Week ${w + 1}` : 'This week', value: Z.rows('requests').filter((x) => x.state !== 'Sent' && Z.daysFrom(x.due) >= w * 7 && Z.daysFrom(x.due) < (w + 1) * 7).length, tone: w ? 'o1' : 'bad' })), { fmt: (v) => v, h: 150 }), `<button class="btn sm ghost" data-act="mod" data-m="${r === 'fin' ? 'finance' : 'claims'}">Open</button>`, 'Insurer requests not yet sent'),
   brief: (Z, r) => `<b>Morning.</b> ${({ cc: `Overnight the Mail reader filed 14 insurer letters; 3 became requests. ${Z.rows('requests').filter((x) => x.state !== 'Sent' && Z.daysFrom(x.due) <= 7).length} requests are due this week.`, atty: `A physician questionnaire waits for your yes, and ${Z.rows('appeals').filter((a) => Z.daysFrom(a.due) < 30).length} appeals are due within 30 days.`, fin: '12 of 14 checks matched; one $14,280 check matches no client and waits for you. Nothing reaches the trust ledger until the bank confirms.' })[r]}<br><br><span class="mute3">Try: switch role from the firm's name at the top left · open <b>Clients</b> for the map, then change the view · drag a request across the board · run an agent from <b>Agents</b> · click any value to see where it came from.</span>`,

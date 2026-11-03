@@ -243,6 +243,139 @@ const overview = {
   },
 }
 
+// ---- accounting, forecast, calendar and knowledge base
+const AM = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+const books = AM.map((m, i) => { const rev = [520000, 410000, 460000, 490000, 590000, 680000][i], cogs = Math.round(rev * [0.34, 0.35, 0.34, 0.33, 0.34, 0.36][i]), mkt = Math.round(rev * [0.12, 0.14, 0.13, 0.12, 0.11, 0.1][i]), ops = 96000 + i * 4000, net = rev - cogs - mkt - ops; return { id: 'bk' + i, month: m, rev, cogs, gross: Math.round((1 - cogs / rev) * 100), mkt, ops, net, cash: 310000 + i * 42000 + (i === 5 ? 18000 : 0), recv: [98000, 104000, 112000, 121000, 128000, 133500][i], state: i === 5 ? 'One flag' : 'Checked' } })
+const achecks = [
+  ['The P&L adds up', 'Passed', 'Every line of October\'s P&L export, cell by cell'],
+  ['The balance sheet balances', 'Passed', 'Assets ₹21.4L = liabilities + equity ₹21.4L'],
+  ['Receivables tie to the aging', 'Passed', '₹1,33,500 on the balance sheet = the A/R aging total'],
+  ['GST collected ties to invoices', 'Flag', '₹2,140 more GST in the books than on October\'s 214 invoices: one invoice entered twice?'],
+  ['Net income ties to retained earnings', 'Passed', 'September closing + October net = October closing'],
+  ['Cash ties to the bank statement', 'Passed', '₹5,38,000 in both'],
+].map(([name, state, how], i) => ({ id: 'ac' + i, name, state, how }))
+const bench = [
+  ['Gross margin', 64, '60 to 70', '%', 'D2C personal care, India, under ₹5Cr'], ['Marketing, of sales', 10, '15 to 25', '%', 'Same peers'], ['Repeat customers in 60 days', 41, '25 to 35', '%', 'Same peers'], ['Days to collect from shops', 52, '30 to 45', ' days', 'Indian retail distribution'], ['Returns', 1.2, 'under 3', '%', 'Same peers'],
+].map(([name, you, band, unit, peers], i) => ({ id: 'bm' + i, name, you, band, unit, peers }))
+const DF = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb']
+const dforecast = products.map((p, i) => { const oct = p.sold, nov = Math.round(oct * [1.32, 1.28, 1.2, 1.4, 1.36, 1.25, 1.18][i]), dec = Math.round(oct * [1.1, 1.08, 1.05, 1.15, 1.12, 1.06, 1.04][i]); return { id: 'df' + i, name: p.name, pid: p.id, oct, nov, dec, why: i === 3 ? 'Diwali gift boxes' : i >= 3 ? 'Wedding season and gifting' : 'Diwali, then steady', herbs: Object.entries(p.f).map(([m, g]) => `${MATS[m].name} ${((nov * g) / 1000).toFixed(1)} kg`).slice(0, 2).join(', ') } })
+const devents = [
+  ['4 pm courier pickup', add(0), 'Dispatch', 'Sameer Patil'], ['Hibiscus from Shree Herbs', add(12), 'Delivery', 'Sameer Patil'], ['Dry ginger from Malabar Spice', add(2), 'Delivery', 'Sameer Patil'], ['GSTR-1 for October due', add(9), 'Tax', 'Ritu Kulkarni'], ['GSTR-3B due', add(18), 'Tax', 'Ritu Kulkarni'], ['Diwali gift box launch on WhatsApp', add(4), 'Campaign', 'Ritu Kulkarni'], ['Neem batch, 20 kg', add(1), 'Making', 'Sameer Patil'], ['Ayur Mart crate dispatch', add(3), 'Dispatch', 'Sameer Patil'], ["Nature's Shelf: shelf-space meeting", add(6), 'Meeting', 'Ritu Kulkarni'], ['Coconut oil from Kerala Mills', add(8), 'Delivery', 'Sameer Patil'], ['Month-end books from the accountant', add(-2), 'Accounts', 'Ritu Kulkarni'], ['Wedding season offer (needs your yes)', add(14), 'Campaign', 'Ritu Kulkarni'],
+].map(([title, date, kind, who], i) => ({ id: 'dv' + i, title, date, kind, who }))
+const dkb = [
+  ['Neem tooth powder: the formula', 'Formula', 'Per 100 g: neem leaf powder 55 g, rock salt 30 g, clove 4 g, rose petal 1 g. Sieve twice; moisture under 6% or it cakes.'],
+  ['GST: CGST + SGST or IGST', 'Tax', 'Shipped inside Maharashtra: half CGST, half SGST. Anywhere else: IGST at the full rate. Tooth powders 12%, oils and hair packs 18%.'],
+  ['Reply: where is my order?', 'WhatsApp reply', 'Namaste {name}! Your order {no} left us on {date} with {courier}: {tracking}. It usually takes 3 to 5 days.'],
+  ['Reply: "red powder" means Ginger clove', 'Customer word', 'Customers call the Ginger clove tooth powder "red powder" or "laal wala". Decided by Ritu, 2 Nov.'],
+  ['Retailer terms', 'Policy', '30% margin on MRP, 45 days to pay, minimum 12 of a product. Past 60 days, no new crate until paid.'],
+  ['Packing a hair oil', 'How-to', 'Cap, shrink band, bubble wrap, upright in the box. Oils leak in summer: double band from April to June.'],
+  ['No discounts on WhatsApp without Ritu', 'Decision', 'Every discount or refund needs Ritu\'s yes, every time. The Reorder nudge never offers one by itself.'],
+  ['Choosing a supplier', 'Policy', 'Two suppliers for every herb over ₹300 a kg. Shree Herbs for leaves and flowers, Malabar Spice for spices.'],
+].map(([title, kind, body], i) => ({ id: 'dk' + i, title, kind, body, updated: add(-int(1, 70)), by: pick(['Ritu Kulkarni', 'Sameer Patil', 'Librarian (agent)']) }))
+
+Object.assign(tables, {
+  books: { name: 'Monthly books', one: 'month', title: 'month', rows: books, sort: null, view: 'table', board: 'state',
+    sub: (r) => `Sales ${Z.money(r.rev)} · net ${Z.money(r.net)}`,
+    detail: (r) => `<div class="sec-t">Where ${r.month}'s sales went</div>${Z.chart.hbar([{ label: 'Herbs, jars, labour', value: r.cogs, color: Z.PAL[0] }, { label: 'Marketing', value: r.mkt, color: Z.PAL[3] }, { label: 'Running costs', value: r.ops, color: Z.PAL[2] }, { label: 'Profit', value: r.net, color: '#2f7a55' }], { max: r.rev, fmt: (v) => inr(v) })}<p class="mute3" style="font-size:12px">Every figure is read from the accountant's export and cites its cell. Click a value for it.</p>`,
+    fields: [
+      { k: 'month', label: 'Month', src: 'The accountant\'s exports' },
+      { k: 'state', label: 'Checks', kind: 'choice', choices: ['Checked', 'One flag'], tones: { Checked: 'good', 'One flag': 'warn' }, computed: true, src: 'Computed: the six checks on the exports' },
+      { k: 'rev', label: 'Sales', kind: 'money', src: (r) => `P&L by month export, cell ${'BCDEFG'[books.indexOf(r)]}4` },
+      { k: 'gross', label: 'Gross margin', kind: 'pct', computed: true, src: 'Computed: (sales − cost of goods) ÷ sales' },
+      { k: 'cogs', label: 'Cost of goods', kind: 'money', src: (r) => `P&L by month export, cell ${'BCDEFG'[books.indexOf(r)]}9` },
+      { k: 'mkt', label: 'Marketing', kind: 'money', src: (r) => `P&L by month export, cell ${'BCDEFG'[books.indexOf(r)]}14` },
+      { k: 'ops', label: 'Running costs', kind: 'money', src: (r) => `P&L by month export, cells ${'BCDEFG'[books.indexOf(r)]}15 to ${'BCDEFG'[books.indexOf(r)]}22` },
+      { k: 'net', label: 'Net profit', kind: 'money', computed: true, src: 'Computed: sales less every cost; ties to the export\'s net line' },
+      { k: 'cash', label: 'Cash', kind: 'money', src: 'Balance sheet export, cell B6' },
+      { k: 'recv', label: 'Shops owe you', kind: 'money', src: 'A/R aging export, total' },
+    ] },
+  achecks: { name: 'Checks', one: 'check', title: 'name', rows: achecks, sort: null, view: 'list', board: 'state',
+    sub: (r) => Z.esc(r.how),
+    fields: [
+      { k: 'name', label: 'Check', src: 'Agreed with your accountant' },
+      { k: 'state', label: 'Result', kind: 'choice', choices: ['Passed', 'Flag'], tones: { Passed: 'good', Flag: 'warn' }, src: 'Books checker' },
+      { k: 'how', label: 'How it was checked', src: 'Books checker' },
+    ] },
+  bench: { name: 'Benchmarks', one: 'benchmark', title: 'name', rows: bench, sort: null, view: 'card',
+    sub: (r) => `You: ${r.you}${r.unit} · peers: ${r.band}${r.unit}`,
+    fields: [
+      { k: 'name', label: 'Measure', src: 'Agreed with Ritu' },
+      { k: 'you', label: 'You', kind: 'number', src: 'Computed from the books' },
+      { k: 'band', label: 'Peers', src: (r) => r.peers },
+      { k: 'peers', label: 'Peer group', src: 'Industry reports, 2025' },
+    ] },
+  dforecast: { name: 'By product', one: 'product forecast', title: 'name', rows: dforecast, sort: ['nov', 'desc'], view: 'table',
+    sub: (r) => `${Z.esc(r.why)} · needs ${Z.esc(r.herbs)}`,
+    fields: [
+      { k: 'name', label: 'Product', src: 'Your product list' },
+      { k: 'oct', label: 'October, sold', kind: 'number', src: 'Orders' },
+      { k: 'nov', label: 'November, forecast', kind: 'number', src: 'Forecaster: last Diwali\'s lift on this year\'s trend' },
+      { k: 'dec', label: 'December, forecast', kind: 'number', src: 'Forecaster: wedding season, from last year' },
+      { k: 'why', label: 'Why', src: 'Forecaster' },
+      { k: 'herbs', label: 'Herbs it needs in November', src: 'Computed: forecast × the formula' },
+    ] },
+  devents: { name: 'Events', one: 'event', title: 'title', rows: devents, sort: ['date', 'asc'], view: 'calendar', board: 'kind', date: 'date',
+    sub: (r) => `${Z.day(r.date)} · ${Z.esc(r.who)}`,
+    fields: [
+      { k: 'title', label: 'Event', src: 'From the module it belongs to' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'From the module it belongs to' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Dispatch', 'Delivery', 'Making', 'Tax', 'Campaign', 'Meeting', 'Accounts'], tones: { Dispatch: 'o1', Delivery: 'o3', Making: 'o5', Tax: 'bad', Campaign: 'acc', Meeting: 'o8', Accounts: 'good' }, src: 'Scheduler' },
+      { k: 'who', label: 'Who', src: 'Owner of the work' },
+    ] },
+  dkb: { name: 'Articles', one: 'article', title: 'title', rows: dkb, sort: ['updated', 'desc'], view: 'card', board: 'kind', date: 'updated',
+    sub: (r) => `${Z.esc(r.kind)} · updated ${Z.day(r.updated)} by ${Z.esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${Z.esc(r.body)}</div><p class="mute3" style="font-size:12px">Agents read this before they run. Change it and they follow the new words.</p>`,
+    fields: [
+      { k: 'title', label: 'Title', src: 'Ritu and Sameer' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Formula', 'Tax', 'WhatsApp reply', 'Customer word', 'Policy', 'How-to', 'Decision'], tones: { Formula: 'o5', Tax: 'bad', 'WhatsApp reply': 'good', 'Customer word': 'o1', Policy: 'o3', 'How-to': 'o8', Decision: 'acc' }, src: 'Ritu and Sameer' },
+      { k: 'by', label: 'Written by', src: 'Ritu, Sameer, or the Librarian from a decision' },
+      { k: 'updated', label: 'Updated', kind: 'date', src: 'Last edit' },
+      { k: 'body', label: 'Text', hide: true, src: 'Ritu and Sameer' },
+    ] },
+})
+overview.accounting = (Z) => {
+  const bs = Z.rows('books'), last = bs.at(-1)
+  return `<div class="counts">${Z.count(inr(last.rev), 'sales in October', 'Monthly books', 'data-act="tab" data-k="books"')}${Z.count(last.gross + '%', 'gross margin')}${Z.count(inr(last.net), 'net profit')}${Z.count(Z.rows('achecks').filter((c) => c.state === 'Flag').length, 'check flagged', 'Checks', 'data-act="tab" data-k="achecks"')}</div>
+  <div class="callout">${Z.ic('warning')} <b>One flag in October:</b> ₹2,140 more GST in the books than on the invoices. Probably invoice VH-2391 entered twice; your accountant has been asked.</div>
+  <div class="cols2">${Z.box('Sales and profit by month', Z.chart.line([{ name: 'Sales', values: bs.map((b) => b.rev) }, { name: 'Net profit', values: bs.map((b) => b.net), color: '#2f7a55' }], AM, { fmt: inr, area: true }))}${Z.box('You against peers', Z.chart.hbar(Z.rows('bench').map((b) => ({ label: b.name, value: b.you, note: `peers ${b.band}${b.unit}`, tone: 'o1', tip: `${b.name}: you ${b.you}${b.unit}, peers ${b.band}${b.unit}` })), { fmt: (v) => v }), '', 'Peers: D2C personal care in India, under ₹5Cr a year')}</div>`
+}
+overview.forecast = (Z) => {
+  const fs = Z.rows('dforecast'), tot = (k) => fs.reduce((a, f) => a + f[k], 0), act = [1420, 1610, tot('oct'), null, null, null, null], fc = [null, null, tot('oct'), tot('nov'), tot('dec'), Math.round(tot('dec') * 0.92), Math.round(tot('dec') * 0.95)]
+  return `<div class="counts">${Z.count(tot('nov').toLocaleString('en-IN'), 'packs forecast for November', 'By product', 'data-act="tab" data-k="dforecast"')}${Z.count('+' + Math.round((tot('nov') / tot('oct') - 1) * 100) + '%', 'on October: Diwali')}${Z.count(inr(tot('nov') * 230), 'sales forecast, November')}${Z.count('3', 'herbs to order early')}</div>
+  ${Z.box('Packs a month: actual, then forecast', Z.chart.line([{ name: 'Actual', values: act, color: '#2f7a55' }, { name: 'Forecast', values: fc, color: '#c4602f', dash: true }], DF, { fmt: (v) => v.toLocaleString('en-IN'), h: 220 }), '', 'Last year\'s festive lift on this year\'s growth')}
+  ${Z.box('November by product', Z.chart.hbar(fs.map((f) => ({ label: f.name, value: f.nov, note: `Oct ${f.oct}`, tone: 'o1', row: ['dforecast', f.id] })), { fmt: (v) => v }), '', 'Click one for the herbs it needs')}`
+}
+agents.push(
+  { id: 'books', name: 'Books checker', module: 'accounting', group: 'Money', level: 'A', when: 'When the accountant sends the exports', reads: 'the six monthly exports', does: 'Reads each export once, traces every figure to its cell, runs six checks and sets the month against your peers. A failed check goes to you with what it found.',
+    steps: ['6 exports for October', 'P&L adds up ✓ · balance sheet balances ✓', 'GST collected ≠ invoices by ₹2,140 → flagged', 'Benchmarks updated'], run: () => ({ text: '5 checks passed, 1 flagged' }) },
+  { id: 'dfore', name: 'Forecaster', module: 'forecast', group: 'Making', level: 'A', when: 'Every Monday', reads: 'orders, last year\'s season and formulas', does: 'Forecasts packs by product for two months and turns them into the herbs you will need, so the Stock planner orders early.',
+    steps: ['Last Diwali: +31% in the 3 weeks before', 'This year\'s growth: +16% a month', 'November: 2,280 packs', 'Hibiscus, dry ginger and clove to order early'], run: () => ({ text: 'November forecast 2,280 packs; 3 herbs to order early' }) },
+  { id: 'dsched', name: 'Scheduler', module: 'calendar', group: 'Orders', level: 'B', when: 'Every evening', reads: 'orders, purchase orders and tax dates', does: 'Puts courier pickups, deliveries, batches and GST dates on one calendar.',
+    steps: ['2 deliveries confirmed', 'GSTR-1 due in 9 days', 'Added a neem batch tomorrow'], run: () => ({ text: '3 dates added' }) },
+  { id: 'dlib', name: 'Librarian', module: 'kb', group: 'Making', level: 'A', when: 'After each decision', reads: 'your answers and notes', does: 'Turns what you decide into an article the agents read: a customer\'s word for a product, a reply, a rule.',
+    steps: ['Read today\'s decisions', '"Red powder" = Ginger clove → saved', 'The WhatsApp order taker reads it from now'], run: () => ({ text: 'saved 1 new customer word' }) },
+)
+tasks.push(
+  { id: 't8', title: 'Ask the accountant about the ₹2,140 GST gap', row: ['achecks', 'ac3'], due: add(1), state: 'todo', by: 'Books checker', roles: ['founder'] },
+  { id: 't9', title: 'Order hibiscus and clove early for Diwali', row: ['dforecast', 'df3'], due: add(0), state: 'doing', by: 'Forecaster', roles: ['founder', 'ops'] },
+  { id: 't10', title: 'Shoot photos for the gift box', due: add(2), state: 'todo', roles: ['founder'] },
+  { id: 't11', title: 'Restock jars and labels', due: add(-2), state: 'done', roles: ['ops'] },
+  { id: 't12', title: 'Send October invoices to the accountant', due: add(-3), state: 'done', by: 'Invoice maker', roles: ['founder'] },
+)
+const notes = [
+  { mod: 'orders', who: 'Ritu Kulkarni', text: 'Retailers in Mumbai want delivery before Friday; plan the crate on Wednesday.' },
+  { mod: 'products', who: 'Sameer Patil', text: 'Clove from Malabar is up again; ask Kannauj for a quote.' },
+  { mod: 'accounting', who: 'Ritu Kulkarni', text: 'The accountant sends exports on the 3rd. Don\'t worry about flags before then.' },
+  { mod: 'forecast', who: 'Ritu Kulkarni', text: 'Last Diwali we ran out of Bhringraj oil on day 10. Not again.' },
+]
+const connections = [
+  { name: 'WhatsApp Business', icon: 'whatsapp-logo', what: 'Messages, read; replies drafted for you to send' },
+  { name: 'Website (Shopify)', icon: 'storefront', what: 'Orders and customers' },
+  { name: 'Bank statement', icon: 'bank', what: 'UPI and bank payments, read-only' },
+  { name: 'Courier', icon: 'truck', what: 'Pickups and tracking' },
+  { name: 'Accountant\'s exports', icon: 'file-xls', what: 'Six monthly exports, read once', state: 'Needs you' },
+]
+
 Z.boot({
   id: 'd2c', today: TODAY, currency: 'INR', findHint: 'customer, an order, a herb',
   brand: { name: 'Vanya Herbals', sub: 'Herbal personal care', mark: 'VH' },
@@ -251,9 +384,14 @@ Z.boot({
   greeting: (r) => `Good morning, ${({ founder: 'Ritu', ops: 'Sameer' })[r]}`,
   tables, levels, needs, tasks, agents, ask,
   modules: [
-    { id: 'orders', name: 'Orders', icon: 'shopping-bag', tables: ['orders', 'customers'], overview: overview.orders },
+    { id: 'orders', name: 'Orders', icon: 'shopping-bag', tables: ['orders', 'customers'], map: 'orders', overview: overview.orders },
     { id: 'products', name: 'Products and stock', icon: 'flask', tables: ['products', 'stock'], overview: overview.products },
+    { id: 'accounting', name: 'Accounting', icon: 'calculator', roles: ['founder'], tables: ['books', 'achecks', 'bench'], overview: overview.accounting },
+    { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['dforecast'], overview: overview.forecast },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['devents'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['dkb'] },
   ],
+  notes, connections, runsOn: "The workshop's own computer", brainLinks: [['orders', 'products'], ['orders', 'accounting'], ['products', 'forecast'], ['orders', 'forecast'], ['calendar', 'orders'], ['calendar', 'products'], ['kb', 'orders']],
   after: refresh,
   journal: [{ who: 'Invoice maker', words: 'sent 9 GST invoices for yesterday\'s orders', mod: 'orders' }, { who: 'Payment matcher', words: 'matched 6 UPI payments to orders', mod: 'orders' }],
   homeSide: (Z) => Z.box('Sales by channel', Z.chart.line(Object.entries(byChannel).map(([name, values]) => ({ name, values })), MONTHS, { fmt: inr, h: 170 }), '<button class="btn sm ghost" data-act="mod" data-m="orders">Open</button>'),

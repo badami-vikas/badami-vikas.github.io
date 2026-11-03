@@ -20,6 +20,7 @@
 let s = 19
 const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
 const int = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1))
+const pick = (a) => a[Math.floor(rnd() * a.length)]
 const TODAY = '2026-11-02'
 const add = (n) => new Date(new Date(TODAY + 'T12:00:00').getTime() + n * 864e5).toISOString().slice(0, 10)
 
@@ -199,7 +200,7 @@ const needs = [
   { id: 'n4', agent: 'Parcel screener', module: 'sites', level: 'A', roles: ['dev', 'cfo'], date: 'Mon',
     title: "Intersection traffic: one road's count, or both roads added?", sub: 'Your process says "50,000 at the main intersection". Zazoo adds both crossing roads for now and marks every such value.',
     why: `With one road's count, ${sites.filter((r) => Math.round(r.inter * 0.58) < 50000).length} sites fall under 50,000. Only you can say what the gate meant.`,
-    acts: [{ label: 'One road only', pri: true, run: () => { INTER = 'one'; return "set the intersection gate to one road's count" }, done: 'One road' }, { label: 'Keep both added', run: () => 'kept both roads added for the intersection gate', done: 'Kept' }] },
+    acts: [{ label: 'Keep both added', pri: true, run: () => 'kept both roads added for the intersection gate', done: 'Kept' }, { label: 'One road only', tip: 'Most sites would then fail this gate', run: () => { INTER = 'one'; return "set the intersection gate to one road's count" }, done: 'One road' }] },
 ]
 const tasks = [
   { id: 't1', title: `Walk ${best.addr} with the contractor`, row: ['sites', 's7'], due: add(1), state: 'todo', roles: ['dev'] },
@@ -259,6 +260,127 @@ const overview = {
 }
 
 const role = () => Z.state().role
+// ---- CRM, forecast, calendar and knowledge base
+const PHASES = ['Sourced', 'Contacted', 'Talking', 'LOI', 'Closed', 'Passed']
+const PEOPLE = [['Halvorsen Family Holdings', 'Ingrid Halvorsen', 'Owner', 's5'], ['Crestline Commercial', 'Dev Kapoor', 'Broker', 's7'], ['Crestline Commercial', 'Dev Kapoor', 'Broker', 's2'], ['Marlow Retail Partners', 'Ellen Marlow', 'Owner', 's17'], ['NAI Ridgeway', 'Sam Okoro', 'Broker', 's13'], ['First Granview Bank', 'Paul Ames', 'Owner', 's21'], ['Westbury Planning Dept', 'Lena Fritsch', 'Town planner', 's0'], ['North Hollis Planning', 'Mark Delaney', 'Town planner', 's1'], ['Brightway Builders', 'Rosa Vega', 'Contractor', 's7'], ['Tremont Realty', 'Joel Baptiste', 'Broker', 's11'], ['Kingsley Trust', 'Ava Lindgren', 'Owner', 's23'], ['Easton Park Planning', 'Ken Mori', 'Town planner', 's13'], ['Pinecrest Properties', 'Nora Fields', 'Owner', 's8'], ['Ridgeway Land Co.', 'Ty Hollis', 'Owner', 's4'], ['Summit Brokers', 'Iris Chen', 'Broker', 's15']]
+const contacts = PEOPLE.map(([firm, name, role, sid], i) => ({ id: 'ct' + i, name, firm, role, sid, site: sites.find((x) => x.id === sid).addr, phase: ['Contacted', 'LOI', 'Talking', 'Closed', 'Talking', 'Contacted', 'Talking', 'Contacted', 'Talking', 'Sourced', 'Sourced', 'Contacted', 'Passed', 'Sourced', 'Talking'][i], last: add(-int(1, 30)), next: ['Owner letter', 'LOI redlines', 'Survey', 'Closing docs', 'Second call', 'Follow-up call', 'Pre-application meeting', 'Hearing Nov 18', 'Site walk', 'First call', 'Find a phone', 'Zoning question', '—', 'First letter', 'Price talk'][i], email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
+const touches = contacts.flatMap((c, i) => Array.from({ length: 1 + (i % 4) }, (_, j) => ({ id: `tc${i}-${j}`, who: c.name, cid: c.id, kind: pick(['Email', 'Call', 'Email', 'Meeting']), date: add(-int(1, 45)), by: pick(['Mia Torres', 'Owner finder (agent)', 'Mia Torres']), about: c.site })))
+const FMONTHS = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
+const fcast = FMONTHS.map((m, i) => { const act = i < 5, base = stores.reduce((a, o) => a + o.trend[Math.min(10, 6 + i)] , 0), season = [1.04, 1.0, 0.98, 1.02, 1.06, 0.94, 0.82, 0.78, 0.86, 1.05, 1.12, 1.1][i], newSite = i >= 10 ? 620 * [0.55, 0.65][i - 10] : 0, cars = Math.round((act ? base : 2880 * season) + newSite); return { id: 'fc' + i, month: m, kind: act ? 'Actual' : 'Forecast', cars, revenue: Math.round(cars * 30 * 10.65), members: Math.round(19000 + i * 260), low: act ? cars : Math.round(cars * (1 - (i - 4) * 0.025)), high: act ? cars : Math.round(cars * (1 + (i - 4) * 0.02)), note: i === 10 ? `${best.addr} opens` : '' } })
+const cevents = [
+  ['Hearing: express tunnel wash, North Hollis', add(16), 'Hearing', 'Mia Torres'], [`Site walk: ${best.addr}`, add(1), 'Site walk', 'Mia Torres'], ['Executive sign-off meeting', add(3), 'Sign-off', 'Grant Ellis'], [`LOI redlines due: ${sites[17].addr}`, add(5), 'LOI', 'Grant Ellis'], ['Westbury pre-application meeting', add(9), 'Hearing', 'Mia Torres'], ['Store 4 membership push starts', add(6), 'Stores', 'Grant Ellis'], ['Quarterly board: pipeline review', add(23), 'Sign-off', 'Grant Ellis'], ['Phase I environmental report due', add(11), 'Due diligence', 'Mia Torres'], ['Broker lunch: Crestline', add(-2), 'Meeting', 'Mia Torres'], ['Traffic count release (state)', add(-12), 'Data', 'Parcel screener'], ['Fairmont council: zoning code update', add(20), 'Hearing', 'Mia Torres'], [`Survey due: ${sites[2].addr}`, add(13), 'Due diligence', 'Mia Torres'],
+].map(([title, date, kind, who], i) => ({ id: 'ev' + i, title, date, kind, who }))
+const ckb = [
+  ['Why each gate exists', 'Method', 'Every gate comes from a store that struggled: Store 4 opened at 39,000 households and has been below plan since. A gate kills a site on one miss; the score only ranks those that pass.'],
+  ['Capture rate: low, base, high', 'Method', 'Base 1.5% of passing cars, from our six stores in their second year. Low is 1.0% (Store 4), high 2.1% (Store 1). The CFO signs off on the low case.'],
+  ['Interstate traffic does not count', 'Decision', 'Grant, June 2026: cars on an interstate cannot turn in. Use the frontage road count instead.'],
+  ['Conditional use, in plain words', 'Zoning', 'A wash is allowed only after a public hearing. Budget 3 to 5 months and a traffic study; most towns grant it with conditions on noise and stacking.'],
+  ['Owner letter', 'Template', 'Dear {owner}, we operate car washes in the region and are looking for one site in {town}. Your parcel on {road} fits what we look for. We would like to talk, with no obligation…'],
+  ['Pro forma assumptions', 'Method', '$10.65 a car, 70% members; labour at $15.50 an hour; water and power at local rates; ramp at 65% and 85% in years 1 and 2.'],
+  ['Stacking: how many cars must fit', 'Zoning', 'Express tunnels need 12 to 15 cars of stacking on site; most codes ask 10. Lots under 0.8 acres rarely fit it, which is why it is a gate.'],
+  ['What a good broker gives us', 'Playbook', 'Off-market leads before they list, traffic counts with the listing, and the owner\'s timing. Crestline does; send them the gates.'],
+].map(([title, kind, body], i) => ({ id: 'ck' + i, title, kind, body, updated: add(-int(2, 90)), by: pick(['Mia Torres', 'Grant Ellis', 'Librarian (agent)']) }))
+
+Object.assign(tables, {
+  contacts: { name: 'Contacts', one: 'contact', title: 'name', rows: contacts, sort: ['last', 'desc'], view: 'board', board: 'phase', date: 'last',
+    lists: [{ name: 'Owners', tone: 'acc', where: (r) => r.role === 'Owner' }, { name: 'Brokers', tone: 'o1', where: (r) => r.role === 'Broker' }, { name: 'No touch in 2 weeks', tone: 'warn', where: (r) => Z.daysFrom(r.last) < -14 && !['Closed', 'Passed'].includes(r.phase) }],
+    sub: (r) => `${Z.esc(r.role)} · ${Z.esc(r.firm)} · ${Z.esc(r.site)}`,
+    links: [{ t: 'sites', label: 'Site', by: (r, x) => x.id === r.sid, show: ['verdict', 'stage'] }, { t: 'touches', label: 'Touches', by: (r, x) => x.cid === r.id, show: ['kind', 'date'] }],
+    fields: [
+      { k: 'name', label: 'Name', src: 'Email signature, or county and state filings' },
+      { k: 'phase', label: 'Phase', kind: 'choice', choices: PHASES, tones: { Sourced: 'o8', Contacted: 'o1', Talking: 'o3', LOI: 'acc', Closed: 'good', Passed: 'bad' }, src: 'Moved by the team' },
+      { k: 'role', label: 'Role', kind: 'choice', choices: ['Owner', 'Broker', 'Town planner', 'Contractor'], tones: { Owner: 'acc', Broker: 'o1', 'Town planner': 'o5', Contractor: 'o8' }, src: 'What they do' },
+      { k: 'firm', label: 'Firm', src: 'Email signature or state filing' },
+      { k: 'site', label: 'Site', src: 'The site they are about' },
+      { k: 'next', label: 'Next step', src: 'The team, or the Follow-up keeper' },
+      { k: 'last', label: 'Last touch', kind: 'date', src: 'Computed from emails, calls and meetings' },
+      { k: 'email', label: 'Email', hide: true, src: 'Gmail' },
+    ] },
+  touches: { name: 'Touches', one: 'touch', title: 'who', rows: touches, sort: ['date', 'desc'], view: 'table', board: 'kind', date: 'date',
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.day(r.date)} · ${Z.esc(r.about)}`,
+    fields: [
+      { k: 'who', label: 'With', src: 'Gmail and the phone log' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Email', 'Call', 'Meeting'], tones: { Email: 'o1', Call: 'o3', Meeting: 'acc' }, src: 'Gmail and the phone log' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'Gmail and the phone log' },
+      { k: 'by', label: 'By', src: 'Who sent or called' },
+      { k: 'about', label: 'About', src: 'Matched to the site' },
+    ] },
+  fcast: { name: 'Months', one: 'month', title: 'month', rows: fcast, sort: null, view: 'table', board: 'kind',
+    sub: (r) => `${r.kind}${r.note ? ' · ' + Z.esc(r.note) : ''}`,
+    fields: [
+      { k: 'month', label: 'Month', src: 'Calendar' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Actual', 'Forecast'], tones: { Actual: 'good', Forecast: 'o1' }, src: 'Past months are actual' },
+      { k: 'cars', label: 'Cars a day, all stores', kind: 'number', src: (r) => (r.kind === 'Actual' ? 'Your point of sale' : 'Forecaster: last year\'s season, this year\'s trend, new sites at their ramp') },
+      { k: 'revenue', label: 'Revenue', kind: 'money', src: 'Cars × 30 days × $10.65' },
+      { k: 'members', label: 'Members', kind: 'number', src: 'Your membership system, then the trend' },
+      { k: 'low', label: 'Low', kind: 'number', computed: true, src: 'Forecaster: a wet winter, like 2024' },
+      { k: 'high', label: 'High', kind: 'number', computed: true, src: 'Forecaster: a dry winter' },
+      { k: 'note', label: 'Note', src: 'Openings and events' },
+    ] },
+  cevents: { name: 'Events', one: 'event', title: 'title', rows: cevents, sort: ['date', 'asc'], view: 'calendar', board: 'kind', date: 'date',
+    sub: (r) => `${Z.day(r.date)} · ${Z.esc(r.who)}`,
+    fields: [
+      { k: 'title', label: 'Event', src: 'From the module it belongs to' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'From the module it belongs to' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Hearing', 'Site walk', 'Sign-off', 'LOI', 'Due diligence', 'Meeting', 'Stores', 'Data'], tones: { Hearing: 'bad', 'Site walk': 'o1', 'Sign-off': 'acc', LOI: 'good', 'Due diligence': 'warn', Meeting: 'o3', Stores: 'o5', Data: 'o8' }, src: 'Scheduler' },
+      { k: 'who', label: 'Who', src: 'Owner of the work' },
+    ] },
+  ckb: { name: 'Articles', one: 'article', title: 'title', rows: ckb, sort: ['updated', 'desc'], view: 'card', board: 'kind', date: 'updated',
+    sub: (r) => `${Z.esc(r.kind)} · updated ${Z.day(r.updated)} by ${Z.esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${Z.esc(r.body)}</div><p class="mute3" style="font-size:12px">Agents read this before they run. Change it and they follow the new words.</p>`,
+    fields: [
+      { k: 'title', label: 'Title', src: 'The team' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Method', 'Decision', 'Zoning', 'Template', 'Playbook'], tones: { Method: 'o1', Decision: 'good', Zoning: 'o5', Template: 'acc', Playbook: 'o3' }, src: 'The team' },
+      { k: 'by', label: 'Written by', src: 'The team, or the Librarian from a decision' },
+      { k: 'updated', label: 'Updated', kind: 'date', src: 'Last edit' },
+      { k: 'body', label: 'Text', hide: true, src: 'The team' },
+    ] },
+})
+overview.crm = (Z) => {
+  const cs = Z.rows('contacts'), ts = Z.rows('touches'), wk = [3, 2, 1, 0].map((w) => ts.filter((t) => Z.daysFrom(t.date) > -(w + 1) * 7 && Z.daysFrom(t.date) <= -w * 7).length)
+  return `<div class="counts">${Z.count(cs.filter((c) => !['Closed', 'Passed'].includes(c.phase)).length, 'in conversation', 'Open the board', 'data-act="tab" data-k="contacts"')}${Z.count(cs.filter((c) => c.phase === 'LOI').length, 'at LOI')}${Z.count(ts.filter((t) => Z.daysFrom(t.date) >= -7).length, 'touches this week')}${Z.count(cs.filter((c) => Z.daysFrom(c.last) < -14 && !['Closed', 'Passed'].includes(c.phase)).length, 'gone quiet, 2 weeks')}</div>
+  <div class="cols2">${Z.box('Contacts by phase', Z.chart.hbar(PHASES.map((p, i) => ({ label: p, value: cs.filter((c) => c.phase === p).length, tone: ['o8', 'o1', 'o3', 'acc', 'good', 'bad'][i] })), { fmt: (v) => v }), '', 'An owner or broker moves from sourced to closed or passed, as a search does')}${Z.box('Touches a week', Z.chart.bar(wk.map((v, i) => ({ label: ['3 weeks ago', '2 weeks ago', 'Last week', 'This week'][i], value: v, tone: i === 3 ? 'acc' : 'o1' })), { fmt: (v) => v }), '', 'Emails, calls and meetings, from Gmail and the phone log')}</div>`
+}
+overview.forecast = (Z) => {
+  const fs = Z.rows('fcast'), act = fs.map((f) => (f.kind === 'Actual' ? f.cars : null)), fc = fs.map((f, i) => (f.kind === 'Forecast' || i === 4 ? f.cars : null))
+  return `<div class="counts">${Z.count(Z.money(fs.filter((f) => f.kind === 'Forecast').reduce((a, f) => a + f.revenue, 0)), 'revenue, next seven months', 'Months', 'data-act="tab" data-k="fcast"')}${Z.count(n0(fs[11].members), 'members by May')}${Z.count('Apr', `${best.addr} opens, if signed`)}${Z.count('±4%', 'how far off it was, last 5 months')}</div>
+  ${Z.box('Cars a day, all stores: actual, then forecast', Z.chart.line([{ name: 'Actual', values: act, color: '#2f7a55' }, { name: 'Forecast', values: fc, color: '#c4602f', dash: true }, { name: 'Low', values: fs.map((f, i) => (i >= 4 ? f.low : null)), color: '#d8b9a5', dash: true }, { name: 'High', values: fs.map((f, i) => (i >= 4 ? f.high : null)), color: '#d8b9a5', dash: true }], fs.map((f) => f.month), { fmt: (v) => n0(v), h: 230 }), '', 'Winter dips as every year; April and May include the new site at its ramp')}
+  <div class="cols2">${Z.box('Revenue a month', Z.chart.bar(fs.map((f) => ({ label: f.month, value: f.revenue, tone: f.kind === 'Actual' ? 'good' : 'o1' })), { fmt: (v) => '$' + Z.compact(v) }))}${Z.box('What moves the forecast', Z.chart.hbar([{ label: 'Winter weather', value: 41 }, { label: 'New site opening date', value: 26 }, { label: 'Membership growth', value: 19 }, { label: 'Planned competitor washes', value: 14 }], { max: 50, fmt: (v) => v + '%' }), '', 'Share of the spread between low and high')}</div>`
+}
+agents.push(
+  { id: 'follow', name: 'Follow-up keeper', module: 'crm', group: 'Finding sites', level: 'B', when: 'Every morning at 8:00', reads: 'Gmail and the phone log', does: 'Logs every email and call against the contact and the site, and drafts a follow-up for anyone who has gone quiet for two weeks. You send it.',
+    steps: ['Read 14 emails and 3 calls', 'Logged against 6 contacts', '2 quiet for two weeks → follow-ups drafted'], run: () => ({ text: '2 follow-ups drafted', needs: [{ roles: ['dev'], level: 'B', row: ['contacts', 'ct10'], title: `${contacts[10].name} has not heard from you in 2 weeks`, sub: `Owner of ${contacts[10].site}. A short follow-up is drafted.`, acts: [{ label: 'Send follow-up', pri: true, run: (Z) => { Z.set('contacts', 'ct10', { phase: 'Contacted', last: TODAY }); return `sent a follow-up to ${contacts[10].name}` }, done: 'Sent' }, { label: 'Call instead', run: () => `will call ${contacts[10].name}`, done: 'Call task added', tasks: () => [{ title: `Call ${contacts[10].name}`, row: ['contacts', 'ct10'], roles: ['dev'] }] }] }] }) },
+  { id: 'forecaster', name: 'Forecaster', module: 'forecast', group: 'Your stores', level: 'A', when: 'On the 1st of each month', reads: 'point of sale, memberships and the pipeline', does: 'Forecasts cars, revenue and members for twelve months, with new sites at their ramp, and checks last month\'s forecast against what came.',
+    steps: ['October: forecast 2,610 cars a day, came 2,644', 'Season from 3 years of sales', `${best.addr} added from April at 55%`, 'Forecast written to May'], run: () => ({ text: 'forecast updated to May; October within 1.3%' }) },
+  { id: 'scheduler', name: 'Scheduler', module: 'calendar', group: 'Checking sites', level: 'B', when: 'Every evening', reads: 'town agendas, LOIs and due diligence', does: 'Puts every hearing, site walk, LOI date and due-diligence deadline on one calendar.',
+    steps: ['Read 7 town agendas', 'Added the North Hollis hearing, Nov 18', 'LOI redlines due in 5 days'], run: () => ({ text: '2 dates added' }) },
+  { id: 'librarian', name: 'Librarian', module: 'kb', group: 'Deciding', level: 'A', when: 'After each decision', reads: 'sign-offs, notes and decisions', does: 'Turns what the team decides into an article the agents read before they run.',
+    steps: ['Read this week\'s decisions', 'Intersection traffic: still open', 'Nothing new to write'], run: () => ({ text: 'articles up to date' }) },
+)
+tasks.push(
+  { id: 't8', title: `Send LOI redlines to ${contacts[1].name}`, row: ['contacts', 'ct1'], due: add(2), state: 'doing', roles: ['dev', 'cfo'] },
+  { id: 't9', title: 'Order the traffic study for Westbury', row: ['sites', 's0'], due: add(4), state: 'todo', by: 'Zoning reader', roles: ['dev'] },
+  { id: 't10', title: 'Confirm Store 6 ramp numbers', row: ['stores', 'o5'], due: add(-4), state: 'done', roles: ['cfo'] },
+  { id: 't11', title: `Second call with ${contacts[4].name}`, row: ['contacts', 'ct4'], due: add(1), state: 'todo', by: 'Follow-up keeper', roles: ['dev'] },
+  { id: 't12', title: 'Board deck: pipeline slide', due: add(20), state: 'todo', roles: ['cfo'] },
+  { id: 't13', title: 'Read the Fairmont code update', due: add(-2), state: 'done', by: 'Zoning reader', roles: ['dev'] },
+)
+const notes = [
+  { mod: 'sites', who: 'Grant Ellis', text: 'Nothing goes to sign-off without the low case on the first page.' },
+  { mod: 'sites', who: 'Mia Torres', text: 'Granview council is friendly to washes; Fairmont is not. Weigh that in the zoning step.' },
+  { mod: 'crm', who: 'Mia Torres', text: 'Dev at Crestline prefers calls to email. Owners first by letter, never a cold call.' },
+  { mod: 'stores', who: 'Grant Ellis', text: 'Store 4: try the $19.99 membership in December before anything bigger.' },
+  { mod: 'forecast', who: 'Grant Ellis', text: 'Use 2024 as the wet-winter low case.' },
+]
+const connections = [
+  { name: 'Gmail', icon: 'envelope-simple', what: 'Broker and owner emails, read-only; drafts for a person to send' },
+  { name: 'Point of sale', icon: 'cash-register', what: 'Cars and tickets at each store, every night' },
+  { name: 'Membership system', icon: 'identification-card', what: 'Members and churn' },
+  { name: 'County parcels', icon: 'map-trifold', what: 'Every commercial parcel in the metro, monthly' },
+  { name: 'Census and state traffic counts', icon: 'chart-bar', what: 'Public data, with its date and source' },
+  { name: 'Town agendas', icon: 'newspaper', what: 'Seven towns\' planning agendas, weekly' },
+]
+
 Z.boot({
   id: 'carwash', today: TODAY, currency: 'USD', findHint: 'site, a store',
   brand: { name: 'Clearpoint Wash', sub: 'Express and full service', mark: 'CW' },
@@ -267,9 +389,14 @@ Z.boot({
   greeting: (r) => `Good morning, ${({ dev: 'Mia', cfo: 'Grant' })[r]}`,
   tables, levels, needs, tasks, agents, ask,
   modules: [
-    { id: 'sites', name: 'Site selection', icon: 'map-pin', tables: ['sites'], overview: overview.sites },
-    { id: 'stores', name: 'Stores', icon: 'drop', tables: ['stores'], overview: overview.stores },
+    { id: 'sites', name: 'Site selection', icon: 'map-pin', tables: ['sites'], map: 'sites', overview: overview.sites },
+    { id: 'crm', name: 'CRM', icon: 'address-book', tables: ['contacts', 'touches'], overview: overview.crm },
+    { id: 'stores', name: 'Stores', icon: 'drop', tables: ['stores'], map: 'stores', overview: overview.stores },
+    { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['fcast'], overview: overview.forecast },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['cevents'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['ckb'] },
   ],
+  notes, connections, runsOn: "Clearpoint's own server", brainLinks: [['sites', 'crm'], ['sites', 'stores'], ['sites', 'forecast'], ['stores', 'forecast'], ['calendar', 'sites'], ['calendar', 'crm'], ['kb', 'sites']],
   after: (Z) => refresh(Z.rows('sites')),
   save: () => ({ W, INTER }),
   load: (p) => p && ({ W, INTER } = p),

@@ -14,6 +14,7 @@ Z.ic = ic
 
 // ---------- dates and amounts
 const T12 = (iso) => new Date(iso + (iso.length === 10 ? 'T12:00:00' : ''))
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 Z.daysFrom = (iso) => Math.round((T12(iso) - T12(D.today)) / 864e5)
 Z.addDays = (n, from) => new Date(T12(from || D.today).getTime() + n * 864e5).toISOString().slice(0, 10)
 Z.day = (iso) => (iso ? T12(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '')
@@ -89,7 +90,7 @@ Z.chart = {
   },
   line(series, labels, o = {}) {
     const w = 560, h = o.h || 200, L = 48, B = 24, T = 10, R = 6
-    const all = series.flatMap((s) => s.values)
+    const all = series.flatMap((s) => s.values).filter((v) => v != null)
     const tk = ticks(Math.max(...all, o.ref?.value || 0)), top = tk[tk.length - 1], f = o.fmt || Z.compact
     const x = (i) => L + ((w - L - R) * i) / Math.max(1, labels.length - 1), y = (v) => T + (h - T - B) * (1 - v / top)
     let g = tk.map((t) => `<line x1="${L}" x2="${w - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--hair)"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" font-size="10" fill="var(--ink-3)">${f(t)}</text>`).join('')
@@ -97,10 +98,10 @@ Z.chart = {
     g += labels.map((l, i) => (i % every ? '' : `<text x="${x(i)}" y="${h - 6}" text-anchor="middle" font-size="10" fill="var(--ink-3)">${esc(l)}</text>`)).join('')
     if (o.ref) g += `<line x1="${L}" x2="${w - R}" y1="${y(o.ref.value)}" y2="${y(o.ref.value)}" stroke="var(--ink)" stroke-dasharray="4 4"/><text x="${w - R}" y="${y(o.ref.value) - 5}" text-anchor="end" font-size="10">${esc(o.ref.label)}</text>`
     series.forEach((s, k) => {
-      const col = s.color || Z.PAL[k], pts = s.values.map((v, i) => `${x(i)},${y(v)}`)
-      if (o.area && k === 0) g += `<polygon points="${x(0)},${y(0)} ${pts.join(' ')} ${x(s.values.length - 1)},${y(0)}" fill="${col}" opacity=".1"/>`
+      const col = s.color || Z.PAL[k], idx = s.values.map((v, i) => (v == null ? -1 : i)).filter((i) => i >= 0), pts = idx.map((i) => `${x(i)},${y(s.values[i])}`)
+      if (o.area && k === 0) g += `<polygon points="${x(idx[0])},${y(0)} ${pts.join(' ')} ${x(idx.at(-1))},${y(0)}" fill="${col}" opacity=".1"/>`
       g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.2" ${s.dash ? 'stroke-dasharray="5 4"' : ''}/>`
-      s.values.forEach((v, i) => (g += `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${col}" data-tip="${esc(s.name)} · ${esc(labels[i])}: ${esc(f(v))}"/>`))
+      s.values.forEach((v, i) => v != null && (g += `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${col}" data-tip="${esc(s.name)} · ${esc(labels[i])}: ${esc(f(v))}"/>`))
     })
     return svg(w, h, g) + (series.length > 1 || o.legend ? Z.legend(series.map((s, k) => ({ label: s.name, color: s.color || Z.PAL[k] }))) : '')
   },
@@ -134,13 +135,13 @@ const titleOf = (t, r) => r[D.tables[t].title]
 const snapshot = () => ({
   rows: Object.fromEntries(Object.entries(D.tables).map(([k, t]) => [k, clone(t.rows)])),
   needs: S.needs.slice(), nstate: S.needs.map((n) => [n.done, n.doneWords]),
-  tasks: S.tasks.slice(), tstate: S.tasks.map((t) => t.state), on: { ...S.on }, srcs: clone(S.srcs), page: D.save?.(),
+  tasks: S.tasks.slice(), tstate: S.tasks.map((t) => t.state), on: { ...S.on }, srcs: clone(S.srcs), notes: S.notes.slice(), page: D.save?.(),
 })
 const restore = (s) => {
   for (const k in s.rows) D.tables[k].rows = s.rows[k]
   S.needs = s.needs; s.needs.forEach((n, i) => ([n.done, n.doneWords] = s.nstate[i]))
   S.tasks = s.tasks; s.tasks.forEach((t, i) => (t.state = s.tstate[i]))
-  S.on = s.on; S.srcs = s.srcs
+  S.on = s.on; S.srcs = s.srcs; S.notes = s.notes
   D.load?.(s.page)
   D.after?.(Z)
 }
@@ -194,7 +195,7 @@ const rail = () => {
       ${mods}
       ${ri('data-act="nomod"', 'plus', 'New module', false, '', '').replace('class="ri"', 'class="ri dim"')}
     </nav>
-    <div class="rail-foot">${ri('data-act="go" data-at="activity"', 'clock-counter-clockwise', 'Activity', here('activity'))}<button class="iconbtn" data-act="why" data-tip="Where ${esc(D.brand.name)}'s data lives">${ic('shield-check')}</button></div>
+    <div class="rail-foot">${ri('data-act="go" data-at="settings"', 'sliders-horizontal', 'Settings', here('settings') || here('activity'))}<button class="iconbtn ${here('brain') ? 'on' : ''}" data-act="go" data-at="brain" data-tip="Second Brain: every module, connected" aria-label="Second Brain">${ic('brain')}</button></div>
   </aside>`
 }
 
@@ -207,7 +208,10 @@ const bar = () => {
     const m = D.modules.find((x) => x.id === r.mod)
     const tabs = [...(m.overview ? [['overview', 'Overview', '']] : []), ...m.tables.map((t) => [t, D.tables[t].name, D.tables[t].rows.length]), ['agents', 'Agents and notes', '']]
     mid = `<div class="tabs" role="tablist">${tabs.map(([k, l, c]) => `<button role="tab" aria-pressed="${r.tab === k}" data-act="tab" data-k="${k}">${esc(l)}${c !== '' ? `<span class="c">${c}</span>` : ''}</button>`).join('')}</div>`
-  } else mid = `<h1>${({ agents: 'Agents', tasks: 'Tasks', activity: 'Activity' })[r.at]}</h1>`
+  } else if (r.at === 'tasks') {
+    const sets = taskLists(tasksMine())
+    mid = `<div class="tabs" role="tablist">${Object.entries(TLISTS).map(([k, l]) => `<button role="tab" aria-pressed="${S.tlist === k}" data-act="tlist" data-k="${k}">${l}<span class="c">${sets[k].length}</span></button>`).join('')}</div>`
+  } else mid = `<h1>${({ agents: 'Agents', activity: 'Activity', settings: 'Settings', brain: 'Second Brain' })[r.at]}</h1>`
   return `<header class="bar"><div class="l">${r.at !== 'home' ? `<button class="iconbtn" data-act="back" data-tip="Back">${ic('arrow-left')}</button>` : ''}</div>${mid}<div class="r">${S.chat ? '' : `<button class="iconbtn" data-act="chat" data-tip="Open ${esc(D.assistant)}">${ic('sidebar-simple')}</button>`}</div></header>`
 }
 
@@ -281,10 +285,61 @@ const home = () => {
       <section class="box"><div class="box-h"><h2>Today and overdue <span class="chip acc">${due.length}</span></h2><button class="btn sm ghost" data-act="go" data-at="tasks">All tasks</button></div>${tabs}<div class="items">${list.map(taskItem).join('') || '<div class="it"><span></span><div class="mute">Nothing here.</div></div>'}</div></section></div>
       <div class="stack">${D.homeSide ? D.homeSide(Z, S.role) : ''}${agentsCard()}</div></div></div>`
 }
-const tasksPage = () => {
-  const { tabs, list } = taskTabs(tasksMine())
-  return `<div class="wrap"><section class="box"><div class="box-h"><h2>Tasks</h2><span class="mute3" style="font-size:12px">Agents add tasks; you, or they, finish them.</span></div>${tabs}<div class="items">${list.map(taskItem).join('') || '<div class="it"><span></span><div class="mute">Nothing here.</div></div>'}</div></section></div>`
+const TLISTS = { all: 'All', today: 'Today', week: 'This week', overdue: 'Overdue', waiting: 'Waiting', done: 'Done' }
+const TSTATES = [['todo', 'To do', 'o8'], ['doing', 'Doing', 'o1'], ['waiting', 'Waiting', 'warn'], ['done', 'Done', 'good']]
+const taskLists = (all) => {
+  const open = (t) => t.state !== 'done'
+  return { all, today: all.filter((t) => open(t) && Z.daysFrom(t.due) <= 0), week: all.filter((t) => open(t) && Z.daysFrom(t.due) <= 7), overdue: all.filter((t) => open(t) && Z.daysFrom(t.due) < 0), waiting: all.filter((t) => t.state === 'waiting'), done: all.filter((t) => t.state === 'done') }
 }
+const taskCard = (t) => {
+  const r = t.row && Z.row(...t.row), n = Z.daysFrom(t.due)
+  return `<div class="cardv tcard" draggable="true" data-drag="${t.id}" data-tip="Drag to another column to change its state"><b>${esc(t.title)}</b>${r ? `<button class="link ell" style="text-align:left" data-act="row" data-t="${t.row[0]}" data-id="${t.row[1]}">${esc(D.tables[t.row[0]].name)} › ${esc(titleOf(t.row[0], r))}</button>` : ''}<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="dt ${n < 0 && t.state !== 'done' ? 'late' : ''}">${ic('calendar-blank')} ${Z.wday(t.due)}</span>${t.by ? Z.chip(t.by, 'o8') : Z.chip(Z.you().split(' ')[0], 'acc')}${t.state === 'waiting' ? `<span class="mute3" style="font-size:12px">on ${esc(t.on || 'a reply')}</span>` : ''}</span></div>`
+}
+const tasksPage = () => {
+  const list = taskLists(tasksMine())[S.tlist], v = S.tview
+  const tool = `<div class="toolbar"><span class="tabs">${[['board', 'kanban', 'Board'], ['list', 'list', 'List'], ['calendar', 'calendar-blank', 'Calendar']].map(([k, i, l]) => `<button aria-pressed="${v === k}" data-act="tview" data-k="${k}">${ic(i)} ${l}</button>`).join('')}</span><span class="sp"></span><span class="mute3" style="font-size:13px">Agents add tasks; you, or they, finish them.</span></div>`
+  let body
+  if (v === 'board') body = `<div class="board">${TSTATES.map(([k, l, tone]) => { const xs = list.filter((t) => t.state === k); return `<div class="lane" data-lane="${k}" data-t="__tasks"><h3>${Z.chip(l, tone)}<span class="mute3">${xs.length}</span></h3>${xs.map(taskCard).join('') || '<span class="mute3" style="font-size:12px;padding:6px">Nothing here.</span>'}</div>` }).join('')}</div>`
+  else if (v === 'list') body = `<section class="box"><div class="items">${list.map(taskItem).join('') || '<div class="it"><span></span><div class="mute">Nothing here.</div></div>'}</div></section>`
+  else {
+    const [y, mo] = D.today.slice(0, 7).split('-').map(Number), first = new Date(y, mo - 1, 1), start = new Date(y, mo - 1, 1 - first.getDay())
+    const cells = Array.from({ length: 42 }, (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i))
+    body = `<div class="cal">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<div class="dh">${d}</div>`).join('')}${cells.map((d) => { const k = iso(d), evs = list.filter((t) => t.due === k); return `<div class="d ${d.getMonth() !== mo - 1 ? 'off' : ''} ${k === D.today ? 'today' : ''}"><span class="num">${d.getDate()}</span>${evs.slice(0, 3).map((t) => `<span class="ev ell chip ${TSTATES.find((x) => x[0] === t.state)[2]}" style="height:auto;display:block" data-tip="${esc(t.title)}">${esc(t.title)}</span>`).join('')}${evs.length > 3 ? `<span class="mute3">+${evs.length - 3}</span>` : ''}</div>` }).join('')}</div>`
+  }
+  return `<div class="wrap" style="max-width:none">${tool}${body}</div>`
+}
+
+// ---------- Settings, and the Second Brain
+const settingsPage = () => {
+  const last = S.journal.slice(0, 5)
+  return `<div class="wrap" style="max-width:900px"><div class="stack">
+    ${Z.box('Workspace', `<dl class="fields"><div class="fr"><dt>Name</dt><dd>${esc(D.brand.name)}</dd></div><div class="fr"><dt>What it does</dt><dd>${esc(D.brand.sub)}</dd></div><div class="fr"><dt>Runs on</dt><dd>${esc(D.runsOn || 'Its own server')}</dd></div><div class="fr"><dt>Modules</dt><dd>${D.modules.length}, with ${D.agents.length} agents</dd></div></dl>`, `<button class="btn sm" data-act="why">${ic('shield-check')} Where the data lives</button>`)}
+    ${Z.box('People', `<div class="items">${(D.roles || []).map((r) => `<div class="it" style="grid-template-columns:auto minmax(0,1fr) auto"><span class="mk sm">${esc(r.name.split(' ').slice(0, 2).map((w) => w[0]).join(''))}</span><div><div class="ti">${esc(r.name.split(' · ')[0])}</div><div class="su">${esc(r.name.split(' · ')[1] || '')} · sees ${D.modules.filter((m) => !m.roles || m.roles.includes(r.id)).map((m) => esc(m.name)).join(', ')}</div></div>${S.role === r.id ? Z.chip('You', 'acc') : `<button class="btn sm" data-act="role" data-id="${r.id}">Switch to</button>`}</div>`).join('')}</div>`)}
+    ${Z.box('Connections', `<div class="items">${(D.connections || []).map((c) => `<div class="it" style="grid-template-columns:auto minmax(0,1fr) auto"><span class="dot" style="background:${c.state === 'Needs you' ? 'var(--warn)' : 'var(--good)'}"></span><div><div class="ti">${ic(c.icon || 'plug')} ${esc(c.name)}</div><div class="su">${esc(c.what)}</div></div>${Z.chip(c.state || 'Connected', c.state === 'Needs you' ? 'warn' : 'good')}</div>`).join('')}</div>`, '', 'What Zazoo reads, and how. Nothing is copied out of the business.')}
+    ${Z.box('Who approves what', `<div class="items">${Object.entries(D.levels).map(([k, l]) => `<div class="it" style="grid-template-columns:auto minmax(0,1fr)"><b class="mono">${k}</b><div><div class="ti">${Z.chip(l.name, l.tone)}</div><div class="su">${esc(l.words)} · ${D.agents.filter((a) => a.level === k).length} agents</div></div></div>`).join('')}</div>`)}
+    ${Z.box('Activity', `<ul class="lines">${last.map((j) => `<li class="${j.undone ? 'undone' : ''}"><span class="who">${esc(j.who)}</span><span>${j.words}</span><time>${j.at}</time></li>`).join('')}</ul>`, `<button class="btn sm ghost" data-act="go" data-at="activity">Everything that changed</button>`)}
+  </div></div>`
+}
+const brainPage = () => {
+  const mods = D.modules, W = 800, H = 540, cx = W / 2, cy = H / 2
+  const at = mods.map((m, i) => { const a = (i / mods.length) * 2 * Math.PI - Math.PI / 2; return [cx + 290 * Math.cos(a), cy + 200 * Math.sin(a), a] })
+  const links = new Set()
+  mods.forEach((m, i) => m.tables.forEach((t) => (D.tables[t].links || []).forEach((L) => { const j = mods.findIndex((x) => x.tables.includes(L.t)); if (j >= 0 && j !== i) links.add([Math.min(i, j), Math.max(i, j)].join('-')) })))
+  ;(D.brainLinks || []).forEach(([a, b]) => { const i = mods.findIndex((m) => m.id === a), j = mods.findIndex((m) => m.id === b); if (i >= 0 && j >= 0) links.add([Math.min(i, j), Math.max(i, j)].join('-')) })
+  let g = [...links].map((k) => { const [i, j] = k.split('-').map(Number); return `<path d="M${at[i][0]} ${at[i][1]} Q${cx} ${cy} ${at[j][0]} ${at[j][1]}" stroke="var(--accent)" stroke-opacity=".35" stroke-width="1.6" fill="none" stroke-dasharray="4 4"/>` }).join('')
+  g += at.map(([x, y]) => `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--edge)"/>`).join('')
+  g += mods.map((m, i) => {
+    const [x, y, a] = at[i], rows = m.tables.reduce((s, t) => s + D.tables[t].rows.length, 0), r = 22 + Math.min(16, Math.sqrt(rows) * 1.6), ags = D.agents.filter((x) => x.module === m.id)
+    const sats = [...m.tables.map((t) => ['t', D.tables[t].name + ' · ' + D.tables[t].rows.length]), ...ags.map((x) => ['a', x.name + (S.on[x.id] ? '' : ' (off)')])]
+    const sat = sats.map(([k, tip], j) => { const b = a + (j - (sats.length - 1) / 2) * 0.22, sx = x + (r + 20) * Math.cos(b), sy = y + (r + 20) * Math.sin(b); return `<circle cx="${sx}" cy="${sy}" r="${k === 't' ? 5 : 4}" fill="${k === 't' ? 'var(--ink-3)' : 'var(--good)'}" data-tip="${esc(k === 't' ? 'Table: ' : 'Agent: ')}${esc(tip)}"/>` }).join('')
+    return `${sat}<g data-act="mod" data-m="${m.id}" style="cursor:pointer" data-tip="${esc(m.name)}: ${rows} rows, ${ags.length} agents. Click to open."><circle cx="${x}" cy="${y}" r="${r}" fill="var(--surface)" stroke="${Z.waiting(m.id) ? 'var(--warn)' : 'var(--accent)'}" stroke-width="2"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="13" font-weight="600">${rows}</text><text x="${x}" y="${y + r + (Math.sin(a) > 0.3 ? 30 : 16)}" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink)" stroke="var(--surface)" stroke-width="3" paint-order="stroke">${esc(m.name)}</text></g>`
+  }).join('')
+  g += `<circle cx="${cx}" cy="${cy}" r="34" fill="var(--accent)"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${esc(D.assistant)}</text>`
+  return `<div class="wrap"><label class="search">${ic('magnifying-glass')}<input data-keep="find" placeholder="Ask across every module: a ${esc(D.findHint)}, a task" value="${esc(S.found)}" data-find>${finder()}</label>
+    <div class="cols"><div class="stack">${Z.box('Every module, connected', `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Modules and how they link">${g}</svg><div class="legend"><span><i style="background:var(--surface);border:2px solid var(--accent)"></i>Module, with its rows</span><span><i style="background:var(--ink-3)"></i>Table</span><span><i style="background:var(--good)"></i>Agent</span><span><i style="background:var(--accent);opacity:.4"></i>Data shared between modules</span></div>`, '', 'Hover a dot for its name; click a module to open it')}</div>
+    <div class="stack">${Z.box('What changed since you looked', `<ul class="lines">${S.journal.slice(0, 6).map((j) => `<li><span class="who">${esc(j.who)}</span><span>${j.words}</span></li>`).join('')}</ul>`)}${Z.box('What each module holds', `<div class="items">${mods.map((m) => `<button class="it" style="grid-template-columns:auto minmax(0,1fr) auto;text-align:left" data-act="mod" data-m="${m.id}">${ic(m.icon)}<div><div class="ti">${esc(m.name)}</div><div class="su">${m.tables.map((t) => `${esc(D.tables[t].name)} ${D.tables[t].rows.length}`).join(' · ')}</div></div><span class="mute3">${D.agents.filter((a) => a.module === m.id).length} agents</span></button>`).join('')}</div>`)}</div></div></div>`
+}
+
 const activityPage = () => {
   const last = S.journal.find((j) => j.snap && !j.undone)
   return `<div class="wrap" style="max-width:820px"><section class="box"><div class="box-h"><h2>Everything that changed</h2><span class="mute3" style="font-size:12px">By people and agents, newest first. Undo the latest and it all goes back.</span></div><div class="box-b"><ul class="lines">${S.journal.map((j) => `<li class="${j.undone ? 'undone' : ''}"><span class="who">${esc(j.who)}</span><span>${j.words}</span><time>${j.at}</time>${j === last ? '<button class="btn sm" data-act="undo">Undo</button>' : ''}</li>`).join('')}</ul></div></section></div>`
@@ -295,22 +350,42 @@ const agentsPage = (onlyMod) => {
   const list = D.agents.filter(roleOk).filter((a) => !onlyMod || a.module === onlyMod)
   const sel = list.find((a) => a.id === S.agent) || list[0]
   if (!sel) return '<div class="mute">No agents here.</div>'
-  const runs = S.runs[sel.id] || []
-  const lv = D.levels[sel.level]
-  return `<div class="cols2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)">
-    <section class="box"><div class="box-h"><h2>Agents</h2><span class="mute3" style="font-size:12px">${list.filter((a) => S.on[a.id]).length} on</span></div><div>${list.map((a) => `<div class="agrow" data-act="agent" data-id="${a.id}" ${a.id === sel.id ? 'aria-current="true"' : ''}><span class="dot" style="background:${S.on[a.id] ? 'var(--good)' : 'var(--edge)'}"></span><div class="nm"><b>${esc(a.name)}</b><div>${esc(D.modules.find((m) => m.id === a.module).name)} · ${esc(a.when)}</div></div>${Z.chip(D.levels[a.level].name, D.levels[a.level].tone)}<button class="switch" role="switch" aria-checked="${!!S.on[a.id]}" data-act="toggle" data-id="${a.id}" data-tip="${S.on[a.id] ? 'Turn off' : 'Turn on'}"></button></div>`).join('')}</div></section>
-    <section class="box"><div class="box-h"><h2>${esc(sel.name)}</h2><button class="btn pri sm" data-act="run" data-id="${sel.id}" ${S.running[sel.id] ? 'disabled' : ''}>${ic('play')} ${S.running[sel.id] ? 'Running…' : 'Run now'}</button></div>
-      <div class="box-b"><p style="font-size:13px">${sel.does}</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><span data-tip="${esc(lv.words)}">${Z.chip(lv.name, lv.tone)}</span>${Z.chip(ic('calendar-blank') + ' ' + sel.when)}${Z.chip('Reads ' + sel.reads)}</div>
-      <div class="thread">${runs.map((r) => `<div class="run"><div class="run-h">${ic(r.live ? 'circle-notch' : 'check-circle')} ${r.live ? 'Running' : 'Ran'} at ${r.at}<span style="flex:1"></span>${r.text ? esc(r.text) : ''}</div><div class="run-b">${r.lines.map((l) => (l.ok ? `<span class="ok">${esc(l.t)}</span>` : esc(l.t))).join('\n')}</div></div>`).join('') || `<p class="mute" style="font-size:13px">No runs yet in this session. ${S.on[sel.id] ? 'It runs ' + esc(sel.when.toLowerCase()) + '; ' : ''}Run now to watch it work.</p>`}</div></div></section></div>`
+  const runs = S.runs[sel.id] || [], lv = D.levels[sel.level], mod = D.modules.find((m) => m.id === sel.module)
+  const groups = D.modules.filter((m) => list.some((a) => a.module === m.id))
+  const left = groups.map((m) => `<div class="axg">${ic(m.icon)} ${esc(m.name)}<span class="mute3">${list.filter((a) => a.module === m.id).length}</span></div>` + list.filter((a) => a.module === m.id).map((a) => `<div class="axa" data-act="agent" data-id="${a.id}" ${a.id === sel.id ? 'aria-current="true"' : ''} data-tip="${esc(a.does)}"><span class="dot" style="background:${S.running[a.id] ? 'var(--accent)' : S.on[a.id] ? 'var(--good)' : 'var(--edge)'}"></span><div class="nm ell"><b>${esc(a.name)}</b><div class="ell">${esc(a.when)}</div></div>${(S.amsgs[a.id] || []).length || (S.runs[a.id] || []).length ? `<span class="n">${(S.runs[a.id] || []).length + (S.amsgs[a.id] || []).filter((x) => x.me).length}</span>` : ''}</div>`).join('')).join('')
+  const msgs = [{ z: true, html: `I'm the <b>${esc(sel.name)}</b>. ${sel.does} I read ${esc(sel.reads)}, ${esc(sel.when.toLowerCase())}.<div class="mute3" style="margin-top:6px">${esc(lv.name)}: ${esc(lv.words)}</div>` }, ...[...runs].reverse().map((r) => ({ z: true, run: r })), ...(S.amsgs[sel.id] || [])]
+  const feed = msgs.map((m) => m.run ? `<div class="run"><div class="run-h">${ic(m.run.live ? 'circle-notch' : 'check-circle')} ${m.run.live ? 'Running' : 'Ran'} at ${m.run.at}<span style="flex:1"></span>${m.run.text ? esc(m.run.text) : ''}</div><div class="run-b">${m.run.lines.map((l) => (l.ok ? `<span class="ok">${esc(l.t)}</span>` : esc(l.t))).join('\n')}</div></div>` : `<div class="msg ${m.me ? 'me' : 'z'}">${m.html}</div>`).join('')
+  return `<div class="ax"><aside class="axl"><div class="axh"><b>Agents</b><span class="mute3">${list.filter((a) => S.on[a.id]).length} of ${list.length} on</span></div><div class="axs">${left}</div></aside>
+    <section class="axr"><div class="axh"><b class="ell">${esc(sel.name)}</b>${Z.chip(mod.name, 'o8')}<span data-tip="${esc(lv.words)}">${Z.chip(lv.name, lv.tone)}</span><span class="sp"></span><button class="switch" role="switch" aria-checked="${!!S.on[sel.id]}" data-act="toggle" data-id="${sel.id}" data-tip="${S.on[sel.id] ? 'On: turn it off' : 'Off: turn it on'}"></button><button class="btn pri sm" data-act="run" data-id="${sel.id}" ${S.running[sel.id] ? 'disabled' : ''}>${ic('play')} ${S.running[sel.id] ? 'Running…' : 'Run now'}</button></div>
+      <div class="feed axf" id="afeed">${feed}</div>
+      <div class="sugg">${['Run now', 'What did you do last?', S.on[sel.id] ? 'Pause until Monday' : 'Turn on'].map((q) => `<button data-act="asay" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+      <form class="compose" data-agent="${sel.id}"><input name="q" data-keep="amsg" placeholder="Message ${esc(sel.name)}" autocomplete="off"><div class="row"><span class="mute3" style="font-size:12px">It answers about its own work; ask ${esc(D.assistant)} about anything else.</span><button class="send" aria-label="Send">${ic('arrow-up')}</button></div></form></section></div>`
+}
+const agentSay = (id, q) => {
+  const a = D.agents.find((x) => x.id === id), w = q.toLowerCase(), runs = S.runs[id] || []
+  ;(S.amsgs[id] ??= []).push({ me: true, html: esc(q) })
+  let reply
+  if (/\brun\b|go ahead|now/.test(w)) { reply = 'Running now. Each step shows above as I go.'; setTimeout(() => runAgent(id), 300) }
+  else if (/pause|stop|off/.test(w)) { if (S.on[id]) Z.change(Z.you(), `paused ${esc(a.name)}`, () => (S.on[id] = false), { mod: a.module }); reply = `Paused. I won't run until you turn me on again. Anything waiting on me stays where it is.` }
+  else if (/turn on|resume|start/.test(w)) { if (!S.on[id]) Z.change(Z.you(), `turned on ${esc(a.name)}`, () => (S.on[id] = true), { mod: a.module }); reply = `On. I run ${esc(a.when.toLowerCase())}.` }
+  else if (/last|did|done|result/.test(w)) reply = runs.length ? `Last run at ${runs[0].at}: ${esc(runs[0].text || 'done')}.` : `Not yet in this session. My last scheduled run went as usual: ${esc(a.steps.at(-1))}.`
+  else reply = a.reply?.(q, Z) || `I only ${esc(a.does.charAt(0).toLowerCase() + a.does.slice(1))} For anything else, ask ${esc(D.assistant)} on the right.`
+  S.amsgs[id].push({ html: reply })
+  Z.render(); const f = $('#afeed'); if (f) f.scrollTop = f.scrollHeight
 }
 
 // ---------- a module
 const modulePage = () => {
   const m = D.modules.find((x) => x.id === S.route.mod), tab = S.route.tab
-  if (tab === 'overview') return `<div class="wrap">${m.overview(Z)}</div>`
-  if (tab === 'agents') return `<div class="wrap">${agentsPage(m.id)}<div style="height:16px"></div>${Z.box('Recent activity', `<ul class="lines">${S.journal.filter((j) => j.mod === m.id).slice(0, 8).map((j) => `<li><span class="who">${esc(j.who)}</span><span>${j.words}</span><time>${j.at}</time></li>`).join('') || '<li class="mute">Nothing yet.</li>'}</ul>`)}</div>`
+  if (tab === 'overview') return `<div class="wrap">${m.map ? `<section class="box" style="margin-bottom:16px"><div class="box-h"><h2>${esc(D.tables[m.map].name)} on the map</h2><button class="btn sm ghost" data-act="tab" data-k="${m.map}">Open ${esc(D.tables[m.map].name.toLowerCase())}</button></div><div class="box-b">${VIEW.map(m.map, D.tables[m.map].rows)}</div></section>` : ''}${m.overview(Z)}${overviewFoot(m)}</div>`
+  if (tab === 'agents') return `<div class="wrap" style="max-width:none">${agentsPage(m.id)}<div style="height:16px"></div><div class="cols2">${notesBox(m)}${Z.box('Recent activity', `<ul class="lines">${S.journal.filter((j) => j.mod === m.id).slice(0, 8).map((j) => `<li><span class="who">${esc(j.who)}</span><span>${j.words}</span><time>${j.at}</time></li>`).join('') || '<li class="mute">Nothing yet.</li>'}</ul>`)}</div></div>`
   return `<div class="wrap" style="max-width:none">${tableArea(tab)}</div>`
+}
+
+const notesBox = (m) => Z.box('Notes', `<form class="noteform" data-note="${m.id}"><input name="q" data-keep="note-${m.id}" placeholder="Add a note for everyone on ${esc(m.name)}" autocomplete="off"><button class="btn sm">Add</button></form><ul class="notes">${S.notes.filter((n) => n.mod === m.id).map((n) => `<li><b>${esc(n.who)}</b><time>${esc(n.at)}</time><p>${esc(n.text)}</p></li>`).join('') || '<li class="mute">No notes yet.</li>'}</ul>`, '', 'Notes the team and the agents keep on this module. Agents read them before they run.')
+const overviewFoot = (m) => {
+  const ags = D.agents.filter(roleOk).filter((a) => a.module === m.id)
+  return `<div class="cols2" style="margin-top:16px">${Z.box('Agents', ags.map((a) => `<div class="ag"><span class="dot" style="background:${S.on[a.id] ? 'var(--good)' : 'var(--edge)'}"></span><button class="nm ell" style="text-align:left" data-act="agent" data-id="${a.id}" data-tip="${esc(a.does)}">${esc(a.name)}<small>${esc(a.when)}</small></button><button class="switch" role="switch" aria-checked="${!!S.on[a.id]}" data-act="toggle" data-id="${a.id}"></button></div>`).join('') || '<p class="mute" style="font-size:13px">No agents on this module yet.</p>', `<button class="btn sm ghost" data-act="tab" data-k="agents">Agents and notes</button>`)}${notesBox(m)}</div>`
 }
 
 // the state of one table's lists and view
@@ -348,7 +423,7 @@ const tableArea = (t) => {
   const toolbar = `<div class="toolbar"><button class="drop" data-act="viewmenu" data-t="${t}">${ic(v[0])} ${v[1]} ${ic('caret-down')}</button>${extra}<label class="tsearch">${ic('magnifying-glass')}<input data-keep="q-${t}" data-q="${t}" placeholder="Search ${esc(T.name.toLowerCase())}" value="${esc(st.q)}"></label>
     ${st.sel.size ? `<span class="chip acc">${st.sel.size} selected</span><button class="btn sm" data-act="selclear" data-t="${t}">Clear</button>` : ''}<span class="sp"></span>
     <button class="btn ${nf ? 'pri' : ''}" data-act="filtermenu" data-t="${t}">${ic('funnel-simple')} Filter${nf ? ' · ' + nf : ''}</button><button class="iconbtn" data-act="moremenu" data-t="${t}" data-tip="Columns, export">${ic('dots-three-vertical')}</button></div>`
-  return chips + toolbar + VIEW[st.view](t, rows)
+  return chips + toolbar + VIEW[st.view](t, rows) + (st.view === 'map' ? `<div class="sec-t" style="margin-top:18px">The same ${esc(T.name.toLowerCase())}, as a table <span class="mute3" style="font-weight:400">· sorted, filtered and searched with the map</span></div>` + VIEW.table(t, rows) : '')
 }
 
 const cellAttrs = (t, f, r) => `data-tip="${esc(srcOf(t, r, f))}"`
@@ -533,9 +608,11 @@ Z.render = () => {
   const scroll = $('.page')?.scrollTop, feedScroll = $('#feed')?.scrollTop
   let page
   if (S.route.at === 'home') page = home()
-  else if (S.route.at === 'agents') page = `<div class="wrap">${agentsPage()}</div>`
+  else if (S.route.at === 'agents') page = `<div class="wrap" style="max-width:none">${agentsPage()}</div>`
   else if (S.route.at === 'tasks') page = tasksPage()
   else if (S.route.at === 'activity') page = activityPage()
+  else if (S.route.at === 'settings') page = settingsPage()
+  else if (S.route.at === 'brain') page = brainPage()
   else page = modulePage()
   $('#app').innerHTML = `<div class="strip">${ic('flask')}<span><b>Interactive prototype</b> · every name and number is made up<span class="hide-sm"> · nothing leaves this tab</span></span><span class="sp"></span><a href="./">All demos</a><a href="#" data-act="reset">Start over</a></div>
     <div class="win ${S.chat ? 'chatopen' : 'nochat'} ${S.railFold ? 'railfold' : ''}">${rail()}<div class="main">${bar()}<div class="page">${page}</div>${sidePanel()}${S.why ? whyPanel() : ''}</div>${chatPanel()}</div>
@@ -543,6 +620,7 @@ Z.render = () => {
     ${menuHtml()}${S.toast ? `<div class="toast">${S.toast.words}${S.toast.undo ? '<button data-act="undo">Undo</button>' : ''}</div>` : ''}<div id="tip"></div>`
   const p = $('.page'); if (p && scroll) p.scrollTop = scroll
   const f = $('#feed'); if (f && feedScroll != null) f.scrollTop = feedScroll
+  const af = $('#afeed'); if (af) af.scrollTop = af.scrollHeight
   if (keep) { const el = document.querySelector(`[data-keep="${keep}"]`); if (el) { el.focus(); try { el.setSelectionRange(pos, pos) } catch {} } }
   S.flash = null
 }
@@ -603,6 +681,10 @@ const act = {
     Z.toast(esc(words), true); Z.render()
   },
   ttab: (el) => { S.taskTab = el.dataset.k; Z.render() },
+  tlist: (el) => { S.tlist = el.dataset.k; Z.render() },
+  tview: (el) => { S.tview = el.dataset.k; Z.render() },
+  asay: (el) => agentSay(S.agent || D.agents.filter(roleOk).find((a) => S.route.at !== 'module' || a.module === S.route.mod).id, el.dataset.q),
+  role: (el) => { S.role = el.dataset.id; Z.toast(`You are ${esc(D.you(S.role))} now`); Z.render() },
   tnext: (el) => {
     const t = S.tasks.find((x) => x.id === el.dataset.id), to = el.dataset.to
     if (to === 'chase') { Z.change(Z.you(), `chased: ${esc(t.title)}`, () => {}); Z.toast(`${esc(D.assistant)} drafted a chaser; it is in your outbox for a look`, true); return Z.render() }
@@ -673,6 +755,13 @@ document.addEventListener('submit', (e) => {
     if (best >= 0) return answer(best, q)
     S.msgs.push({ me: true, html: esc(q) }, { html: `In the live Zazoo this goes to the model, which reads ${esc(D.brand.name)}'s tables to answer. This prototype knows a few answers: try one of the suggestions.` })
     Z.render(); scrollFeed()
+  } else if (f.matches('[data-agent]')) {
+    const q = new FormData(f).get('q').trim(); if (q) agentSay(f.dataset.agent, q)
+  } else if (f.matches('[data-note]')) {
+    const q = new FormData(f).get('q').trim(), mod = f.dataset.note
+    if (!q) return
+    Z.change(Z.you(), `noted on ${esc(D.modules.find((m) => m.id === mod).name)}: ${esc(q)}`, () => S.notes.unshift({ mod, who: Z.you(), at: clock(), text: q }), { mod })
+    Z.render()
   } else if (f.matches('[data-correct]')) {
     const { t, id, edit } = S.panel, fd = fieldOf(t, edit), raw = new FormData(f).get('v')
     const v = isNum(fd) ? Number(raw) : raw
@@ -697,7 +786,16 @@ document.addEventListener('dragover', (e) => { const l = e.target.closest?.('.la
 document.addEventListener('drop', (e) => {
   const l = e.target.closest?.('.lane'); if (!l) return
   e.preventDefault()
-  const id = e.dataTransfer.getData('text/plain'), { t, k, lane } = l.dataset, r = Z.row(t, id)
+  const id = e.dataTransfer.getData('text/plain'), { t, k, lane } = l.dataset
+  if (t === '__tasks') {
+    const tk = S.tasks.find((x) => x.id === id)
+    if (!tk || tk.state === lane) return Z.render()
+    const name = TSTATES.find((x) => x[0] === lane)[1]
+    Z.change(Z.you(), `moved ${esc(tk.title)} to ${name}`, () => (tk.state = lane))
+    Z.toast(`${esc(tk.title)} → ${name}`, true)
+    return Z.render()
+  }
+  const r = Z.row(t, id)
   if (!r || r[k] === lane) return Z.render()
   Z.change(Z.you(), `moved ${esc(r[D.tables[t].title])} to ${esc(lane)}`, () => (r[k] = lane), { row: id })
   Z.toast(`${esc(r[D.tables[t].title])} → ${esc(lane)}`, true)
@@ -713,7 +811,7 @@ document.addEventListener('keydown', (e) => {
 Z.boot = (demo) => {
   D = demo
   D.assistant ??= 'Zazoo'
-  S = { route: { at: 'home' }, hist: [], ts: {}, panel: null, journal: [], needs: D.needs.map((n) => ({ ...n })), tasks: D.tasks.map((t) => ({ ...t })), msgs: [], asked: new Set(), runs: {}, running: {}, on: Object.fromEntries(D.agents.map((a) => [a.id, a.on !== false])), srcs: {}, tick: 0, chat: innerWidth > 980, needsMode: 'agent', taskTab: 'today', found: '', role: D.roles?.[0].id }
+  S = { route: { at: 'home' }, hist: [], ts: {}, panel: null, journal: [], needs: D.needs.map((n) => ({ ...n })), tasks: D.tasks.map((t) => ({ ...t })), msgs: [], asked: new Set(), runs: {}, running: {}, on: Object.fromEntries(D.agents.map((a) => [a.id, a.on !== false])), srcs: {}, tick: 0, chat: innerWidth > 980, needsMode: 'agent', taskTab: 'today', tlist: 'all', tview: 'board', amsgs: {}, notes: (D.notes || []).map((n) => ({ at: 'Earlier', ...n })), found: '', role: D.roles?.[0].id }
   for (const j of D.journal || []) log(j.who, j.words, { mod: j.mod })
   D.after?.(Z)
   document.title = `${D.brand.name} · Zazoo demo`
