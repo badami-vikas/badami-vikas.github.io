@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car wash site selection · WashBridge demo</title>
+<meta name="description" content="An interactive WashBridge prototype for a car wash chain choosing its next sites, with made-up parcels, gates and pro formas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app"></div>
+<script src="app.js"></script>
+<script>
+// A made-up express and full-service car wash chain choosing its next sites in one made-up metro.
+// The method is the chain's own: gates that kill a site on one miss, then a weighted score.
+let s = 19
+const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+const int = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1))
+const pick = (a) => a[Math.floor(rnd() * a.length)]
+const TODAY = '2026-11-02'
+const add = (n) => new Date(new Date(TODAY + 'T12:00:00').getTime() + n * 864e5).toISOString().slice(0, 10)
+
+// the metro: a beltway around a centre, towns around it
+const C = [39.8, -86.12]
+const TOWNS = [['Westbury', 39.79, -86.33], ['North Hollis', 39.95, -86.14], ['Easton Park', 39.83, -85.93], ['Granview', 39.66, -86.02], ['Fairmont', 39.67, -86.24], ['Stonebridge', 39.92, -86.3], ['Harlan Heights', 39.93, -85.98]]
+const ROADS = ['Brookhaven Rd', 'Harlan Ave', 'Northgate Blvd', 'Cedar Mill Rd', 'Fairmont Dr', 'Kingsley Rd', 'Wexford Pike', 'Orchard Crossing', 'Bellmont Ave', 'Rivergate Blvd', 'Sawmill Ct', 'Tremont Pike', 'Granby Rd', 'Easton Way', 'Maple Ridge Rd', 'Stonebridge Blvd', 'Ashford Ave', 'Linden Pkwy', 'Pemberton Rd', 'Carver St', 'Hillcrest Dr', 'Quarry Rd', 'Old Mill Pike', 'Westfield Ave']
+const USES = ['Former bank branch', 'Vacant pad, grocery-anchored center', 'Former tire shop', 'Former fast-food drive-thru', 'Outparcel, big-box lot', 'Vacant land, zoned commercial', 'Former auto dealer']
+const STAGES = ['Found', 'Screening', 'Scorecard', 'Exec sign-off', 'LOI']
+const SIGNERS = ['MP', 'COO', 'CFO', 'CDO', 'CEO']
+const STAGE_OF = [0, 1, 2, 2, 1, 0, 2, 3, 1, 0, 1, 2, 0, 1, 2, 0, 1, 4, 0, 1, 2, 0, 1, 0]
+
+const sites = ROADS.map((road, i) => {
+  const [town, la, ln] = TOWNS[i % TOWNS.length], aadt = int(31, 64) * 1000
+  return {
+    id: 's' + i, addr: `${int(1, 49) * 100 + int(0, 9) * 10} ${road}`, town, use: USES[i % USES.length],
+    lat: la + (rnd() - 0.5) * 0.09, lng: ln + (rnd() - 0.5) * 0.12,
+    acres: Math.round((0.85 + rnd() * 1.05) * 100) / 100, price: int(9, 28) * 100000, aadt, inter: aadt + int(14, 34) * 1000, interstate: i === 10,
+    hh3: int(45, 66) * 1000, density: int(1520, 2300), pop10: int(128, 215) * 1000, taq: int(71, 94), income: int(58, 118) * 1000,
+    washes: int(0, 4), planned: i % 5 === 1 ? 1 : 0, anchor: Math.round((0.1 + rnd() * 1.1) * 10) / 10, flood: i === 9, ownMi: i === 12 ? 2.1 : Math.round((3 + rnd() * 8) * 10) / 10,
+    stage: STAGES[STAGE_OF[i]], listed: i % 3 !== 2, found: add(-int(2, 120)),
+    MP: i === 7 || i === 17, COO: i === 7 || i === 17, CFO: i === 17, CDO: i === 7 || i === 17, CEO: i === 17,
+  }
+})
+Object.assign(sites[14], { acres: 0.62 })
+Object.assign(sites[16], { taq: 64 })
+Object.assign(sites[20], { hh3: 39800 })
+// one strong site and one that scores well but fails a gate, so the difference shows
+Object.assign(sites[7], { addr: '1180 Lakeview Pkwy', hh3: 58200, density: 2050, pop10: 182000, taq: 91, aadt: 52400, inter: 78100, income: 96000, washes: 1, planned: 0, anchor: 0.2, acres: 1.42, price: 1650000, interstate: false, flood: false, ownMi: 6.4 })
+Object.assign(sites[3], { addr: '2280 Cedar Mill Rd', hh3: 41200, density: 1980, pop10: 171000, taq: 88, aadt: 58600, inter: 81200, income: 104000, washes: 0, anchor: 0.3, acres: 1.2, interstate: false })
+const strong = { taq: 89, aadt: 56800, washes: 1, planned: 0, anchor: 0.3, income: 98000, hh3: 59800, flood: false, interstate: false }
+;[17, 13, 21].forEach((i, k) => Object.assign(sites[i], strong, { taq: 89 - k * 3, aadt: 56800 - k * 2400, inter: 79000 - k * 3000, acres: 1.1 + k * 0.2, ownMi: 5.2 + k }))
+Object.assign(sites[5], { listed: false, taq: 86, hh3: 56100, aadt: 49800, washes: 1, planned: 0, flood: false, acres: 1.3, ownMi: 5.1, interstate: false })
+
+const W0 = { traffic: 20, hh: 15, taq: 15, income: 8, comp: 17, anchor: 10 }
+const WL = { traffic: "Traffic on the site's road", hh: 'Households within 3 mi', taq: 'Trade area quality', income: 'Household income', comp: 'Few washes within 2 mi', anchor: 'Grocery or big box nearby' }
+let W = { ...W0 }, SCEN = 'base', INTER = 'both'
+const clip = (v) => Math.max(0, Math.min(1, v))
+const interOf = (r) => (INTER === 'one' ? Math.round(r.inter * 0.58) : r.inter)
+const factors = (r) => ({ traffic: clip((r.aadt - 30000) / 30000), hh: clip((r.hh3 - 45000) / 20000), taq: clip((r.taq - 70) / 30), income: clip((r.income - 60000) / 50000), comp: clip(1 - (r.washes + r.planned) / 4), anchor: clip(1 - (r.anchor - 0.1) / 0.9) })
+const scoreOf = (r) => { const f = factors(r), tot = Object.values(W).reduce((a, b) => a + b, 0) || 1; return Math.round((Object.keys(W).reduce((a, k) => a + W[k] * f[k], 0) / tot) * 100) }
+const n0 = (v) => Math.round(v).toLocaleString()
+const gates = (r) => [
+  { name: 'Households within 3 mi', v: r.hh3, min: 45000, ok: r.hh3 >= 45000, f: n0 },
+  { name: 'Households per sq mi', v: r.density, min: 1500, ok: r.density >= 1500, f: n0 },
+  { name: 'People within a 10-min drive', v: r.pop10, min: 125000, ok: r.pop10 >= 125000, f: (v) => Z.compact(v) },
+  { name: 'Trade area quality', v: r.taq, min: 70, ok: r.taq >= 70, f: (v) => v },
+  { name: "Daily traffic on the site's road", v: r.aadt, min: 30000, ok: r.aadt >= 30000 && !r.interstate, f: (v) => Z.compact(v), note: r.interstate ? 'an interstate count: your process does not count it' : '' },
+  { name: 'Traffic at the main intersection', v: interOf(r), min: 50000, ok: interOf(r) >= 50000, f: (v) => Z.compact(v), note: INTER === 'one' ? "one road's count" : 'both roads added' },
+  { name: 'Lot size, 0.8 to 2.0 acres', v: r.acres, min: 0.8, ok: r.acres >= 0.8 && r.acres <= 2, f: (v) => v + ' ac' },
+  { name: 'Outside the flood zone', v: r.flood ? 'In the zone' : 'Clear', ok: !r.flood, f: (v) => v },
+  { name: '3 mi from your own stores', v: r.ownMi, min: 3, ok: r.ownMi >= 3, f: (v) => v + ' mi' },
+]
+const fails = (r) => gates(r).filter((g) => !g.ok)
+const verdictOf = (r) => (fails(r).length ? 'Fails a gate' : r.score >= 70 ? 'A site' : r.score >= 55 ? 'Worth a look' : 'Weak')
+
+// the pro forma: the chain's own economics, simplified
+const CAPTURE = { low: 0.01, base: 0.015, high: 0.021 }
+const proforma = (r, scen = SCEN) => {
+  const eff = r.aadt + 0.1 * Math.max(0, interOf(r) - r.aadt), comp = 1 / (1 + 0.15 * (r.washes + r.planned))
+  const incf = Math.max(0.9, Math.min(1.1, Math.pow(r.income / 72000, 0.3)))
+  const pool = r.hh3 * 1.9 * 0.45 * 12 * Math.min(0.6, 1 / (1 + r.washes))
+  const cars = Math.round(Math.min(pool, CAPTURE[scen] * eff * 365 * comp * incf))
+  const rev = cars * 10.65, variable = cars * 1.48, pct = rev * 0.1545
+  const labor = (4380 * 2 * 15.5 + 0.03 * cars * 15.5) * 1.14 + 68000 * 1.1 + 52000
+  const capex = r.price + 1900000 + 1400000 + 330000, tax = 0.012 * 0.5 * (r.price + 1900000)
+  const ebitda = rev - variable - pct - labor - 20000 - tax
+  const cum = [], ramp = [0.65, 0.85, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  ramp.reduce((a, k, i) => (cum[i] = a + ebitda * k), 0)
+  const pb = cum.findIndex((c) => c >= capex)
+  return { cars, perDay: Math.round(cars / 365), rev, ebitda, capex, cum, payback: pb < 0 ? null : pb + 1, margin: ebitda / rev, breakeven: Math.round((labor + 20000 + tax) / (10.65 * (1 - 0.1545) - 1.48) / 365) }
+}
+const refresh = (rows) => rows.forEach((r) => {
+  r.score = scoreOf(r); r.verdict = verdictOf(r); r.gatesOk = 9 - fails(r).length
+  r.signed = SIGNERS.filter((k) => r[k]).length; r.payback = proforma(r, 'base').payback || 13; r.perDay = proforma(r, 'base').perDay
+})
+refresh(sites)
+
+// own stores, the benchmark the formula is fitted on
+const STORES = [['Store 1 · Westbury', 39.78, -86.27, 96], ['Store 2 · Granview', 39.69, -86.07, 91], ['Store 3 · Harlan Heights', 39.9, -85.95, 85], ['Store 4 · North Hollis', 39.97, -86.2, 70], ['Store 5 · Downtown', 39.79, -86.15, 78], ['Store 6 · Easton Park', 39.84, -85.9, 74]]
+const MONTHS = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']
+const SEASON = [0.82, 0.78, 0.86, 1.05, 1.12, 1.1, 1.04, 1.0, 0.98, 1.02, 1.06]
+const stores = STORES.map(([name, lat, lng, taq], i) => {
+  const base = [612, 548, 498, 371, 455, 402][i]
+  return { id: 'o' + i, name, lat, lng, taq, perDay: base, members: [4210, 3880, 3120, 2240, 2950, 2610][i], ticket: [11.2, 10.9, 10.4, 9.6, 10.8, 10.1][i], opened: ['2019', '2020', '2021', '2023', '2022', '2024'][i], state: i === 3 ? 'Below plan' : i === 5 ? 'Ramping' : 'On plan', trend: SEASON.map((k) => Math.round(base * k * (0.95 + rnd() * 0.1))) }
+})
+const COMP = Array.from({ length: 24 }, (_, i) => ({ lat: 39.6 + rnd() * 0.42, lng: -86.42 + rnd() * 0.6, planned: i === 3 || i === 11, brand: ['SpeedyShine', 'Bubble Bay', 'TidalWash', 'Local, single site'][i % 4] }))
+Object.assign(COMP[3], { lat: 39.96, lng: -86.11 })
+
+const ring = (p, la, ln, mi) => { const [x, y] = p(la, ln), [, y2] = p(la + mi / 69, ln); return [x, y, Math.abs(y - y2)] }
+const vtone = { 'A site': 'good', 'Worth a look': 'o1', 'Fails a gate': 'bad', Weak: 'o8' }
+const tables = {
+  sites: { name: 'Sites', one: 'site', title: 'addr', rows: sites, sort: ['score', 'desc'], view: 'map', board: 'stage', date: 'found',
+    lists: [{ name: 'A sites', tone: 'good', where: (r) => r.verdict === 'A site', tip: 'Pass every gate and score 70 or more' }, { name: 'Worth a look', tone: 'o1', where: (r) => r.verdict === 'Worth a look' }, { name: 'Fails a gate', tone: 'bad', where: (r) => r.verdict === 'Fails a gate', tip: 'Kept with the reason, never ranked' }, { name: 'Waiting for sign-off', tone: 'acc', where: (r) => r.stage === 'Exec sign-off' }, { name: 'Off-market', where: (r) => !r.listed, tip: 'Not for sale: the owner is approached' }],
+    sub: (r) => `${Z.esc(r.town)} · ${Z.esc(r.use)} · ${r.acres} ac · ${r.listed ? 'listed at ' + Z.money(r.price) : 'not listed: owner outreach'}`,
+    map: { lat: 'lat', lng: 'lng', color: 'verdict', size: 'score', tip: ['verdict', 'score', 'stage', 'aadt'], bounds: { s: 39.6, n: 40.02, w: -86.45, e: -85.82 },
+      base: (p) => {
+        const belt = Array.from({ length: 41 }, (_, i) => { const a = (i / 40) * 2 * Math.PI; return p(C[0] + 0.13 * Math.sin(a), C[1] + 0.17 * Math.cos(a)).join(' ') }).join('L')
+        const road = (pts, w, label) => `<path d="M${pts.map(([a, b]) => p(a, b).join(' ')).join('L')}" stroke="#fffdf9" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="M${pts.map(([a, b]) => p(a, b).join(' ')).join('L')}" stroke="#e2d9c8" stroke-width="1" fill="none"/>` + (label ? `<text x="${p(...pts[0])[0] + 6}" y="${p(...pts[0])[1] - 7}" font-size="10" fill="#8a8473">${label}</text>` : '')
+        return `<path d="M${belt}Z" stroke="#fffdf9" stroke-width="7" fill="none"/>` + road([[39.77, -86.45], [39.79, -86.2], [39.81, -86.0], [39.84, -85.82]], 7, 'I-70 (not counted)') + road([[40.02, -86.32], [39.86, -86.18], [39.72, -86.05], [39.6, -85.95]], 6, '') + road([[39.6, -86.2], [39.8, -86.13], [40.02, -86.08]], 4, '') + `<text x="${p(C[0], C[1])[0]}" y="${p(C[0], C[1])[1] + 4}" text-anchor="middle" font-size="11" fill="#a39b88" font-style="italic">downtown</text>`
+          + STORES.map(([, la, ln]) => { const [x, y, r] = ring(p, la, ln, 3); return `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--ink)" fill-opacity=".05" stroke="var(--ink)" stroke-opacity=".18" stroke-dasharray="3 3"/>` }).join('')
+      },
+      layers: (p) => TOWNS.map(([n, la, ln]) => { const [x, y] = p(la + 0.045, ln); return `<text x="${x}" y="${y}" text-anchor="middle" font-size="11" font-weight="500" fill="#6f6857" stroke="#fffdf9" stroke-width="3" paint-order="stroke" pointer-events="none">${n}</text>` }).join('')
+        + COMP.map((c) => { const [x, y] = p(c.lat, c.lng); return `<path d="M${x} ${y - 6} l5.5 10 h-11z" fill="${c.planned ? '#fffdf9' : '#8a8f9c'}" stroke="#6f7380" stroke-width="1.2" data-tip="${c.planned ? 'Planned wash, from a town agenda' : 'Existing wash · ' + c.brand}"/>` }).join('')
+        + STORES.map(([n, la, ln]) => { const [x, y] = p(la, ln); return `<g data-tip="${n}: your store, with its 3-mile ring"><rect x="${x - 8}" y="${y - 8}" width="16" height="16" rx="4" fill="var(--ink)"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${n[6]}</text></g>` }).join(''),
+      legend: '<span><i style="background:var(--ink);border-radius:3px"></i>Your store, 3-mi ring</span><span><i style="background:#8a8f9c;border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)"></i>Wash (hollow: planned)</span>' },
+    detail: (r, Z) => {
+      const g = gates(r), p = proforma(r), f = factors(r), fl = fails(r)
+      return `${fl.length ? `<div class="callout bad"><b>Fails ${fl.length === 1 ? 'one gate' : fl.length + ' gates'}.</b> Your process kills a site on any one, however well it scores (${r.score} here). ${fl.map((x) => `${x.name}: ${x.f(x.v)}${x.min ? ` against ${x.f(x.min)}` : ''}`).join('; ')}.</div>` : ''}
+      <div class="sec-t">Your gates <span class="mute3" style="font-weight:400">· ${r.gatesOk} of 9 pass</span></div><div class="gates">${g.map((x) => `<div class="gate ${x.ok ? 'ok' : 'no'}" data-tip="${Z.esc(x.note || (x.min ? 'Minimum ' + x.f(x.min) : 'Must hold'))}"><b>${x.ok ? '✓' : '✕'} ${x.f(x.v)}</b>${x.name}</div>`).join('')}</div>
+      <div class="sec-t">What makes up the score <span class="mute3" style="font-weight:400">· ${r.score}</span></div>${Z.chart.hbar(Object.keys(W).map((k) => ({ label: WL[k], value: Math.round(f[k] * 100), note: `× ${W[k]}`, tip: `${WL[k]}: ${Math.round(f[k] * 100)} of 100, weighted ${W[k]}` })), { max: 100, fmt: (v) => v })}
+      <div class="sec-t">Pro forma <span style="flex:1"></span><span class="tabs">${['low', 'base', 'high'].map((k) => `<button data-act="scen" data-k="${k}" aria-pressed="${SCEN === k}" data-tip="${CAPTURE[k] * 100}% of passing cars">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</span></div>
+      <div class="counts" style="grid-template-columns:repeat(2,1fr);margin:0 0 8px">${Z.count(p.perDay, `cars a day · breakeven ${p.breakeven}`)}${Z.count('$' + Z.compact(p.rev), 'revenue a year')}${Z.count(Math.round(p.margin * 100) + '%', 'EBITDA margin')}${Z.count(p.payback ? p.payback + ' years' : '12+ years', 'to pay back')}</div>
+      ${Z.chart.line([{ name: 'Cumulative EBITDA', values: p.cum }], p.cum.map((_, i) => `Y${i + 1}`), { fmt: (v) => '$' + Z.compact(v), ref: { value: p.capex, label: 'All-in cost $' + Z.compact(p.capex) }, area: true, h: 170 })}
+      <p class="mute3" style="font-size:12px">Cars from traffic × capture, cut for washes nearby and capped by the households' demand; $10.65 a car (70% members); years 1 and 2 at 65% and 85% while it ramps.</p>
+      <div class="sec-t">Executive sign-off <span class="mute3" style="font-weight:400">· ${r.signed} of 5</span></div><div class="signoff">${SIGNERS.map((k) => Z.chip(`${k} ${r[k] ? '✓' : '·'}`, r[k] ? 'good' : 'o8')).join('')}</div><p class="mute3" style="font-size:12px">Your scorecard needs all five before an LOI.</p>`
+    },
+    fields: [
+      { k: 'addr', label: 'Site', src: (r) => (r.listed ? 'Listing found by the Listing scout' : 'Off-market parcel, county records') },
+      { k: 'town', label: 'Town', kind: 'choice', choices: TOWNS.map((t) => t[0]), tones: Object.fromEntries(TOWNS.map((t, i) => [t[0], 'o' + (i + 1)])), src: 'County parcel record' },
+      { k: 'verdict', label: 'Verdict', kind: 'choice', choices: ['A site', 'Worth a look', 'Weak', 'Fails a gate'], tones: vtone, computed: true, help: 'A failed gate overrides any score', src: 'Computed: your gates first, then the score' },
+      { k: 'score', label: 'Score', kind: 'score', computed: true, help: 'Ranks the sites that pass the gates', src: 'Computed from your weights in Overview' },
+      { k: 'gatesOk', label: 'Gates passed', kind: 'number', computed: true, unit: 'of 9', src: 'Computed: your site selection process, June 2026' },
+      { k: 'stage', label: 'Stage', kind: 'choice', choices: STAGES, tones: { Found: 'o8', Screening: 'o1', Scorecard: 'o3', 'Exec sign-off': 'acc', LOI: 'good' }, src: 'Moved by the team' },
+      { k: 'perDay', label: 'Cars a day', kind: 'number', computed: true, help: 'Base case, once ramped', src: 'Computed: the pro forma, base case' },
+      { k: 'payback', label: 'Payback, years', kind: 'number', computed: true, src: 'Computed: the pro forma, base case' },
+      { k: 'aadt', label: 'Daily traffic', kind: 'compact', src: (r) => `State traffic count, 2025${r.interstate ? ' (interstate: not counted)' : ''}` },
+      { k: 'hh3', label: 'Households 3 mi', kind: 'compact', src: 'Census, 2024 five-year estimates, exact 3-mile ring' },
+      { k: 'taq', label: 'Trade area quality', kind: 'number', help: '0 to 100, your own formula', src: 'Your formula, fitted on your four best stores' },
+      { k: 'washes', label: 'Washes within 2 mi', kind: 'number', src: (r) => `Mapped washes${r.planned ? ', plus 1 planned (town agenda)' : ''}` },
+      { k: 'price', label: 'Asking', kind: 'money', src: (r) => (r.listed ? 'The listing' : 'Assessed value × 1.3: there is no listing') },
+      { k: 'acres', label: 'Acres', kind: 'number', src: 'County parcel record' },
+      { k: 'signed', label: 'Signed off', kind: 'number', computed: true, unit: 'of 5', src: 'Your scorecard: MP, COO, CFO, CDO, CEO' },
+      { k: 'found', label: 'Found', kind: 'date', hide: true, src: 'Listing scout or Parcel screener' },
+      { k: 'income', label: 'Median income', kind: 'money', hide: true, src: 'Census, 2024 five-year estimates' },
+      { k: 'inter', label: 'Intersection traffic', kind: 'compact', hide: true, src: () => (INTER === 'one' ? "State traffic count, one road (your call)" : 'State traffic counts, both roads added (your call pending)') },
+      { k: 'pop10', label: 'People in 10 min', kind: 'compact', hide: true, src: 'Drive-time area on road speeds' },
+      { k: 'ownMi', label: 'To your nearest store', kind: 'number', unit: 'mi', hide: true, src: 'Computed from your store addresses' },
+    ] },
+  stores: { name: 'Your stores', one: 'store', title: 'name', rows: stores, sort: ['perDay', 'desc'], view: 'table', board: 'state',
+    sub: (r) => `Open since ${r.opened} · ${n0(r.members)} members`,
+    map: { lat: 'lat', lng: 'lng', color: 'state', size: 'perDay', tip: ['perDay', 'members'], bounds: { s: 39.6, n: 40.02, w: -86.45, e: -85.82 } },
+    detail: (r, Z) => `<div class="sec-t">Cars a day, by month</div>${Z.chart.line([{ name: 'Cars a day', values: r.trend }], MONTHS, { fmt: (v) => v, area: true, h: 160 })}`,
+    fields: [
+      { k: 'name', label: 'Store', src: 'Your store list' },
+      { k: 'state', label: 'Against plan', kind: 'choice', choices: ['On plan', 'Ramping', 'Below plan'], tones: { 'On plan': 'good', Ramping: 'o1', 'Below plan': 'warn' }, src: "Computed: this month's cars against the store's plan" },
+      { k: 'perDay', label: 'Cars a day', kind: 'number', src: 'Your point of sale, last 30 days' },
+      { k: 'members', label: 'Members', kind: 'number', src: 'Your membership system' },
+      { k: 'ticket', label: 'Average ticket', kind: 'money', src: 'Your point of sale, last 30 days' },
+      { k: 'taq', label: 'Trade area quality', kind: 'number', help: 'The score you gave the store; the formula is fitted to it', src: 'Your scorecard, June 2026' },
+      { k: 'opened', label: 'Opened', src: 'Your store list' },
+    ] },
+}
+
+const levels = {
+  A: { name: 'Runs on its own', tone: 'good', words: 'Finds, reads and scores. Never contacts anyone.' },
+  B: { name: 'Analyst approves', tone: 'warn', words: 'Drafts outreach or a zoning reading; the analyst checks it.' },
+  C: { name: 'Executive signs off', tone: 'bad', words: 'Money and commitments: an LOI waits for all five sign-offs.' },
+}
+const best = sites[7], pb = proforma(best, 'base')
+const needs = [
+  { id: 'n1', agent: 'Pro forma builder', module: 'sites', level: 'C', roles: ['cfo'], date: 'Today', row: ['sites', 's7'],
+    title: `Sign off on ${best.addr}`, sub: `Passes all 9 gates, scores ${best.score}. Base case ${pb.perDay} cars a day; pays back in ${pb.payback} years. MP, COO and CDO have signed.`,
+    why: 'The only site this quarter with traffic and trade-area quality both near your best store, and one wash within 2 miles.',
+    acts: [{ label: 'Sign off', pri: true, run: (Z) => { Z.set('sites', 's7', { CFO: true }); return `signed off on ${best.addr} as CFO` }, done: 'Signed' },
+      { label: 'See the low case first', tip: 'Opens the site with the 1% capture case', run: (Z) => { SCEN = 'low'; setTimeout(() => { Z.go('module', { mod: 'sites', tab: 'sites' }); Z.open('sites', 's7') }); return `opened the low case for ${best.addr}` }, done: 'Low case open' }] },
+  { id: 'n2', agent: 'Owner finder', module: 'sites', level: 'B', roles: ['dev'], date: 'Today', row: ['sites', 's5'],
+    title: `Write to the owner of ${sites[5].addr}?`, sub: 'Not for sale, but it passes every gate. The county names Halvorsen Family Holdings LLC; WashBridge found the manager and drafted a letter.',
+    why: 'Off-market sites that pass are rare: 1 in 9 this quarter. The letter names no price and says who you are.',
+    draft: `Dear Ms. Halvorsen,\n\nWe operate car washes in the region and are looking for one site in ${sites[5].town}. Your parcel on Kingsley Rd fits what we look for…`,
+    acts: [{ label: 'Send the letter', pri: true, run: (Z) => { Z.set('sites', 's5', { stage: 'Screening' }); return `sent the owner letter for ${sites[5].addr}` }, done: 'Sent' },
+      { label: 'Call instead', run: () => 'will call the owner', done: 'Call task added', tasks: () => [{ title: `Call the owner of ${sites[5].addr}`, row: ['sites', 's5'], roles: ['dev'] }] }] },
+  { id: 'n3', agent: 'Zoning reader', module: 'sites', level: 'B', roles: ['dev'], date: 'Today', row: ['sites', 's11'],
+    title: `${sites[11].town} may need a special-use permit for ${sites[11].addr}`, sub: 'Its code lists car washes as a conditional use in this district. Please confirm before it is scored as allowed.',
+    why: 'Zoning code, section 1143.07, table of uses: "Vehicle wash: C". A conditional use needs a hearing, which adds 3 to 5 months.',
+    acts: [{ label: 'Confirmed: conditional', pri: true, run: () => `confirmed ${sites[11].town} needs a conditional-use hearing`, done: 'Confirmed' }, { label: 'Allowed by right', run: () => 'marked it allowed by right', done: 'Marked' }] },
+  { id: 'n4', agent: 'Parcel screener', module: 'sites', level: 'A', roles: ['dev', 'cfo'], date: 'Mon',
+    title: "Intersection traffic: one road's count, or both roads added?", sub: 'Your process says "50,000 at the main intersection". WashBridge adds both crossing roads for now and marks every such value.',
+    why: `With one road's count, ${sites.filter((r) => Math.round(r.inter * 0.58) < 50000).length} sites fall under 50,000. Only you can say what the gate meant.`,
+    acts: [{ label: 'Keep both added', pri: true, run: () => 'kept both roads added for the intersection gate', done: 'Kept' }, { label: 'One road only', tip: 'Most sites would then fail this gate', run: () => { INTER = 'one'; return "set the intersection gate to one road's count" }, done: 'One road' }] },
+]
+const tasks = [
+  { id: 't1', title: `Walk ${best.addr} with the contractor`, row: ['sites', 's7'], due: add(1), state: 'todo', roles: ['dev'] },
+  { id: 't2', title: `Ask the broker for the survey of ${sites[2].addr}`, row: ['sites', 's2'], due: add(0), state: 'todo', by: 'Listing scout', roles: ['dev'] },
+  { id: 't3', title: `Phase I environmental for ${sites[17].addr}`, row: ['sites', 's17'], due: add(-1), state: 'waiting', on: 'the consultant', chase: 'Chase', roles: ['dev'] },
+  { id: 't4', title: 'Approve the Q4 capex envelope', due: add(2), state: 'todo', roles: ['cfo'] },
+  { id: 't5', title: `Attend the North Hollis hearing on the planned wash`, due: add(16), state: 'todo', by: 'Competition watch', roles: ['dev'] },
+  { id: 't6', title: `LOI for ${sites[17].addr} to legal`, row: ['sites', 's17'], due: add(0), state: 'doing', roles: ['cfo', 'dev'] },
+  { id: 't7', title: 'Store 4 below plan: review the membership push', row: ['stores', 'o3'], due: add(3), state: 'todo', roles: ['cfo'] },
+]
+
+const agents = [
+  { id: 'scout', name: 'Listing scout', module: 'sites', group: 'Finding sites', level: 'A', when: 'Every morning at 6:00', reads: 'listing sites and broker emails', does: 'Finds new commercial listings in your target towns, reads the size, price and use, and runs each through your gates.',
+    steps: ['Read 4 listing sites and the broker inbox', '3 new listings in target towns', '1 passes all 9 gates', '2 fail: lot too small; inside a flood zone'],
+    run: (Z) => {
+      if (Z.row('sites', 'snew')) return { text: 'no new listings since the last run' }
+      const r = { id: 'snew', addr: '640 Pemberton Rd', town: 'Granview', use: 'Former bank branch', lat: 39.65, lng: -86.0, acres: 1.18, price: 1420000, aadt: 47800, inter: 69300, interstate: false, hh3: 53600, density: 1820, pop10: 158000, taq: 84, income: 91000, washes: 1, planned: 0, anchor: 0.3, flood: false, ownMi: 6.2, stage: 'Found', listed: true, found: TODAY, MP: false, COO: false, CFO: false, CDO: false, CEO: false }
+      refresh([r]); Z.rows('sites').push(r)
+      return { text: `1 new site passes: 640 Pemberton Rd, score ${r.score}`, row: 'snew', needs: [{ roles: ['dev'], level: 'A', row: ['sites', 'snew'], title: '640 Pemberton Rd passes every gate', sub: `Score ${r.score}. A former bank branch, 1.18 ac, listed at $1.42M. Base case ${proforma(r).perDay} cars a day.`, acts: [{ label: 'Move to scorecard', pri: true, run: (Z) => { Z.set('sites', 'snew', { stage: 'Scorecard' }); return 'moved 640 Pemberton Rd to the scorecard' }, done: 'Moved' }, { label: 'Not for us', run: () => 'passed on 640 Pemberton Rd', done: 'Passed' }] }] }
+    } },
+  { id: 'screen', name: 'Parcel screener', module: 'sites', group: 'Finding sites', level: 'A', when: 'On the 1st of each month', reads: 'county parcels, Census, traffic counts', does: 'Runs every commercial parcel in the metro through your gates, off-market ones too, and keeps the reason for every one that fails.',
+    steps: ['48,210 commercial parcels', 'Households and density: 4,904 pass', 'Traffic, without interstates: 1,120 pass', 'Lot size, flood zone, own stores: 312 pass'], run: () => ({ text: '312 parcels pass all gates' }) },
+  { id: 'owner', name: 'Owner finder', module: 'sites', group: 'Finding sites', level: 'B', when: 'For off-market sites that pass', reads: 'county records and state business filings', does: 'Finds who owns an off-market parcel and who decides, then drafts a first letter. Nothing is sent without you.',
+    steps: ['County record: Halvorsen Family Holdings LLC', 'State filing: the managing member', 'Drafted a letter'], run: () => ({ text: 'owner found, letter drafted' }) },
+  { id: 'zoning', name: 'Zoning reader', module: 'sites', group: 'Checking sites', level: 'B', when: 'When a site joins the pipeline', reads: "each town's zoning code", does: "Reads the town's table of uses for the site's district and says whether a wash is allowed, conditional or banned, quoting the section. You confirm.",
+    steps: ['Fetched the Fairmont zoning code', 'District C-2, table of uses', '"Vehicle wash: P" → allowed by right'], run: () => ({ text: 'allowed by right in Fairmont (§1143.07)' }) },
+  { id: 'comp', name: 'Competition watch', module: 'sites', group: 'Checking sites', level: 'A', when: 'Every Friday', reads: 'town planning agendas', does: 'Watches planning agendas for new car wash applications near your sites and marks them as planned washes.',
+    steps: ['Read 7 town agendas', 'North Hollis: "Express tunnel wash, 1.1 ac", hearing Nov 18', 'Marked as a planned wash near 2 sites'], run: (Z) => { Z.set('sites', 's1', { planned: 1 }); Z.set('sites', 's8', { planned: 1 }); return { text: 'a planned wash in North Hollis lowers 2 scores' } } },
+  { id: 'pf', name: 'Pro forma builder', module: 'sites', group: 'Deciding', level: 'C', when: 'When a site reaches the scorecard', reads: 'the site, local water, power and wage rates', does: 'Builds a three-case pro forma from your economics with local utility and wage rates, and sends it for executive sign-off.',
+    steps: ['Water and sewer: $6.10 per 100 cu ft (city rate card)', 'Power: 12.4¢ a kWh (state average)', 'Wage floor: $15.50 an hour', 'Built the low, base and high cases'], run: () => ({ text: 'pro forma ready for sign-off' }) },
+  { id: 'plan', name: 'Store pulse', module: 'stores', group: 'Your stores', level: 'A', when: 'Every morning at 7:00', reads: 'your point of sale and memberships', does: "Compares each store's cars and members with its plan and flags a store that falls behind two weeks running.",
+    steps: ['Read yesterday at 6 stores', 'Store 4: 371 cars a day against a plan of 420', 'Two weeks below plan → flagged'], run: () => ({ text: 'Store 4 below plan two weeks running' }) },
+]
+
+const ask = [
+  { q: 'Why does Cedar Mill Rd fail when it scores so well?', keys: ['cedar', 'fail', 'why'], reads: 'sites and your gates', a: (Z) => { const r = Z.row('sites', 's3'); return `It scores ${r.score}, one of the highest, but has ${n0(r.hh3)} households within 3 miles against your minimum of 45,000. Your process kills a site on any one gate, so WashBridge keeps it out of the ranking. If 45,000 is too strict for this town, change the gate and every site is rechecked.` } },
+  { q: 'Which sites could open fastest?', keys: ['fast', 'quick', 'soon', 'open'], reads: 'sites, zoning and listings', a: (Z) => { const rows = Z.rows('sites').filter((r) => !fails(r).length && r.listed).sort((a, b) => b.score - a.score).slice(0, 4); return `Listed, passing every gate, and no conditional-use hearing:<div class="mini"><table><tbody>${rows.map((r) => `<tr data-act="row" data-t="sites" data-id="${r.id}" style="cursor:pointer"><td>${Z.esc(r.addr)}</td><td>${Z.esc(r.town)}</td><td class="n">${r.score}</td><td class="n">${Z.money(r.price)}</td></tr>`).join('')}</tbody></table></div>` } },
+  { q: 'What if capture is only 1%?', keys: ['capture', 'low', '1%', 'worst'], roles: ['cfo', 'dev'], reads: 'pro formas', a: (Z) => { const p = proforma(Z.row('sites', 's7'), 'low'); return `At 1% capture, ${best.addr} does ${p.perDay} cars a day (breakeven ${p.breakeven}) and pays back in ${p.payback ? p.payback + ' years' : 'more than 12 years'}.` } },
+  { q: 'Where are competitors planning new washes?', keys: ['competitor', 'planned', 'new wash'], reads: 'planning agendas', a: () => 'Two applications this quarter: an express tunnel in North Hollis (hearing Nov 18) and a conversion in Easton Park. Both are on the map as hollow triangles, and they lower the score of sites within 2 miles.' },
+]
+
+const overview = {
+  sites: (Z) => {
+    const rs = Z.rows('sites'), a = rs.filter((r) => r.verdict === 'A site')
+    const funnel = [['Parcels screened', 48210], ['Pass your gates', 312], ['For sale or approachable', 41], ['Score 70+', 9], ['Exec sign-off', rs.filter((r) => r.stage === 'Exec sign-off').length], ['LOI', rs.filter((r) => r.stage === 'LOI').length]]
+    const passing = rs.filter((r) => !fails(r).length).sort((x, y) => y.score - x.score).slice(0, 8)
+    return `<div class="counts">${Z.count(rs.length, 'sites in review', 'Open on the map', 'data-act="tab" data-k="sites"')}${Z.count(a.length, 'A sites: every gate, 70+')}${Z.count(rs.filter((r) => r.verdict === 'Fails a gate').length, 'fail a gate')}${Z.count(a.length ? '$' + Z.compact(Math.max(...a.map((r) => proforma(r, 'base').ebitda))) : '–', 'best site EBITDA, base')}</div>
+    ${Z.box('Your weights', `<div class="weights">${Object.keys(W).map((k) => `<label><span>${WL[k]}<b data-wl="${k}">${W[k]}</b></span><input type="range" min="0" max="30" value="${W[k]}" data-w="${k}" aria-label="${WL[k]}"></label>`).join('')}</div>`, `<button class="btn sm ghost" data-act="wreset" ${JSON.stringify(W) === JSON.stringify(W0) ? 'disabled' : ''}>Back to your weights</button>`, 'The gates kill a site on one miss; the weights only rank the sites that pass. Move one and watch the ranking.')}
+    <div class="cols2">${Z.box('Top 8 with these weights', Z.chart.hbar(passing.map((r) => ({ label: r.addr, value: r.score, tone: r.score >= 70 ? 'good' : 'o1', row: ['sites', r.id] })), { max: 100, fmt: (v) => v }), '', 'Only sites that pass every gate. Click one to open it.')}${Z.box('From 48,210 parcels to an LOI', Z.chart.hbar(funnel.map(([label, value], i) => ({ label, value: Math.log10(value + 1), note: value.toLocaleString(), tip: `${label}: ${value.toLocaleString()}`, color: Z.PAL[i % 3] })), { max: 5, fmt: () => '' }), '', 'On a log scale: each step keeps a few percent of the one before')}</div>
+    <div class="cols2">${Z.box('Sites by stage', Z.chart.bar(STAGES.map((st, i) => ({ label: st, value: rs.filter((r) => r.stage === st).length, tone: ['o8', 'o1', 'o3', 'acc', 'good'][i] })), { fmt: (v) => v }), `<button class="btn sm ghost" data-act="sitesboard">Open</button>`)}${Z.box('Your four best stores, the benchmark', Z.chart.bar(stores.slice(0, 4).map((o) => ({ label: o.name.split(' · ')[0], value: o.taq })), { ref: { value: 70, label: 'Gate: 70' }, fmt: (v) => v }), '', 'Trade area quality: the formula gives your own stores the scores you gave them, within 3 points')}</div>`
+  },
+  stores: (Z) => {
+    const os = Z.rows('stores'), tot = MONTHS.map((_, i) => os.reduce((a, o) => a + o.trend[i], 0))
+    return `<div class="counts">${Z.count(n0(os.reduce((a, o) => a + o.perDay, 0)), 'cars a day, all stores', 'Stores', 'data-act="tab" data-k="stores"')}${Z.count(n0(os.reduce((a, o) => a + o.members, 0)), 'members')}${Z.count(Z.money(os.reduce((a, o) => a + o.perDay * o.ticket, 0) * 30), 'revenue, last 30 days')}${Z.count(os.filter((o) => o.state === 'Below plan').length, 'store below plan')}</div>
+    <div class="cols2">${Z.box('Cars a day, all stores', Z.chart.line([{ name: 'Cars a day', values: tot }], MONTHS, { fmt: (v) => n0(v), area: true }))}${Z.box('Cars a day by store', Z.chart.hbar(os.map((o) => ({ label: o.name, value: o.perDay, tone: o.state === 'Below plan' ? 'warn' : 'good', row: ['stores', o.id] })), { fmt: (v) => v }))}</div>`
+  },
+}
+
+const role = () => Z.state().role
+// ---- CRM, forecast, calendar and knowledge base
+const PHASES = ['Sourced', 'Contacted', 'Talking', 'LOI', 'Closed', 'Passed']
+const PEOPLE = [['Halvorsen Family Holdings', 'Ingrid Halvorsen', 'Owner', 's5'], ['Crestline Commercial', 'Dev Kapoor', 'Broker', 's7'], ['Crestline Commercial', 'Dev Kapoor', 'Broker', 's2'], ['Marlow Retail Partners', 'Ellen Marlow', 'Owner', 's17'], ['NAI Ridgeway', 'Sam Okoro', 'Broker', 's13'], ['First Granview Bank', 'Paul Ames', 'Owner', 's21'], ['Westbury Planning Dept', 'Lena Fritsch', 'Town planner', 's0'], ['North Hollis Planning', 'Mark Delaney', 'Town planner', 's1'], ['Brightway Builders', 'Rosa Vega', 'Contractor', 's7'], ['Tremont Realty', 'Joel Baptiste', 'Broker', 's11'], ['Kingsley Trust', 'Ava Lindgren', 'Owner', 's23'], ['Easton Park Planning', 'Ken Mori', 'Town planner', 's13'], ['Pinecrest Properties', 'Nora Fields', 'Owner', 's8'], ['Ridgeway Land Co.', 'Ty Hollis', 'Owner', 's4'], ['Summit Brokers', 'Iris Chen', 'Broker', 's15']]
+const contacts = PEOPLE.map(([firm, name, role, sid], i) => ({ id: 'ct' + i, name, firm, role, sid, site: sites.find((x) => x.id === sid).addr, phase: ['Contacted', 'LOI', 'Talking', 'Closed', 'Talking', 'Contacted', 'Talking', 'Contacted', 'Talking', 'Sourced', 'Sourced', 'Contacted', 'Passed', 'Sourced', 'Talking'][i], last: add(-int(1, 30)), next: ['Owner letter', 'LOI redlines', 'Survey', 'Closing docs', 'Second call', 'Follow-up call', 'Pre-application meeting', 'Hearing Nov 18', 'Site walk', 'First call', 'Find a phone', 'Zoning question', '—', 'First letter', 'Price talk'][i], email: name.toLowerCase().replace(/ /g, '.') + '@example.com' }))
+const touches = contacts.flatMap((c, i) => Array.from({ length: 1 + (i % 4) }, (_, j) => ({ id: `tc${i}-${j}`, who: c.name, cid: c.id, kind: pick(['Email', 'Call', 'Email', 'Meeting']), date: add(-int(1, 45)), by: pick(['Mia Torres', 'Owner finder (agent)', 'Mia Torres']), about: c.site })))
+const FMONTHS = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
+const fcast = FMONTHS.map((m, i) => { const act = i < 5, base = stores.reduce((a, o) => a + o.trend[Math.min(10, 6 + i)] , 0), season = [1.04, 1.0, 0.98, 1.02, 1.06, 0.94, 0.82, 0.78, 0.86, 1.05, 1.12, 1.1][i], newSite = i >= 10 ? 620 * [0.55, 0.65][i - 10] : 0, cars = Math.round((act ? base : 2880 * season) + newSite); return { id: 'fc' + i, month: m, kind: act ? 'Actual' : 'Forecast', cars, revenue: Math.round(cars * 30 * 10.65), members: Math.round(19000 + i * 260), low: act ? cars : Math.round(cars * (1 - (i - 4) * 0.025)), high: act ? cars : Math.round(cars * (1 + (i - 4) * 0.02)), note: i === 10 ? `${best.addr} opens` : '' } })
+const cevents = [
+  ['Hearing: express tunnel wash, North Hollis', add(16), 'Hearing', 'Mia Torres'], [`Site walk: ${best.addr}`, add(1), 'Site walk', 'Mia Torres'], ['Executive sign-off meeting', add(3), 'Sign-off', 'Grant Ellis'], [`LOI redlines due: ${sites[17].addr}`, add(5), 'LOI', 'Grant Ellis'], ['Westbury pre-application meeting', add(9), 'Hearing', 'Mia Torres'], ['Store 4 membership push starts', add(6), 'Stores', 'Grant Ellis'], ['Quarterly board: pipeline review', add(23), 'Sign-off', 'Grant Ellis'], ['Phase I environmental report due', add(11), 'Due diligence', 'Mia Torres'], ['Broker lunch: Crestline', add(-2), 'Meeting', 'Mia Torres'], ['Traffic count release (state)', add(-12), 'Data', 'Parcel screener'], ['Fairmont council: zoning code update', add(20), 'Hearing', 'Mia Torres'], [`Survey due: ${sites[2].addr}`, add(13), 'Due diligence', 'Mia Torres'],
+].map(([title, date, kind, who], i) => ({ id: 'ev' + i, title, date, kind, who }))
+const ckb = [
+  ['Why each gate exists', 'Method', 'Every gate comes from a store that struggled: Store 4 opened at 39,000 households and has been below plan since. A gate kills a site on one miss; the score only ranks those that pass.'],
+  ['Capture rate: low, base, high', 'Method', 'Base 1.5% of passing cars, from our six stores in their second year. Low is 1.0% (Store 4), high 2.1% (Store 1). The CFO signs off on the low case.'],
+  ['Interstate traffic does not count', 'Decision', 'Grant, June 2026: cars on an interstate cannot turn in. Use the frontage road count instead.'],
+  ['Conditional use, in plain words', 'Zoning', 'A wash is allowed only after a public hearing. Budget 3 to 5 months and a traffic study; most towns grant it with conditions on noise and stacking.'],
+  ['Owner letter', 'Template', 'Dear {owner}, we operate car washes in the region and are looking for one site in {town}. Your parcel on {road} fits what we look for. We would like to talk, with no obligation…'],
+  ['Pro forma assumptions', 'Method', '$10.65 a car, 70% members; labour at $15.50 an hour; water and power at local rates; ramp at 65% and 85% in years 1 and 2.'],
+  ['Stacking: how many cars must fit', 'Zoning', 'Express tunnels need 12 to 15 cars of stacking on site; most codes ask 10. Lots under 0.8 acres rarely fit it, which is why it is a gate.'],
+  ['What a good broker gives us', 'Playbook', 'Off-market leads before they list, traffic counts with the listing, and the owner\'s timing. Crestline does; send them the gates.'],
+].map(([title, kind, body], i) => ({ id: 'ck' + i, title, kind, body, updated: add(-int(2, 90)), by: pick(['Mia Torres', 'Grant Ellis', 'Librarian (agent)']) }))
+
+Object.assign(tables, {
+  contacts: { name: 'Contacts', one: 'contact', title: 'name', rows: contacts, sort: ['last', 'desc'], view: 'board', board: 'phase', date: 'last',
+    lists: [{ name: 'Owners', tone: 'acc', where: (r) => r.role === 'Owner' }, { name: 'Brokers', tone: 'o1', where: (r) => r.role === 'Broker' }, { name: 'No touch in 2 weeks', tone: 'warn', where: (r) => Z.daysFrom(r.last) < -14 && !['Closed', 'Passed'].includes(r.phase) }],
+    sub: (r) => `${Z.esc(r.role)} · ${Z.esc(r.firm)} · ${Z.esc(r.site)}`,
+    links: [{ t: 'sites', label: 'Site', by: (r, x) => x.id === r.sid, show: ['verdict', 'stage'] }, { t: 'touches', label: 'Touches', by: (r, x) => x.cid === r.id, show: ['kind', 'date'] }],
+    fields: [
+      { k: 'name', label: 'Name', src: 'Email signature, or county and state filings' },
+      { k: 'phase', label: 'Phase', kind: 'choice', choices: PHASES, tones: { Sourced: 'o8', Contacted: 'o1', Talking: 'o3', LOI: 'acc', Closed: 'good', Passed: 'bad' }, src: 'Moved by the team' },
+      { k: 'role', label: 'Role', kind: 'choice', choices: ['Owner', 'Broker', 'Town planner', 'Contractor'], tones: { Owner: 'acc', Broker: 'o1', 'Town planner': 'o5', Contractor: 'o8' }, src: 'What they do' },
+      { k: 'firm', label: 'Firm', src: 'Email signature or state filing' },
+      { k: 'site', label: 'Site', src: 'The site they are about' },
+      { k: 'next', label: 'Next step', src: 'The team, or the Follow-up keeper' },
+      { k: 'last', label: 'Last touch', kind: 'date', src: 'Computed from emails, calls and meetings' },
+      { k: 'email', label: 'Email', hide: true, src: 'Gmail' },
+    ] },
+  touches: { name: 'Touches', one: 'touch', title: 'who', rows: touches, sort: ['date', 'desc'], view: 'table', board: 'kind', date: 'date',
+    sub: (r) => `${Z.esc(r.kind)} · ${Z.day(r.date)} · ${Z.esc(r.about)}`,
+    fields: [
+      { k: 'who', label: 'With', src: 'Gmail and the phone log' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Email', 'Call', 'Meeting'], tones: { Email: 'o1', Call: 'o3', Meeting: 'acc' }, src: 'Gmail and the phone log' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'Gmail and the phone log' },
+      { k: 'by', label: 'By', src: 'Who sent or called' },
+      { k: 'about', label: 'About', src: 'Matched to the site' },
+    ] },
+  fcast: { name: 'Months', one: 'month', title: 'month', rows: fcast, sort: null, view: 'table', board: 'kind',
+    sub: (r) => `${r.kind}${r.note ? ' · ' + Z.esc(r.note) : ''}`,
+    fields: [
+      { k: 'month', label: 'Month', src: 'Calendar' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Actual', 'Forecast'], tones: { Actual: 'good', Forecast: 'o1' }, src: 'Past months are actual' },
+      { k: 'cars', label: 'Cars a day, all stores', kind: 'number', src: (r) => (r.kind === 'Actual' ? 'Your point of sale' : 'Forecaster: last year\'s season, this year\'s trend, new sites at their ramp') },
+      { k: 'revenue', label: 'Revenue', kind: 'money', src: 'Cars × 30 days × $10.65' },
+      { k: 'members', label: 'Members', kind: 'number', src: 'Your membership system, then the trend' },
+      { k: 'low', label: 'Low', kind: 'number', computed: true, src: 'Forecaster: a wet winter, like 2024' },
+      { k: 'high', label: 'High', kind: 'number', computed: true, src: 'Forecaster: a dry winter' },
+      { k: 'note', label: 'Note', src: 'Openings and events' },
+    ] },
+  cevents: { name: 'Events', one: 'event', title: 'title', rows: cevents, sort: ['date', 'asc'], view: 'calendar', board: 'kind', date: 'date',
+    sub: (r) => `${Z.day(r.date)} · ${Z.esc(r.who)}`,
+    fields: [
+      { k: 'title', label: 'Event', src: 'From the module it belongs to' },
+      { k: 'date', label: 'Day', kind: 'date', src: 'From the module it belongs to' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Hearing', 'Site walk', 'Sign-off', 'LOI', 'Due diligence', 'Meeting', 'Stores', 'Data'], tones: { Hearing: 'bad', 'Site walk': 'o1', 'Sign-off': 'acc', LOI: 'good', 'Due diligence': 'warn', Meeting: 'o3', Stores: 'o5', Data: 'o8' }, src: 'Scheduler' },
+      { k: 'who', label: 'Who', src: 'Owner of the work' },
+    ] },
+  ckb: { name: 'Articles', one: 'article', title: 'title', rows: ckb, sort: ['updated', 'desc'], view: 'card', board: 'kind', date: 'updated',
+    sub: (r) => `${Z.esc(r.kind)} · updated ${Z.day(r.updated)} by ${Z.esc(r.by)}`,
+    detail: (r) => `<div class="kbody">${Z.esc(r.body)}</div><p class="mute3" style="font-size:12px">Agents read this before they run. Change it and they follow the new words.</p>`,
+    fields: [
+      { k: 'title', label: 'Title', src: 'The team' },
+      { k: 'kind', label: 'Kind', kind: 'choice', choices: ['Method', 'Decision', 'Zoning', 'Template', 'Playbook'], tones: { Method: 'o1', Decision: 'good', Zoning: 'o5', Template: 'acc', Playbook: 'o3' }, src: 'The team' },
+      { k: 'by', label: 'Written by', src: 'The team, or the Librarian from a decision' },
+      { k: 'updated', label: 'Updated', kind: 'date', src: 'Last edit' },
+      { k: 'body', label: 'Text', hide: true, src: 'The team' },
+    ] },
+})
+overview.crm = (Z) => {
+  const cs = Z.rows('contacts'), ts = Z.rows('touches'), wk = [3, 2, 1, 0].map((w) => ts.filter((t) => Z.daysFrom(t.date) > -(w + 1) * 7 && Z.daysFrom(t.date) <= -w * 7).length)
+  return `<div class="counts">${Z.count(cs.filter((c) => !['Closed', 'Passed'].includes(c.phase)).length, 'in conversation', 'Open the board', 'data-act="tab" data-k="contacts"')}${Z.count(cs.filter((c) => c.phase === 'LOI').length, 'at LOI')}${Z.count(ts.filter((t) => Z.daysFrom(t.date) >= -7).length, 'touches this week')}${Z.count(cs.filter((c) => Z.daysFrom(c.last) < -14 && !['Closed', 'Passed'].includes(c.phase)).length, 'gone quiet, 2 weeks')}</div>
+  <div class="cols2">${Z.box('Contacts by phase', Z.chart.hbar(PHASES.map((p, i) => ({ label: p, value: cs.filter((c) => c.phase === p).length, tone: ['o8', 'o1', 'o3', 'acc', 'good', 'bad'][i] })), { fmt: (v) => v }), '', 'An owner or broker moves from sourced to closed or passed, as a search does')}${Z.box('Touches a week', Z.chart.bar(wk.map((v, i) => ({ label: ['3 weeks ago', '2 weeks ago', 'Last week', 'This week'][i], value: v, tone: i === 3 ? 'acc' : 'o1' })), { fmt: (v) => v }), '', 'Emails, calls and meetings, from Gmail and the phone log')}</div>`
+}
+overview.forecast = (Z) => {
+  const fs = Z.rows('fcast'), act = fs.map((f) => (f.kind === 'Actual' ? f.cars : null)), fc = fs.map((f, i) => (f.kind === 'Forecast' || i === 4 ? f.cars : null))
+  return `<div class="counts">${Z.count(Z.money(fs.filter((f) => f.kind === 'Forecast').reduce((a, f) => a + f.revenue, 0)), 'revenue, next seven months', 'Months', 'data-act="tab" data-k="fcast"')}${Z.count(n0(fs[11].members), 'members by May')}${Z.count('Apr', `${best.addr} opens, if signed`)}${Z.count('±4%', 'how far off it was, last 5 months')}</div>
+  ${Z.box('Cars a day, all stores: actual, then forecast', Z.chart.line([{ name: 'Actual', values: act, color: '#2f7a55' }, { name: 'Forecast', values: fc, color: '#0b6e8a', dash: true }, { name: 'Low', values: fs.map((f, i) => (i >= 4 ? f.low : null)), color: '#d8b9a5', dash: true }, { name: 'High', values: fs.map((f, i) => (i >= 4 ? f.high : null)), color: '#d8b9a5', dash: true }], fs.map((f) => f.month), { fmt: (v) => n0(v), h: 230 }), '', 'Winter dips as every year; April and May include the new site at its ramp')}
+  <div class="cols2">${Z.box('Revenue a month', Z.chart.bar(fs.map((f) => ({ label: f.month, value: f.revenue, tone: f.kind === 'Actual' ? 'good' : 'o1' })), { fmt: (v) => '$' + Z.compact(v) }))}${Z.box('What moves the forecast', Z.chart.hbar([{ label: 'Winter weather', value: 41 }, { label: 'New site opening date', value: 26 }, { label: 'Membership growth', value: 19 }, { label: 'Planned competitor washes', value: 14 }], { max: 50, fmt: (v) => v + '%' }), '', 'Share of the spread between low and high')}</div>`
+}
+agents.push(
+  { id: 'follow', name: 'Follow-up keeper', module: 'crm', group: 'Finding sites', level: 'B', when: 'Every morning at 8:00', reads: 'Gmail and the phone log', does: 'Logs every email and call against the contact and the site, and drafts a follow-up for anyone who has gone quiet for two weeks. You send it.',
+    steps: ['Read 14 emails and 3 calls', 'Logged against 6 contacts', '2 quiet for two weeks → follow-ups drafted'], run: () => ({ text: '2 follow-ups drafted', needs: [{ roles: ['dev'], level: 'B', row: ['contacts', 'ct10'], title: `${contacts[10].name} has not heard from you in 2 weeks`, sub: `Owner of ${contacts[10].site}. A short follow-up is drafted.`, acts: [{ label: 'Send follow-up', pri: true, run: (Z) => { Z.set('contacts', 'ct10', { phase: 'Contacted', last: TODAY }); return `sent a follow-up to ${contacts[10].name}` }, done: 'Sent' }, { label: 'Call instead', run: () => `will call ${contacts[10].name}`, done: 'Call task added', tasks: () => [{ title: `Call ${contacts[10].name}`, row: ['contacts', 'ct10'], roles: ['dev'] }] }] }] }) },
+  { id: 'forecaster', name: 'Forecaster', module: 'forecast', group: 'Your stores', level: 'A', when: 'On the 1st of each month', reads: 'point of sale, memberships and the pipeline', does: 'Forecasts cars, revenue and members for twelve months, with new sites at their ramp, and checks last month\'s forecast against what came.',
+    steps: ['October: forecast 2,610 cars a day, came 2,644', 'Season from 3 years of sales', `${best.addr} added from April at 55%`, 'Forecast written to May'], run: () => ({ text: 'forecast updated to May; October within 1.3%' }) },
+  { id: 'scheduler', name: 'Scheduler', module: 'calendar', group: 'Checking sites', level: 'B', when: 'Every evening', reads: 'town agendas, LOIs and due diligence', does: 'Puts every hearing, site walk, LOI date and due-diligence deadline on one calendar.',
+    steps: ['Read 7 town agendas', 'Added the North Hollis hearing, Nov 18', 'LOI redlines due in 5 days'], run: () => ({ text: '2 dates added' }) },
+  { id: 'librarian', name: 'Librarian', module: 'kb', group: 'Deciding', level: 'A', when: 'After each decision', reads: 'sign-offs, notes and decisions', does: 'Turns what the team decides into an article the agents read before they run.',
+    steps: ['Read this week\'s decisions', 'Intersection traffic: still open', 'Nothing new to write'], run: () => ({ text: 'articles up to date' }) },
+)
+tasks.push(
+  { id: 't8', title: `Send LOI redlines to ${contacts[1].name}`, row: ['contacts', 'ct1'], due: add(2), state: 'doing', roles: ['dev', 'cfo'] },
+  { id: 't9', title: 'Order the traffic study for Westbury', row: ['sites', 's0'], due: add(4), state: 'todo', by: 'Zoning reader', roles: ['dev'] },
+  { id: 't10', title: 'Confirm Store 6 ramp numbers', row: ['stores', 'o5'], due: add(-4), state: 'done', roles: ['cfo'] },
+  { id: 't11', title: `Second call with ${contacts[4].name}`, row: ['contacts', 'ct4'], due: add(1), state: 'todo', by: 'Follow-up keeper', roles: ['dev'] },
+  { id: 't12', title: 'Board deck: pipeline slide', due: add(20), state: 'todo', roles: ['cfo'] },
+  { id: 't13', title: 'Read the Fairmont code update', due: add(-2), state: 'done', by: 'Zoning reader', roles: ['dev'] },
+)
+const notes = [
+  { mod: 'sites', who: 'Grant Ellis', text: 'Nothing goes to sign-off without the low case on the first page.' },
+  { mod: 'sites', who: 'Mia Torres', text: 'Granview council is friendly to washes; Fairmont is not. Weigh that in the zoning step.' },
+  { mod: 'crm', who: 'Mia Torres', text: 'Dev at Crestline prefers calls to email. Owners first by letter, never a cold call.' },
+  { mod: 'stores', who: 'Grant Ellis', text: 'Store 4: try the $19.99 membership in December before anything bigger.' },
+  { mod: 'forecast', who: 'Grant Ellis', text: 'Use 2024 as the wet-winter low case.' },
+]
+const connections = [
+  { name: 'Gmail', icon: 'envelope-simple', what: 'Broker and owner emails, read-only; drafts for a person to send' },
+  { name: 'Point of sale', icon: 'cash-register', what: 'Cars and tickets at each store, every night' },
+  { name: 'Membership system', icon: 'identification-card', what: 'Members and churn' },
+  { name: 'County parcels', icon: 'map-trifold', what: 'Every commercial parcel in the metro, monthly' },
+  { name: 'Census and state traffic counts', icon: 'chart-bar', what: 'Public data, with its date and source' },
+  { name: 'Town agendas', icon: 'newspaper', what: 'Seven towns\' planning agendas, weekly' },
+]
+
+Object.assign(tables, Z.library('c', [
+  [`Survey: ${sites[2].addr}`, 'Survey', 'From the broker, 2025', add(-6), 'Listing scout'],
+  [`Phase I environmental: ${sites[17].addr}`, 'Environmental', 'Draft, no findings so far', add(-3), 'Mia Torres'],
+  [`LOI: ${sites[17].addr}`, 'LOI', 'Redlines with legal', add(-1), 'Grant Ellis'],
+  ['Fairmont zoning code, chapter 1143', 'Zoning code', 'Table of uses, read by the Zoning reader', add(-20), 'Zoning reader'],
+  ['North Hollis planning agenda, Nov 18', 'Agenda', 'Express tunnel wash application', add(-4), 'Competition watch'],
+  ['Site selection process, June 2026', 'Policy', 'The nine gates and the weights', add(-120), 'Grant Ellis'],
+  ['Store 4 lease', 'Lease', 'Renews 2029', add(-200), 'Grant Ellis']
+], [
+  ['Weekly pipeline', 'Pipeline', 'Three new listings, one passes every gate. Lakeview Pkwy waits for the CFO. A planned wash in North Hollis lowers two scores.', add(-1), 'Listing scout'],
+  [`Sign-off pack: ${best.addr}`, 'Sign-off', 'Gates, score, pro forma in three cases, and the low case on the first page.', add(-2), 'Pro forma builder'],
+  ['Stores, October', 'Monthly', 'Cars a day up 3% on September; Store 4 below plan two weeks running.', add(-2), 'Store pulse'],
+  ['Quarterly board: pipeline', 'Board', '48,210 parcels to 9 A sites to 1 LOI. Capex envelope for Q4.', add(-30), 'Grant Ellis'],
+  ['Forecast to May', 'Forecast', 'October within 1.3%. Winter dip as every year; the new site from April.', add(-2), 'Forecaster']
+]))
+Z.boot({
+  id: 'carwash', today: TODAY, currency: 'USD', findHint: 'site, a store',
+  brand: { name: 'Clearpoint Wash', sub: 'Express and full service', mark: 'CW' },
+  roles: [{ id: 'dev', name: 'Mia Torres · Development' }, { id: 'cfo', name: 'Grant Ellis · CFO' }],
+  you: (r) => ({ dev: 'Mia Torres', cfo: 'Grant Ellis' })[r],
+  greeting: (r) => `Good morning, ${({ dev: 'Mia', cfo: 'Grant' })[r]}`,
+  tables, levels, needs, tasks, agents, ask,
+  modules: [
+    { id: 'sites', name: 'Site selection', icon: 'map-pin', tables: ['sites'], map: 'sites', overview: overview.sites },
+    { id: 'crm', name: 'CRM', icon: 'address-book', tables: ['contacts', 'touches'], overview: overview.crm },
+    { id: 'stores', name: 'Stores', icon: 'drop', tables: ['stores'], map: 'stores', overview: overview.stores },
+    { id: 'forecast', name: 'Forecast', icon: 'chart-line-up', tables: ['fcast'], overview: overview.forecast },
+    { id: 'calendar', name: 'Calendar', icon: 'calendar-blank', tables: ['cevents'] },
+    { id: 'kb', name: 'Knowledge base', icon: 'books', tables: ['ckb', 'cdocs', 'creports'] },
+  ],
+  notes, connections, runsOn: "Clearpoint's own server", brainLinks: [['sites', 'crm'], ['sites', 'stores'], ['sites', 'forecast'], ['stores', 'forecast'], ['calendar', 'sites'], ['calendar', 'crm'], ['kb', 'sites']],
+  after: (Z) => refresh(Z.rows('sites')),
+  save: () => ({ W, INTER }),
+  load: (p) => p && ({ W, INTER } = p),
+  journal: [{ who: 'Listing scout', words: 'checked 6 new listings; 1 passed', mod: 'sites' }, { who: 'Parcel screener', words: 'updated traffic counts to the 2025 state counts; no site crossed a gate', mod: 'sites' }],
+  homeSide: (Z) => Z.box('Sites by verdict', Z.chart.donut(['A site', 'Worth a look', 'Weak', 'Fails a gate'].map((v) => ({ label: v, value: Z.rows('sites').filter((r) => r.verdict === v).length, color: { 'A site': '#2f7a55', 'Worth a look': '#2f5f8a', Weak: '#9a917f', 'Fails a gate': '#b5432e' }[v] })), { center: Z.rows('sites').length, sub: 'sites', fmt: (v) => v }), '<button class="btn sm ghost" data-act="tab-sites">Map</button>'),
+  brief: (Z, r) => `<b>Morning.</b> ${r === 'cfo' ? `One site waits for your sign-off: ${best.addr}. Its pro forma uses your own economics with local rates.` : `Overnight the Listing scout checked 6 listings and the Competition watch read 7 town agendas. ${Z.rows('sites').filter((x) => x.verdict === 'A site').length} sites pass every gate and score 70 or more.`}<br><br><span class="mute3">Try: open <b>Site selection</b> for the map, then change the view or colour · open a site for its gates and payback · move a weight in Overview · run the Listing scout from <b>Agents</b> · switch to the CFO from the name at the top left.</span>`,
+  why: `<p style="font-size:14px">WashBridge runs on Clearpoint's own server. Your scorecard, your stores' sales and your weights never leave it.</p><ul style="margin:14px 0 0 18px;font-size:14px;line-height:1.8"><li>Public data (Census, traffic counts, parcels, zoning codes) is fetched and kept with its date and source.</li><li>The gates and weights are your own process, not a vendor's model.</li><li>WashBridge's team maintains the data feeds and the software.</li></ul>`,
+  acts: {
+    scen: (el, Z) => { SCEN = el.dataset.k; Z.render() },
+    wreset: (el, Z) => { Z.change(Z.you(), 'set the weights back to your own', () => (W = { ...W0 }), { mod: 'sites' }); Z.render() },
+    sitesboard: (el, Z) => { Z.go('module', { mod: 'sites', tab: 'sites' }) },
+    'tab-sites': (el, Z) => { Z.go('module', { mod: 'sites', tab: 'sites' }) },
+  },
+  onInput: (el) => { const b = document.querySelector(`[data-wl="${el.dataset.w}"]`); if (b) b.textContent = el.value },
+  onChange: (el, Z) => { const k = el.dataset.w, was = W[k]; Z.change(Z.you(), `moved the weight for ${WL[k].toLowerCase()} from ${was} to ${el.value}`, () => (W = { ...W, [k]: +el.value }), { mod: 'sites' }); Z.render() },
+})
+</script>
+</body>
+</html>
