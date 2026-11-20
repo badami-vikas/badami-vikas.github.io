@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Engine</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font: 13px/1.35 system-ui, -apple-system, sans-serif; color: #1d2329; }
+  #map { position: absolute; inset: 0 0 0 300px; }
+  #side { position: absolute; top: 0; bottom: 0; left: 0; width: 300px; overflow-y: auto; background: #fff; border-right: 1px solid #d8dde2; padding: 10px 12px; }
+  h1 { font-size: 15px; margin: 0 0 2px; display: flex; justify-content: space-between; align-items: center; }
+  h1 a { text-decoration: none; font-size: 17px; color: #4a535c; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #66707a; margin: 14px 0 6px; }
+  .muted { color: #66707a; font-size: 12px; }
+  .note { color: #8a5a00; font-size: 12px; }
+  label { display: flex; align-items: center; gap: 6px; padding: 2px 0; cursor: pointer; }
+  select { width: 100%; padding: 3px; }
+  .sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .dot { border-radius: 50%; }
+  .keys { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 0 0 4px 20px; font-size: 11px; color: #4a535c; }
+  .keys span { display: inline-flex; align-items: center; gap: 4px; }
+  .chip { cursor: pointer; user-select: none; border-radius: 3px; padding: 0 2px; }
+  .chip:hover { background: #eef5fd; }
+  .chip.off { opacity: .35; text-decoration: line-through; }
+  .ww { align-items: center; }
+  .ww input { width: 46px; font-size: 11px; padding: 0 2px; }
+  .ww button { font-size: 11px; padding: 1px 6px; cursor: pointer; }
+  .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid #c8d0d8; border-top-color: #0b63c5; border-radius: 50%; animation: s .8s linear infinite; vertical-align: -1px; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  .ramp { height: 8px; width: 120px; border-radius: 2px; background: linear-gradient(90deg, #d7301f, #fdae61, #ffffbf, #a6d96a, #1a9850); }
+  #top ol { margin: 0; padding-left: 22px; }
+  #top li { padding: 2px 0; cursor: pointer; }
+  #top li:hover { color: #0b63c5; }
+  #top li.fail { color: #9aa2aa; }
+  .score { display: inline-block; min-width: 26px; font-weight: 600; }
+  #card { position: absolute; top: 10px; right: 50px; width: 310px; max-height: calc(100% - 20px); overflow-y: auto; background: #fff; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.3); padding: 12px; display: none; }
+  #card .x { float: right; border: 0; background: none; font-size: 18px; cursor: pointer; line-height: 1; }
+  #card .big { font-size: 28px; font-weight: 700; }
+  #card .sale { margin: 4px 0; cursor: help; } #card .sale b.ok { color: #1a7f37; }
+  #card .taq { font-size: 15px; margin: 0 6px; }
+  #card .btn { display: block; margin: 8px 0 4px; padding: 6px 10px; background: #0b63c5; color: #fff; border-radius: 4px; text-align: center; text-decoration: none; font-weight: 600; }
+  #card details { margin-top: 10px; }
+  #card summary { cursor: pointer; color: #0b63c5; font-size: 12px; }
+  .ok { color: #1a7f37; }
+  .tag.ok { border-color: #1a7f37; color: #1a7f37; border-style: solid; }
+  ul.flag { color: #8a5a00; margin: 0 0 4px; padding-left: 18px; }
+  .all { max-height: 260px; overflow-y: auto; margin-top: 4px; }
+  .all td:first-child { width: 42%; }
+  #card ul { margin: 0 0 4px; padding-left: 18px; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; vertical-align: middle; border: 1px dashed #c0271c; color: #c0271c; }
+  .bar { display: grid; grid-template-columns: 120px 1fr 32px; gap: 6px; align-items: center; margin: 3px 0; font-size: 12px; }
+  .bar i { display: block; height: 8px; background: #e7eaed; border-radius: 2px; overflow: hidden; }
+  .bar i b { display: block; height: 100%; background: #2b7bba; }
+  .fail { color: #c0271c; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  td { padding: 2px 0; vertical-align: top; }
+  td:first-child { color: #66707a; width: 45%; }
+  .links a { margin-right: 10px; }
+  .maplibregl-popup-content { font-size: 12px; padding: 8px 10px; }
+  /* ⓘ tooltip (one element, shared) */
+  .i { display: inline-block; color: #8a949e; font-style: normal; text-transform: none; letter-spacing: 0; font-size: 11px; cursor: help; margin-left: 2px; border-radius: 50%; }
+  .i:hover, .i:focus { color: #0b63c5; outline: none; }
+  #tip { position: fixed; z-index: 10; max-width: 290px; background: #1d2329; color: #f2f4f6; font-size: 12px; line-height: 1.4; padding: 7px 9px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,.3); display: none; }
+  #tip .src { margin-top: 4px; color: #aab3bc; }
+  #tip a { color: #8fc7ff; }
+  #tip code { font-size: 11px; color: #ffe9a8; }
+  /* search + pin */
+  #search { position: absolute; top: 10px; left: 310px; width: 340px; background: #fff; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.3); padding: 6px; display: none; }
+  #search form { display: flex; gap: 4px; }
+  #search input { flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid #d8dde2; border-radius: 4px; font: inherit; }
+  #search button { padding: 4px 8px; border: 1px solid #d8dde2; border-radius: 4px; background: #f4f6f8; cursor: pointer; font: inherit; }
+  #search button.on { background: #0b63c5; color: #fff; border-color: #0b63c5; }
+  #results { list-style: none; margin: 4px 0 0; padding: 0; max-height: 220px; overflow-y: auto; }
+  #results li { padding: 4px 4px; cursor: pointer; border-top: 1px solid #eef0f2; font-size: 12px; }
+  #results li:hover { background: #eef5fd; }
+  body.pin #map canvas { cursor: crosshair !important; }
+  /* map / table toggle + ranked table */
+  #viewtoggle { display: flex; margin: 6px 0 2px; border: 1px solid #c8d0d8; border-radius: 5px; overflow: hidden; }
+  #viewtoggle button { flex: 1; padding: 4px 0; border: 0; background: #f4f6f8; cursor: pointer; font: inherit; }
+  #viewtoggle button.on { background: #0b63c5; color: #fff; }
+  #tableview { position: absolute; inset: 0 0 0 300px; z-index: 3; background: #fff; overflow: auto; padding: 10px 14px; display: none; }
+  body.table #tableview { display: block; }
+  body.table #search, body.table #card { display: none !important; }
+  #tbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+  #tbar input[type=search] { width: 240px; padding: 4px 6px; border: 1px solid #d8dde2; border-radius: 4px; font: inherit; }
+  #tbar select { width: auto; }
+  #tbar button { padding: 4px 8px; border: 1px solid #d8dde2; border-radius: 4px; background: #f4f6f8; cursor: pointer; font: inherit; }
+  #ranked { width: 100%; font-size: 12px; }
+  #ranked th { position: sticky; top: -10px; background: #f4f6f8; text-align: left; padding: 5px 6px; border-bottom: 1px solid #d8dde2; cursor: pointer; white-space: nowrap; user-select: none; }
+  #ranked th.num, #ranked td.num { text-align: right; }
+  #ranked th[aria-sort=ascending]::after { content: ' ▲'; } #ranked th[aria-sort=descending]::after { content: ' ▼'; }
+  #ranked td { padding: 4px 6px; border-bottom: 1px solid #eef0f2; color: #1d2329; width: auto; }
+  #ranked tr:hover td { background: #eef5fd; }
+  #ranked tr.fail td { color: #8a949e; }
+  #ranked td.why { max-width: 260px; font-size: 11px; color: #8a5a00; }
+  #ranked a { color: #0b63c5; text-decoration: none; margin-right: 8px; white-space: nowrap; cursor: pointer; }
+  /* embedded in Alpha (?embed=1): Alpha's search box asks for places, its Filter button opens
+     this panel over the map; the map takes the whole frame */
+  body.embed #map, body.embed #tableview { left: 0; }
+  body.embed #side { display: none; z-index: 5; box-shadow: 0 4px 18px rgba(0,0,0,.25); border-radius: 0 0 6px 0; bottom: auto; max-height: 100%; }
+  body.embed.side #side { display: block; }
+  body.embed #search { left: 10px; width: auto; max-width: 340px; }
+  body.embed.side #search { left: 310px; }
+  body.embed #q, body.embed #sform button[type=submit], body.embed #sform .i { display: none; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h1><span id="title">Site Engine</span> <a href="settings.html" class="api" id="gear" style="display:none" aria-label="Settings">⚙︎</a></h1>
+  <div id="viewtoggle" role="tablist"><button type="button" data-v="map" class="on">🗺 Map</button><button type="button" data-v="table">☰ Table</button></div>
+  <div class="muted" id="src"></div>
+  <div class="note" id="notes"></div>
+  <div class="muted" id="apinote" style="display:none">Demo: map and table only</div>
+
+  <h2>Basemap <span class="i" tabindex="0" data-tip="basemap">ⓘ</span></h2>
+  <select id="basemap">
+    <option value="usgs">USGS imagery (public domain)</option>
+    <option value="nc">NC OneMap orthos, sharp to zoom 20 (USGS below z13)</option>
+    <option value="esri">Esri World Imagery</option>
+    <option value="osm">Streets (OpenStreetMap)</option>
+  </select>
+  <label><input type="checkbox" id="labels" checked> Roads &amp; labels on imagery <span class="i" tabindex="0" data-tip="labels">ⓘ</span></label>
+
+  <h2>Layers</h2>
+  <div id="layers"></div>
+
+  <div id="lstwrap" style="display:none"><h2>Listings for sale</h2><div id="lst" class="muted"></div></div>
+
+  <h2>Top candidates</h2>
+  <div id="top" class="muted">Loading…</div>
+</div>
+<div id="map"></div>
+<div id="search">
+  <form id="sform"><input id="q" type="search" placeholder="Address or place…" autocomplete="off"><button type="submit">Go</button><button type="button" id="pinbtn">📍 Drop pin</button></form>
+  <ul id="results"></ul>
+</div>
+<div id="card"></div>
+<div id="tableview">
+  <div id="tbar">
+    <input id="tq" type="search" placeholder="Filter by address, city…" autocomplete="off">
+    <select id="tshow"><option value="pass">Pass every gate</option><option value="near">Pass, or fail one</option><option value="all">All shown on the map</option></select>
+    <select id="ttype"><option value="">Parcels + listings</option><option value="parcel">Parcels only</option><option value="listing">Listings only</option></select>
+    <button type="button" id="tcsv">Download CSV</button>
+    <span id="tcount" class="muted"></span>
+  </div>
+  <table id="ranked"><thead></thead><tbody></tbody></table>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+// Alpha drives the embedded map: {alpha: 'search', q} looks a place up; {alpha: 'filters', open}
+// shows or hides the panel of basemaps and layers
+if (new URLSearchParams(location.search).has('embed')) {
+  document.body.classList.add('embed')
+  addEventListener('message', (e) => {
+    if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(e.origin)) return
+    const m = e.data || {}
+    if (m.alpha === 'filters') document.body.classList.toggle('side', !!m.open)
+    if (m.alpha === 'search') {
+      document.getElementById('q').value = m.q || ''
+      document.getElementById('sform').requestSubmit()
+    }
+  })
+}
+</script>
+<script type="module">
+// ---------- config ----------
+const params = new URLSearchParams(location.search);
+// metro comes from the server (GET /api/meta); static mode (no server) reads ?metro=, default charlotte. Mirrors engine/config.py + serve.py META.
+const STATIC_META = {
+  charlotte: { name: 'Charlotte', state: 'NC', bbox: [-81.75, 34.45, -79.85, 36.05], basemap: 'nc', record: 'https://polaris3g.mecklenburgcountync.gov/pid/{pid}' },
+  akron: { name: 'Akron', state: 'OH', bbox: [-81.95, 40.92, -81.30, 41.35], basemap: 'usgs', record: 'https://propertyaccess.summitoh.net/search/commonsearch.aspx?mode=parid&parid={pid}' },
+  stlouis: { name: 'St. Louis', state: 'MO', bbox: [-91.20, 38.20, -89.70, 39.20], basemap: 'usgs', record: 'https://revenue.stlouisco.com/IAS/SearchInput.aspx?locator={pid}' },
+  columbus: {"name": "Columbus", "state": "OH", "bbox": [-83.55, 39.55, -82.25, 40.45], "record": "https://property.franklincountyauditor.com/_web/search/commonsearch.aspx?mode=parid&parid={pid}", "tsrc": [["ODOT traffic count segments", "https://tims.dot.state.oh.us/tims"]], "psrc": ["Franklin County Auditor", "https://www.franklincountyauditor.com"], "basemap": "usgs"},
+  cincinnati: {"name": "Cincinnati", "state": "OH", "bbox": [-84.95, 38.9, -83.95, 39.6], "record": null, "tsrc": [["ODOT traffic count segments", "https://tims.dot.state.oh.us/tims"]], "psrc": ["Hamilton County CAGIS", "https://cagismaps.hamilton-co.org"], "basemap": "usgs"},
+  indianapolis: {"name": "Indianapolis", "state": "IN", "bbox": [-86.75, 39.4, -85.55, 40.4], "record": null, "tsrc": [["INDOT AADT 2021", "https://www.in.gov/indot/traffic-statistics/"]], "psrc": ["IGIO statewide parcels", "https://www.indianamap.org"], "basemap": "usgs"},
+  minneapolis: {"name": "Minneapolis", "state": "MN", "bbox": [-94.3, 44.45, -92.7, 45.6], "record": "https://www16.co.hennepin.mn.us/pins/pidresult.jsp?pid={pid}", "tsrc": [["MnDOT AADT segments", "https://www.dot.state.mn.us/traffic/data/"]], "psrc": ["Met Council regional parcels (Hennepin)", "https://gisdata.mn.gov/dataset/us-mn-state-metrogis-plan-regional-parcels"], "basemap": "usgs"},
+  milwaukee: {"name": "Milwaukee", "state": "WI", "bbox": [-88.55, 42.82, -87.8, 43.55], "record": null, "tsrc": [["WisDOT traffic counts", "https://wisconsindot.gov/Pages/projects/data-plan/traf-counts/default.aspx"]], "psrc": ["Wisconsin statewide parcels", "https://www.sco.wisc.edu/parcels/data/"], "basemap": "usgs"},
+};
+const META = await fetch('/api/meta').then(r => r.ok ? r.json() : null).catch(() => null)
+  || { metro: params.get('metro') || 'charlotte', ...STATIC_META[params.get('metro') || 'charlotte'] };
+const BBOX = META.bbox;
+const DATA = params.get('data') === 'sample' ? '../out/sample/' : META.metro === 'charlotte' ? '../out/' : `../out/${META.metro}/`;
+document.title = `Site Engine · ${META.name}`;
+document.getElementById('title').textContent = `Site Engine · ${META.name}, ${META.state}`;
+const BUST = params.get('v') || localStorage.getItem('rescoredAt') || ''; // set by settings.html after a rescore
+const TOP_N = 25;
+const FACTORS = [ // [column, weight key, label]
+  ['f_traffic', 'traffic', 'Traffic'], ['f_gap', 'gap', 'Demand gap'], ['f_anchor', 'anchor', 'Anchor nearby'],
+  ['f_households', 'households', 'Households'], ['f_income', 'income', 'Income'], ['f_competition', 'competition', 'Few competitors'],
+  ['f_taq', 'taq', 'Trade Area Quality'], ['f_vehicles', 'vehicles', 'Vehicles / household'], ['f_age', 'age', 'Adults 25–54'],
+  ['f_auto_care', 'auto_care', 'Auto-care nearby'], ['f_jobs', 'jobs', 'Daytime jobs'], ['f_growth', 'growth', 'Growth vs. city'], ['f_exit', 'exit', 'Highway exit'],
+];
+// fallbacks = engine/settings.py DEFAULTS; replaced by GET /api/settings when the server is up
+let W = { traffic: 20, gap: 15, anchor: 10, households: 15, income: 8, competition: 17, taq: 15, vehicles: 5, age: 4, auto_care: 5, jobs: 5, growth: 15, exit: 5 };
+let C = { acres_min: 0.8, acres_max: 2.0, length_ft_min: 225, aadt_min: 30000, aadt_full: 60000, aadt_radius_ft: 500,
+  anchor_full_ft: 500, anchor_zero_ft: 2640, comp_radius_mi: 2.0, comp_max: 3, trade_radius_mi: 3.0, people_per_wash_target: 17500,
+  households_full: 63000, income_min: 50000, income_max: 120000,
+  income_fade_start: 150000, income_fade_end: 250000, income_fade_floor: 0.6, veh_min: 1.3, veh_full: 2.0, age_share_min: 0.33,
+  age_share_full: 0.45, auto_care_radius_ft: 2640, auto_care_full: 4, jobs_full: 100000, growth_band: 0.10, exit_radius_ft: 1320, exit_full: 10000, fail_in_flood: true, hh_3mi_min: 45000, density_min: 1500,
+  drive10_pop_min: 125000, taq_min: 70, intersection_min: 50000, aadt_road_types: ['US', 'SR', 'CR', 'TR', 'MR'] };
+const WASH_COLORS = { express: '#e6194b', flex: '#9a6324', full_service: '#f58231', self_serve: '#ffe119', in_bay: '#42d4f4', unknown: '#bfbfbf' };
+// traffic: vehicles/day colour ramp (light → dark red)
+const AADT_STOPS = [[1000, '#ffffb2'], [10000, '#fecc5c'], [25000, '#fd8d3c'], [50000, '#f03b20'], [90000, '#bd0026']];
+const aadtRamp = ['interpolate', ['linear'], ['coalesce', ['get', 'aadt'], 0], ...AADT_STOPS.flat()];
+const counted = ['==', ['get', 'counted'], true];
+const ANCHOR_COLORS = { grocery: '#3cb44b', big_box: '#4363d8', home_improvement: '#f58231', warehouse_club: '#911eb4', qsr: '#a9a9a9' };
+const matchColor = (prop, colors) => ['match', ['coalesce', ['get', prop], 'unknown'], ...Object.entries(colors).flat(), '#bfbfbf'];
+const scoreRamp = prop => ['interpolate', ['linear'], ['coalesce', ['get', prop], 0], 0, '#d7301f', 25, '#fdae61', 50, '#ffffbf', 75, '#a6d96a', 100, '#1a9850'];
+const isFail = ['to-boolean', ['coalesce', ['get', 'hard_fail'], '']];
+const fmt = (v, d = 0) => v == null || v === '' || Number.isNaN(+v) ? '–' : (+v).toLocaleString(undefined, { maximumFractionDigits: d });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+const sumW = () => Object.values(W).reduce((a, b) => a + (+b || 0), 0) || 1;
+
+document.getElementById('src').textContent = 'Data: ' + DATA + (DATA.includes('sample') ? ' (SAMPLE)' : '');
+
+// ---------- tooltip copy: edit here. text may be a function (reads live W / C). ----------
+const S = { // sources
+  ncdot: ['NCDOT 2025 AADT', 'https://connect.ncdot.gov/resources/State-Mapping/Pages/Traffic-Volume-Maps.aspx'],
+  odot: ['ODOT TIMS traffic counts', 'https://gis.dot.state.oh.us/tims'],
+  fhwa: ['FHWA TMAS continuous counts', 'https://www.fhwa.dot.gov/policyinformation/tables/tmasdata/'],
+  scdot: ['SCDOT traffic data', 'https://www.scdot.org/travel/traffic-data.html'],
+  acs: ['Census ACS 2024 5-year (block groups)', 'https://www.census.gov/programs-surveys/acs'],
+  overture: ['Overture Maps places 2026-09-23.1', 'https://docs.overturemaps.org/guides/places/'],
+  osm: ['OpenStreetMap', 'https://www.openstreetmap.org'],
+  udo: ['Charlotte UDO Article 15', 'https://charlotteudo.org/articles/part-vii-uses/article-15-uses'],
+  fema: ['FEMA NFHL', 'https://www.fema.gov/flood-maps/national-flood-hazard-layer'],
+  meck: ['Mecklenburg County GIS', 'https://maps.mecknc.gov/opendata'],
+  h3: ['Uber H3', 'https://h3geo.org'],
+  nconemap: ['NC OneMap', 'https://www.nconemap.gov'],
+  usgs: ['USGS National Map', 'https://www.usgs.gov/programs/national-geospatial-program/national-map'],
+  esri: ['Esri World Imagery', 'https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9'],
+};
+const TSRC = META.tsrc || { OH: [S.odot], MO: [['MoDOT traffic segments', 'https://www.modot.org/traffic-volume-maps']] }[META.state] || [S.ncdot, S.scdot];  // traffic counts by metro
+const PSRC = META.psrc || { OH: ['Summit County fiscal office', 'https://propertyaccess.summitoh.net'], MO: ['St. Louis County GIS', 'https://data-stlcogis.opendata.arcgis.com'] }[META.state] || S.meck;
+const n = v => fmt(v, 2);
+const TIPS = {
+  score: { text: () => `Overall score = <code>100 × Σ(w×f) / Σw</code>, each factor f between 0 and 1. Weights now: ${FACTORS.map(([, k, l]) => `${l} ${n(W[k])}`).join(', ')} (Σw = ${n(sumW())}). Hard fails don't change the score; they only screen the parcel.`, src: [] },
+  f_traffic: { text: () => `Drive-by volume. <code>f = (AADT − ${n(C.aadt_min)}) / (${n(C.aadt_full)} − ${n(C.aadt_min)})</code>, clamped 0–1.`, src: TSRC },
+  f_gap: { text: () => `How underserved the trade area is. <code>f = gap_score / 100</code>.`, src: [S.h3, S.acs, S.overture] },
+  f_anchor: { text: () => `Closeness to a store that drives repeat trips. <code>f = 1</code> within ${n(C.anchor_full_ft)} ft, falling linearly to 0 at ${n(C.anchor_zero_ft)} ft.`, src: [S.overture, S.osm] },
+  f_households: { text: () => `Customers within reach. <code>f = households_3mi / ${n(C.households_full)}</code>, capped at 1.`, src: [S.acs] },
+  f_income: { text: () => `Ability to buy memberships. Rises from 0 at $${n(C.income_min)} to 1 at $${n(C.income_max)}, holds to $${n(C.income_fade_start)}, then eases down to ${n(C.income_fade_floor)} at $${n(C.income_fade_end)} (the wealthiest areas use detailers and dealer washes more).`, src: [S.acs] },
+  f_vehicles: { text: () => `More cars per home, more washes. <code>f = (vehicles per household − ${n(C.veh_min)}) / (${n(C.veh_full)} − ${n(C.veh_min)})</code>, clamped 0–1.`, src: [S.acs] },
+  f_age: { text: () => `Core membership buyers. <code>f = (share aged 25–54 − ${n(C.age_share_min)}) / (${n(C.age_share_full)} − ${n(C.age_share_min)})</code>, clamped 0–1.`, src: [S.acs] },
+  f_auto_care: { text: () => `Repair, tire, oil-change, parts, body and glass shops within ${n(C.auto_care_radius_ft)} ft: drivers already come here to spend on their cars. <code>f = shops / ${n(C.auto_care_full)}</code>, capped at 1.`, src: [S.overture] },
+  f_growth: { text: () => `Is this part of town growing faster than the rest of the city? Households (50%), land built over seen by satellite (30%) and jobs (20%) within ${n(C.trade_radius_mi)} mi, 5-year pace minus the metro's. <code>f = 0.5 + lead / (2 × ${n(C.growth_band)})</code>, clamped 0–1: 0.5 = metro pace.`, src: [S.acs, ['LEHD LODES workplace jobs', 'https://lehd.ces.census.gov/data/']] },
+  f_exit: { text: () => `Drivers coming off the highway next to the site. Exit traffic = half the counted ramp traffic within ${n(C.exit_radius_ft)} ft (ramps carry both off and on traffic); where ramps aren't counted, the change in highway traffic across the interchange (traffic in − traffic out ≈ net exits). <code>f = exit traffic / ${n(C.exit_full)}</code>, capped at 1.`, src: TSRC },
+  f_jobs: { text: () => `Weekday demand from people who work nearby. <code>f = workplace jobs within ${n(C.trade_radius_mi)} mi / ${n(C.jobs_full)}</code>, capped at 1.`, src: [['LEHD LODES workplace jobs', 'https://lehd.ces.census.gov/data/']] },
+  f_competition: { text: () => `Fewer washes close by is better. <code>f = 1 − washes_near / ${n(C.comp_max)}</code> (washes within ${n(C.comp_radius_mi)} mi), clamped 0–1.`, src: [S.overture, S.osm] },
+  acres: { text: () => `Parcel area. A tunnel wash with vacuums and stacking needs about ${n(C.acres_min)}–${n(C.acres_max)} acres; outside that range is a hard fail.`, src: [PSRC] },
+  depth: { text: () => `Lot from the minimum rotated rectangle. Depth runs away from the frontage road; frontage runs along it. A tunnel plus its queue needs a lot length (long side) of at least ${n(C.length_ft_min)} ft, so that is the hard fail.`, src: [PSRC] },
+  taq: { text: () => `Trade Area Quality, the client's 0–100 formula: density (10) + traffic (30) + retail (15) + destination anchors (30) + construction (15). Client minimum ${n(C.taq_min)}. Parameters are in Settings → TAQ.`, src: [S.acs, S.overture] },
+  f_taq: { text: () => `<code>f = TAQ / 100</code>.`, src: [] },
+  intersection: { text: () => C.intersection_method === 'all' ? `Traffic on every counted road within ${n(C.intersection_radius_ft ?? 1320)} ft of the parcel, added, each road once (a road carrying two route names counts once; interstates, ramps and freeways are left out). The detailed report lists each road with a link to check it and lets you untick any. Client minimum ${n(C.intersection_min)}.` : `Primary intersection: the busiest crossing of counted routes within the radius, combined by '${C.intersection_method}'. Client minimum ${n(C.intersection_min)}.`, src: TSRC },
+  drive10: { text: () => `Population within a 10-minute drive. Client minimum ${n(C.drive10_pop_min)}. Shown as 'proxy' when it is a straight-line ring instead of a drive-time isochrone.`, src: [S.acs] },
+  flags: { text: 'Warnings that do not fail the site: things to check before an LOI.', src: [] },
+  ww: { text: 'How much each wash type counts as a competitor: 1 = a full competitor for an express/flex site, 0 = ignored. Applying rescores every parcel (about 20 s). Also in Settings → Wash type weights.', src: [] },
+  'k-pass': { text: 'Passes every client gate and engine screen. Zoomed out, these are the dots with a thick white ring.', src: [] },
+  zoning: { text: 'Zoning district and whether a car wash is allowed there: by right, conditional, or prohibited. Towns outside Charlotte show "unknown" because they are not checked yet.', src: [S.udo, PSRC] },
+  land_use: { text: 'County land-use code. Road strips, easements, ponds and similar uses are excluded because you can\'t buy or build on them.', src: [PSRC] },
+  aadt: { text: () => `Average daily traffic on the busiest counted road within ${n(C.aadt_radius_ft)} ft (road types: ${(C.aadt_road_types || []).join(', ')}). Interstates and ramps are excluded by default because you can't turn into a wash from them.`, src: TSRC },
+  anchor: { text: 'Straight-line distance to the nearest grocery, big-box, home-improvement or warehouse-club store.', src: [S.overture, S.osm] },
+  washes: { text: () => `Car washes within ${n(C.comp_radius_mi)} mi, weighted by type (express 1.0, in-bay 0.5, self-serve 0.15, and so on; set in Settings). Your own stores don't count.`, src: [S.overture, S.osm] },
+  households: { text: () => `Households within ${n(C.trade_radius_mi)} mi: block groups weighted by the share of their area inside the ring. Client minimum ${n(C.hh_3mi_min)}.`, src: [S.acs] },
+  income: { text: 'Median household income across the trade area, weighted by households.', src: [S.acs] },
+  gap: { text: () => `Demand-gap score from 0 to 100: people per existing wash in the trade area compared with a target of ${n(C.people_per_wash_target)}. 50 means room for exactly one more wash.`, src: [S.h3, S.acs, S.overture] },
+  flood: { text: () => `Whether the parcel centroid falls inside a FEMA Special Flood Hazard Area.${C.fail_in_flood ? ' That is a hard fail.' : ''}`, src: [S.fema] },
+  owner: { text: 'Owner of record. Public, institutional or utility owners need a different outreach path than a private seller.', src: [PSRC] },
+  fails: { text: 'Deal-breaker screens (size, zoning, traffic floor, flood, land use). A parcel that fails one keeps its score; the fail is a separate flag.', src: [] },
+  // layers + legend
+  'g-list': { text: 'Land and pads listed by brokers, each scored on the client gates at its location (same scoring as a dropped pin). Fill = score; thick navy ring = passes every gate. Only Sale listings are shown for now; lease and rent are coming soon. Listings come from search snippets and broker sites, so confirm availability with the broker.', src: [] },
+  'g-cand': { text: 'Parcels screened as possible sites, colored by overall score. A red dashed outline means a hard fail: the parcel is still scored but is screened out.', src: [PSRC] },
+  'k-ramp': { text: 'Fill color = overall score, from 0 (red) to 100 (green).', src: [] },
+  'k-fail': { text: 'Red dashed outline with light hatching = at least one hard fail. The fill still shows the real score.', src: [] },
+  'g-wash': { text: 'Existing car washes. The type is guessed from name and brand and can be corrected in Settings → Car washes. Black ring = your own store; yellow ring = planned.', src: [S.overture, S.osm] },
+  'wash-flex': { text: 'Flex-serve: an express tunnel with optional interior add-ons.', src: [S.overture, S.osm] },
+  'g-anchor': { text: 'Stores that drive repeat trips and pull customers past a wash.', src: [S.overture, S.osm] },
+  'g-aadt': { text: 'Traffic counts (AADT), coloured and sized by vehicles per day. Solid = road types counted in scoring. Faded and dashed = excluded types (interstates, ramps and freeways by default; change this in Settings). Click a road for every field.', src: TSRC },
+  'k-speed': { text: () => `Speed limit of each counted road: posted limit from OpenStreetMap (via Overture), else a default for the road class (shown as "estimated" in the popup). Slower traffic sees the site and can turn in: the traffic factor gives full weight at ≤ ${n(C.speed_full_mph ?? 35)} mph, falling to ${n(C.speed_floor ?? 0.4)} at ≥ ${n(C.speed_zero_mph ?? 60)} mph. Untick bands to show only roads at the speeds you want.`, src: [S.osm, S.overture] },
+  'k-aadt': { text: 'Colour and width scale with AADT: light yellow ≈ 1k, red ≈ 50k, dark red 90k+.', src: TSRC },
+  'g-hex': { text: () => `Demand gap on an H3 resolution-8 grid: people per wash within a ${n(C.trade_radius_mi)} mi ring compared with the target. Green = underserved.`, src: [S.h3, S.acs, S.overture] },
+  'k-hex': { text: 'Hex color = gap score, from low (red, saturated) to high (green, room for more washes).', src: [S.h3] },
+  'g-flood': { text: 'FEMA Special Flood Hazard Area (the 100-year floodplain). Shown at zoom 13 and closer.', src: [S.fema] },
+  'k-flood': { text: 'Blue fill = inside the SFHA.', src: [S.fema] },
+  'wash-express': { text: 'Express exterior tunnel. The closest competitor to this format.', src: [S.overture, S.osm] },
+  'wash-full_service': { text: 'Full-service wash with interior cleaning by staff.', src: [S.overture, S.osm] },
+  'wash-self_serve': { text: 'Coin-op or self-serve bays.', src: [S.overture, S.osm] },
+  'wash-in_bay': { text: 'In-bay automatic, usually at a gas station.', src: [S.overture, S.osm] },
+  'wash-unknown': { text: 'Type couldn\'t be guessed from the name.', src: [S.overture, S.osm] },
+  'anchor-grocery': { text: 'Grocery store, the strongest driver of weekly trips.', src: [S.overture, S.osm] },
+  'anchor-big_box': { text: 'Big-box general merchandise (e.g. Target, Walmart).', src: [S.overture, S.osm] },
+  'anchor-home_improvement': { text: 'Home improvement (e.g. Lowe\'s, Home Depot).', src: [S.overture, S.osm] },
+  'anchor-warehouse_club': { text: 'Warehouse club (e.g. Costco, Sam\'s, BJ\'s).', src: [S.overture, S.osm] },
+  'anchor-qsr': { text: 'Quick-service restaurant. Shown for context; counts as an anchor only if enabled in settings.', src: [S.overture, S.osm] },
+  basemap: { text: 'Background map only, not used in scoring. NC OneMap has the sharpest recent aerials (USGS fills in below zoom 13), USGS is public domain, Esri is global, and Streets shows OpenStreetMap.', src: [S.nconemap, S.usgs, S.esri, S.osm] },
+  labels: { text: 'Esri road and place labels drawn over the imagery.', src: [S.esri] },
+  search: { text: 'Find an address or place, then score that spot. Uses the US Census geocoder, falling back to Nominatim (OpenStreetMap).', src: [['Census geocoder', 'https://geocoding.geo.census.gov/'], S.osm] },
+  pin: { text: 'Click once, then click the map to score that point. Right-click (or long-press on touch) anywhere also scores the point.', src: [] },
+};
+const ti = key => `<span class="i" tabindex="0" data-tip="${key}">ⓘ</span>`;
+
+// ---------- tooltip behavior: hover, focus, tap ----------
+const tipEl = document.getElementById('tip');
+let tipTimer;
+function showTip(el) {
+  const t = TIPS[el.dataset.tip];
+  if (!t) return;
+  clearTimeout(tipTimer);
+  const text = typeof t.text === 'function' ? t.text() : t.text;
+  tipEl.innerHTML = text + (t.src.length ? '<div class="src">Source: ' + t.src.map(([l, u]) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`).join(', ') + '</div>' : '');
+  tipEl.style.display = 'block';
+  const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  tipEl.style.left = Math.max(4, Math.min(innerWidth - w - 4, r.left - 8)) + 'px';
+  tipEl.style.top = (r.bottom + h + 6 < innerHeight ? r.bottom + 4 : Math.max(4, r.top - h - 4)) + 'px';
+}
+const hideTip = () => { clearTimeout(tipTimer); tipTimer = setTimeout(() => tipEl.style.display = 'none', 250); };
+document.addEventListener('mouseover', e => { const i = e.target.closest('.i'); if (i) showTip(i); else if (e.target.closest('#tip')) clearTimeout(tipTimer); });
+document.addEventListener('mouseout', e => { if (e.target.closest('.i, #tip')) hideTip(); });
+document.addEventListener('focusin', e => { const i = e.target.closest('.i'); if (i) showTip(i); else if (e.target.closest('#tip')) clearTimeout(tipTimer); });
+document.addEventListener('focusout', e => { if (e.target.closest('.i, #tip')) hideTip(); });
+document.addEventListener('click', e => {
+  const i = e.target.closest('.i');
+  if (i) { e.preventDefault(); showTip(i); }  // preventDefault: don't toggle the checkbox of the enclosing label
+  else if (!e.target.closest('#tip')) tipEl.style.display = 'none';
+});
+
+// ---------- basemaps (all verified free XYZ endpoints) ----------
+const raster = (tiles, attribution, extra = {}) => ({ type: 'raster', tiles: [tiles], tileSize: 256, attribution, ...extra });
+const BASEMAPS = {
+  usgs: raster('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
+    'Imagery: <a href="https://www.usgs.gov/programs/national-geospatial-program/national-map">USGS The National Map</a>', { maxzoom: 16 }),
+  // ponytail: NC OneMap cache is blank below z13, so USGS stays underneath it as the fallback
+  nc: raster('https://services.nconemap.gov/secure/rest/services/Imagery/Orthoimagery_Latest_cached/ImageServer/tile/{z}/{y}/{x}',
+    'Imagery: <a href="https://www.nconemap.gov/">NC OneMap</a> / NC CGIA', { minzoom: 13, maxzoom: 20 }),
+  esri: raster('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community', { maxzoom: 19 }),
+  osm: raster('https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', { maxzoom: 19 }),
+};
+const LABEL_TILES = ['Reference/World_Transportation', 'Reference/World_Boundaries_and_Places'];
+
+const empty = { type: 'FeatureCollection', features: [] };
+const style = { version: 8, sources: {}, layers: [] };
+for (const [id, src] of Object.entries(BASEMAPS)) {
+  style.sources[id] = src;
+  style.layers.push({ id: 'bm-' + id, type: 'raster', source: id, layout: { visibility: id === 'usgs' || id === META.basemap ? 'visible' : 'none' } });
+}
+LABEL_TILES.forEach((path, i) => {
+  style.sources['lbl' + i] = raster(`https://services.arcgisonline.com/ArcGIS/rest/services/${path}/MapServer/tile/{z}/{y}/{x}`, i ? '' : 'Labels: Esri', { maxzoom: 19 });
+  style.layers.push({ id: 'lbl' + i, type: 'raster', source: 'lbl' + i, paint: { 'raster-opacity': 0.75 } });
+});
+
+// ---------- overlays (sources start empty; fetched below) ----------
+const FILES = ['hex_gap', 'flood', 'candidates', 'aadt', 'anchors', 'carwashes'];
+FILES.forEach(f => style.sources[f] = { type: 'geojson', data: empty });
+style.sources.pick = { type: 'geojson', data: empty };  // parcel returned by /api/score
+style.sources['cand-pts'] = { type: 'geojson', data: empty };  // one point per candidate, for zoomed-out views
+style.sources.listings = { type: 'geojson', data: empty };  // broker listings scored on the client gates (engine/listings.py)
+// traffic declutter: busy roads at every zoom, quieter ones fade in as you zoom in, excluded types (interstates…) from z12
+const byZoom = (lo, hi) => ['interpolate', ['linear'], ['zoom'], 9, ['interpolate', ['linear'], ['get', 'aadt'], 1000, lo[0], 90000, lo[1]],
+  16, ['interpolate', ['linear'], ['get', 'aadt'], 1000, hi[0], 90000, hi[1]]];
+const isLine = ['==', ['geometry-type'], 'LineString'], isPt = ['==', ['geometry-type'], 'Point'];
+const band = (p, a, b) => ['all', ['>=', ['coalesce', ['get', p], 0], a], ['<', ['coalesce', ['get', p], 0], b]];
+const AADT_LAYERS = [
+  { id: 'aadt-line-x', type: 'line', source: 'aadt', minzoom: 12, filter: ['all', isLine, ['!', counted]],
+    paint: { 'line-color': aadtRamp, 'line-opacity': 0.4, 'line-dasharray': [2, 2], 'line-width': byZoom([0.5, 2], [1, 5]) } },
+  { id: 'aadt-pt-x', type: 'circle', source: 'aadt', minzoom: 12, filter: ['all', isPt, ['!', counted]],
+    paint: { 'circle-color': aadtRamp, 'circle-opacity': 0.3, 'circle-stroke-color': '#888', 'circle-stroke-width': 1, 'circle-radius': byZoom([1.5, 4], [3, 10]) } },
+];
+for (const [t, f, minzoom] of [['minor', band('aadt', 0, 10000), 13], ['mid', band('aadt', 10000, 25000), 11], ['major', band('aadt', 25000, 1e9), 0]])
+  AADT_LAYERS.push(
+    { id: `aadt-line-${t}`, type: 'line', source: 'aadt', minzoom, filter: ['all', isLine, counted, f], layout: { 'line-cap': 'round' },
+      paint: { 'line-color': aadtRamp, 'line-opacity': 0.85, 'line-width': byZoom([0.6, 3], [1.5, 8]) } },
+    { id: `aadt-pt-${t}`, type: 'circle', source: 'aadt', minzoom, filter: ['all', isPt, counted, f],
+      paint: { 'circle-color': aadtRamp, 'circle-opacity': 0.9, 'circle-stroke-color': '#fff', 'circle-stroke-width': 0.5, 'circle-radius': byZoom([1.5, 5], [3, 12]) } });
+const AADT_IDS = AADT_LAYERS.map(l => l.id);
+const isPass = ['==', ['coalesce', ['get', 'n_fail'], 0], 0];
+const pointRadius = ['interpolate', ['linear'], ['zoom'], 9, 3, 15, 7];
+const lineW = ['interpolate', ['linear'], ['zoom'], 10, 1, 16, 2.5];
+style.layers.push(
+  { id: 'hex', type: 'fill', source: 'hex_gap', paint: { 'fill-color': scoreRamp('gap_score'), 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 13, 0.35, 16, 0.15], 'fill-outline-color': 'rgba(255,255,255,0.7)' } },
+  { id: 'flood', type: 'fill', source: 'flood', minzoom: 13, filter: ['!=', ['get', 'sfha'], false], paint: { 'fill-color': '#1f78ff', 'fill-opacity': 0.3, 'fill-outline-color': '#1f78ff' } },
+  ...AADT_LAYERS,
+  // every candidate is filled by its score; hard fails only get a hatch overlay + red dashed outline
+  { id: 'cand-fill', type: 'fill', source: 'candidates', paint: { 'fill-color': scoreRamp('score'), 'fill-opacity': 0.6 } },
+  { id: 'cand-fail', type: 'fill', source: 'candidates', filter: isFail, paint: { 'fill-pattern': 'hatch' } },
+  { id: 'cand-line', type: 'line', source: 'candidates', filter: ['!', isFail], paint: { 'line-color': '#ffffff', 'line-width': lineW } },
+  { id: 'cand-fail-line', type: 'line', source: 'candidates', filter: isFail, paint: { 'line-color': '#ff2a1a', 'line-width': lineW, 'line-dasharray': [2, 1.5] } },
+  { id: 'cand-sel', type: 'line', source: 'candidates', filter: ['==', ['get', 'pid'], ''], paint: { 'line-color': '#00e5ff', 'line-width': 4 } },
+  { id: 'pick-line', type: 'line', source: 'pick', paint: { 'line-color': '#00e5ff', 'line-width': 4 } },
+  // whole-metro view only (parcels are specks below zoom ~10): a small dot per candidate, gone by zoom 10.5 so parcel shapes show
+  { id: 'cand-pt', type: 'circle', source: 'cand-pts', maxzoom: 10.5, layout: { 'circle-sort-key': ['-', 0, ['coalesce', ['get', 'n_fail'], 9]] },
+    paint: { 'circle-color': scoreRamp('score'), 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, ['case', isPass, 4, 2], 10.5, ['case', isPass, 5, 3]],
+             'circle-stroke-color': ['case', isPass, '#ffffff', '#ff2a1a'], 'circle-stroke-width': ['case', isPass, 1.5, 0.5],
+             'circle-opacity': ['interpolate', ['linear'], ['zoom'], 9.5, 1, 10.5, 0], 'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 9.5, 1, 10.5, 0] } },
+  { id: 'anchors', type: 'circle', source: 'anchors', paint: { 'circle-color': matchColor('anchor_type', ANCHOR_COLORS), 'circle-radius': pointRadius, 'circle-stroke-color': '#000', 'circle-stroke-width': 1 } },
+  { id: 'washes', type: 'circle', source: 'carwashes', paint: { 'circle-color': matchColor('wash_type', WASH_COLORS), 'circle-radius': pointRadius,
+    'circle-stroke-color': ['case', ['==', ['get', 'own'], true], '#000', ['==', ['get', 'planned'], true], '#ffd400', '#fff'],
+    'circle-stroke-width': ['case', ['any', ['==', ['get', 'own'], true], ['==', ['get', 'planned'], true]], 3, 1.5] } },
+  // listings: big score-coloured dot with a navy ring, drawn on top; only offer types ticked under Listings are shown
+  { id: 'listings', type: 'circle', source: 'listings', filter: ['==', ['get', 'sale'], true],
+    paint: { 'circle-color': scoreRamp('score'), 'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 6, 15, 11],
+             'circle-stroke-color': '#0b2a6b', 'circle-stroke-width': ['case', isPass, 4, 2.5] } },
+);
+
+const map = new maplibregl.Map({ container: 'map', style, bounds: BBOX, hash: true, fitBoundsOptions: { padding: 20 }, maxZoom: 20, attributionControl: { compact: true } });
+window.siteMap = map;  // for the browser console
+new ResizeObserver(() => map.resize()).observe(map.getContainer());  // panes that start hidden or get resized
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'imperial' }), 'bottom-left');
+
+// light red diagonal hatch over hard-fail parcels (transparent between lines so the score color shows)
+map.on('styleimagemissing', e => {
+  if (e.id !== 'hatch') return;
+  const n = 16, c = document.createElement('canvas'); c.width = c.height = n;
+  const g = c.getContext('2d');
+  g.strokeStyle = 'rgba(255,42,26,0.55)'; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(0, n); g.lineTo(n, 0); g.moveTo(-4, 4); g.lineTo(4, -4); g.moveTo(n - 4, n + 4); g.lineTo(n + 4, n - 4); g.stroke();
+  map.addImage('hatch', g.getImageData(0, 0, n, n));
+});
+
+// ---------- layer toggles + legend: every legend item is a filter chip ----------
+// a group has dims (lists of chips); a feature shows when, in every dim, it matches at least one chip that is on
+const eq = (p, v, d = '') => ['==', ['coalesce', ['get', p], d], v];
+const chip = (k, label, sw, expr, tip) => ({ k, label, sw, expr, tip, on: true });
+const dot = c => `background:${c};border-radius:50%`;
+const SPEED_C = ['#1a9850', '#91cf60', '#fc8d59', '#d73027'];  // slow (good for a wash) → fast
+const SCORE_C = ['#ea6f40', '#fed690', '#d3ec95', '#60b85b'], AADT_C = AADT_STOPS.map(s => s[1]);
+const GROUPS = [
+  { name: 'Listings', tip: 'g-list', layers: ['listings'], on: true,
+    extra: `<div class="keys" id="offer">Offer type:
+      <label><input type="checkbox" value="sale" checked> Sale</label>
+      <label class="muted"><input type="checkbox" value="lease"> Lease</label>
+      <label class="muted"><input type="checkbox" value="rent"> Rent</label></div><div class="keys note" id="offernote"></div>`,
+    dims: [[chip('lpass', 'passes all gates', 'background:#fff;outline:3px solid #0b2a6b;border-radius:50%', isPass, 'k-pass'),
+            chip('lfail', 'fails a gate', 'background:#fff;outline:2px solid #0b2a6b;border-radius:50%', ['!', isPass], 'k-fail')]] },
+  { name: 'Candidate parcels', tip: 'g-cand', layers: ['cand-fill', 'cand-fail', 'cand-line', 'cand-fail-line', 'cand-pt'], on: true, dims: [
+      [0, 25, 50, 75].map((a, i) => chip(`s${a}`, `${a}–${a + 25}`, `background:${SCORE_C[i]}`, band('score', a, a === 75 ? 101 : a + 25))),
+      [chip('pass', 'passes all gates', 'background:#fff;outline:2px solid #1a9850', isPass, 'k-pass'),
+       chip('f1', '1 fail', 'background:#fff;outline:1px dashed #ff2a1a', eq('n_fail', 1, 0), 'k-fail'),
+       chip('f2', '2+ fails', 'background:repeating-linear-gradient(135deg,#ff2a1a80 0 1px,#fff0 1px 4px);outline:1px dashed #ff2a1a', ['>=', ['coalesce', ['get', 'n_fail'], 0], 2], 'k-fail')]] },
+  { name: 'Car washes', tip: 'g-wash', layers: ['washes'], on: true, extra: '<div class="keys ww" id="ww"></div>',
+    dims: [Object.entries(WASH_COLORS).map(([k, c]) => chip(k, k.replace('_', ' '), dot(c), eq('wash_type', k, 'unknown'), 'wash-' + k))] },
+  { name: 'Anchors', tip: 'g-anchor', layers: ['anchors'], on: true,
+    dims: [Object.entries(ANCHOR_COLORS).map(([k, c]) => chip(k, k.replace('_', ' '), dot(c), eq('anchor_type', k), 'anchor-' + k))] },
+  { name: 'Traffic (AADT)', tip: 'g-aadt', layers: AADT_IDS, on: true, dims: [
+      [[1000, 10000, '1–10k'], [10000, 25000, '10–25k'], [25000, 50000, '25–50k'], [50000, 90000, '50–90k'], [90000, 1e9, '90k+']]
+        .map(([a, b, l], i) => chip(`a${a}`, l, `background:${AADT_C[i]}`, band('aadt', a, b), i === 0 ? 'k-aadt' : null)),
+      // speed limit bands (posted, else road-class default): untick to show only roads at the speeds you want
+      [[0, 31, '≤ 30 mph'], [31, 41, '35–40 mph'], [41, 51, '45–50 mph'], [51, 200, '55+ mph']]
+        .map(([a, b, l], i) => chip(`sp${a}`, l, `height:3px;background:${SPEED_C[i]}`, ['all', ['>=', ['coalesce', ['get', 'speed_mph'], -1], a], ['<', ['coalesce', ['get', 'speed_mph'], -1], b]], i === 0 ? 'k-speed' : null))
+        .concat([chip('spna', 'speed unknown', 'height:3px;background:#bbb', ['==', ['coalesce', ['get', 'speed_mph'], -1], -1])])] },
+  { name: 'Demand-gap hexes', tip: 'g-hex', layers: ['hex'], on: true,
+    dims: [[20, 40, 60, 80].map((a, i) => chip(`g${a}`, `gap ${a}–${a === 80 ? 100 : a + 20}`, `background:${SCORE_C[i]}`, band('gap_score', a, a === 80 ? 101 : a + 20), i === 0 ? 'k-hex' : null))] },
+  { name: 'Flood (SFHA, zoom 13+)', tip: 'g-flood', layers: ['flood'], on: true, dims: [[chip('sfha', 'SFHA', 'background:#1f78ff80;outline:1px solid #1f78ff', true, 'k-flood')]] },
+];
+const BASE = Object.fromEntries(style.layers.map(l => [l.id, l.filter]));  // each layer's own filter, kept under the chip filter
+function applyChips(g) {
+  const f = ['all', ...g.dims.map(d => ['any', ...d.filter(c => c.on).map(c => c.expr)])];
+  g.layers.forEach(id => map.setFilter(id, BASE[id] ? ['all', BASE[id], f] : f));
+}
+const legend = document.getElementById('layers');
+legend.innerHTML = '<div class="muted" style="margin:-2px 0 4px">Click a legend item to hide/show it; double-click to show only it.</div>' + GROUPS.map((g, i) =>
+  `<label><input type="checkbox" data-g="${i}" ${g.on ? 'checked' : ''}> ${g.name}${ti(g.tip)}</label>` +
+  g.dims.map((d, di) => '<div class="keys">' + d.map((c, ci) =>
+    `<span class="chip" data-g="${i}" data-d="${di}" data-c="${ci}"><i class="sw" style="${c.sw}"></i>${c.label}${c.tip ? ti(c.tip) : ''}</span>`).join('') + '</div>').join('') +
+  (g.extra || '')).join('');
+legend.addEventListener('change', e => {
+  if (!e.target.dataset.g) return;
+  const g = GROUPS[e.target.dataset.g];
+  g.layers.forEach(id => map.setLayoutProperty(id, 'visibility', e.target.checked ? 'visible' : 'none'));
+});
+function chipClick(e, only) {
+  const el = e.target.closest('.chip');
+  if (!el || e.target.closest('.i')) return;
+  const g = GROUPS[el.dataset.g], d = g.dims[el.dataset.d], c = d[el.dataset.c];
+  if (only) d.forEach(x => x.on = x === c); else c.on = !c.on;
+  legend.querySelectorAll(`.chip[data-g="${el.dataset.g}"][data-d="${el.dataset.d}"]`).forEach(x => x.classList.toggle('off', !d[x.dataset.c].on));
+  applyChips(g);
+}
+// offer type: Sale filters the listings layer; Lease and Rent are placeholders until those listings are collected
+document.getElementById('offer').addEventListener('change', e => {
+  const t = e.target;
+  if (t.value !== 'sale') {
+    t.checked = false;
+    document.getElementById('offernote').textContent = `${t.value[0].toUpperCase() + t.value.slice(1)} listings: coming soon.`;
+    return;
+  }
+  BASE.listings = t.checked ? ['==', ['get', 'sale'], true] : ['==', 1, 0];
+  applyChips(GROUPS[0]);
+});
+legend.addEventListener('click', e => chipClick(e, false));
+legend.addEventListener('dblclick', e => chipClick(e, true));
+
+function setBasemap() {
+  const pick = document.getElementById('basemap').value;
+  for (const id in BASEMAPS) map.setLayoutProperty('bm-' + id, 'visibility', id === pick || (pick === 'nc' && id === 'usgs') ? 'visible' : 'none');
+  const showLabels = document.getElementById('labels').checked && pick !== 'osm';
+  LABEL_TILES.forEach((_, i) => map.setLayoutProperty('lbl' + i, 'visibility', showLabels ? 'visible' : 'none'));
+}
+if (META.state !== 'NC') document.querySelector('#basemap option[value=nc]').remove();  // NC OneMap only covers NC
+document.getElementById('basemap').value = META.basemap || 'usgs';
+document.getElementById('basemap').onchange = setBasemap;
+document.getElementById('labels').onchange = setBasemap;
+
+// ---------- API detection: live weights/criteria, else static read-only mode ----------
+let API = false;
+const WW = {};  // competitor weight per wash type (settings.wash_weights)
+function renderWashWeights() {
+  const el = document.getElementById('ww');
+  el.innerHTML = `<span class="muted">Competitor weight${ti('ww')}</span>` + Object.entries(WW).map(([k, v]) =>
+    `<span>${esc(k.replace('_', ' '))} <input type="number" min="0" max="1" step="0.05" data-ww="${esc(k)}" value="${v}"></span>`).join('') +
+    '<button type="button" id="wwapply">Apply &amp; rescore</button><span id="wwst" class="muted"></span>';
+  document.getElementById('wwapply').onclick = async () => {
+    const st = document.getElementById('wwst'), btn = document.getElementById('wwapply');
+    const wash_weights = Object.fromEntries([...el.querySelectorAll('[data-ww]')].map(i => [i.dataset.ww, +i.value]));
+    btn.disabled = true; st.innerHTML = ' <span class="spin"></span> rescoring…';
+    try {
+      const r = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ values: { wash_weights } }) });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || r.status);
+      localStorage.setItem('rescoredAt', Date.now());
+      location.reload();
+    } catch (err) { st.innerHTML = ` <span class="fail">${esc(err.message)}</span>`; btn.disabled = false; }
+  };
+}
+const apiReady = fetch('/api/settings').then(r => r.ok ? r.json() : Promise.reject()).then(s => {
+  API = true;
+  Object.assign(W, s.values.weights); Object.assign(C, s.values.criteria); Object.assign(WW, s.values.wash_weights);
+  renderWashWeights();
+  document.getElementById('search').style.display = 'block';
+  document.getElementById('gear').style.display = '';
+}).catch(() => { document.getElementById('apinote').style.display = 'block'; });
+
+// ---------- data loading (missing files fail soft) ----------
+const byPid = new Map();
+const notes = [];
+// downloads start now, not on map load, so the table view fills even before the map has rendered
+const geo = name => fetch(DATA + name + '.geojson' + (BUST ? '?v=' + encodeURIComponent(BUST) : '')).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+const FETCHED = Object.fromEntries(FILES.map(n => [n, geo(n)]));
+Object.values(FETCHED).forEach(p => p.catch(() => {}));  // failures are reported by load(), not as unhandled rejections
+const LISTED = geo('listings').catch(() => empty);  // listings exist only for some metros: no "not loaded" note
+Promise.all([FETCHED.candidates.catch(() => empty), LISTED]).then(([c, l]) => {
+  c.features.forEach(f => byPid.set(String(f.properties.pid), f));
+  setRows(c.features, l.features);
+});
+async function load(name) {
+  try {
+    const fc = await FETCHED[name];
+    map.getSource(name).setData(fc);
+    return fc;
+  } catch (err) {
+    notes.push(`${name}.geojson not loaded (${err.message})`);
+    document.getElementById('notes').textContent = notes.join(' · ');
+    return empty;
+  }
+}
+
+map.on('load', async () => {
+  const [cands] = await Promise.all(['candidates', ...FILES.filter(f => f !== 'candidates')].map(load));
+  map.getSource('cand-pts').setData({ type: 'FeatureCollection', features: cands.features.map(f => ({ type: 'Feature', properties: f.properties,
+    geometry: { type: 'Point', coordinates: f.properties.in_lng != null ? [f.properties.in_lng, f.properties.in_lat] : bounds(f.geometry).getCenter().toArray() } })) });
+  await apiReady;
+  renderTop(cands.features);
+  const lst = await LISTED;
+  map.getSource('listings').setData(lst);
+  renderListings(lst.features);
+});
+
+// ---------- table view: every site on the map, rank-ordered (gates first, then score), sortable, filterable, CSV ----------
+const pctS = v => v == null || v === '' ? '–' : (v >= 0 ? '+' : '') + (100 * v).toFixed(1) + '%';
+const COLS = [ // [key, label, value(row), cell html(row), numeric]
+  ['rank', 'Rank', r => r.rank, r => r.rank, true],
+  ['score', 'Score', r => r.p.score, r => `<b>${fmt(r.p.score)}</b>`, true],
+  ['status', 'Gates', r => r.nf, r => r.nf ? `fails ${r.nf}` : '<span class="ok">pass</span>', true],
+  ['type', 'Type', r => r.type, r => r.type === 'listing' ? `listing (${esc(r.p.listing_offer_type || 'sale')})` : 'parcel', false],
+  ['address', 'Address', r => r.addr, r => esc(r.addr), false],
+  ['acres', 'Acres', r => r.acres, r => fmt(r.acres, 2), true],
+  ['aadt', 'Site AADT', r => r.p.aadt_near, r => fmt(r.p.aadt_near), true],
+  ['hh', 'Households 3 mi', r => r.p.hh_ring, r => fmt(r.p.hh_ring), true],
+  ['taq', 'TAQ', r => r.p.taq, r => fmt(r.p.taq), true],
+  ['growth', 'HH growth 5 yr', r => r.p.hh_growth_ring, r => pctS(r.p.hh_growth_ring), true],
+  ['f_growth', 'Growth vs city', r => r.p.f_growth, r => fmt(r.p.f_growth, 2), true],
+  ['jobs', 'Jobs 3 mi', r => r.p.jobs_ring, r => fmt(r.p.jobs_ring), true],
+  ['income', 'Income', r => r.p.hh_income, r => r.p.hh_income == null ? '–' : '$' + fmt(r.p.hh_income), true],
+  ['exit', 'Exit traffic', r => r.p.exit_aadt, r => fmt(r.p.exit_aadt), true],
+  ['washes', 'Washes 2 mi', r => r.p.washes_near, r => fmt(r.p.washes_near, 1), true],
+  ['sale', 'Sells 24 mo', r => r.type === 'listing' ? 100 : r.p.sale_prob, r => r.type === 'listing' ? 'listed' : r.p.sale_prob == null ? '–' : fmt(r.p.sale_prob) + '%', true],
+  ['price', 'Asking', r => +r.p.listing_asking_price || null, r => r.type === 'listing' ? price(r.p.listing_asking_price) : '', true],
+  ['why', 'Hard fails', r => r.p.hard_fail || '', r => esc(r.p.hard_fail || ''), false],
+];
+let ROWS = [], sortKey = 'rank', sortDir = 1;
+function setRows(cands, lst) {
+  const pt = f => f.properties.in_lat != null ? [f.properties.in_lng, f.properties.in_lat] : f.geometry.type === 'Point' ? f.geometry.coordinates : bounds(f.geometry).getCenter().toArray();
+  ROWS = [...cands.map(f => ({ f, p: f.properties, type: 'parcel', addr: f.properties.address || 'Parcel ' + f.properties.pid, acres: f.properties.acres })),
+          ...lst.map(f => ({ f, p: f.properties, type: 'listing', addr: [f.properties.listing_address, f.properties.listing_city].filter(Boolean).join(', '),
+                            acres: parseFloat(f.properties.listing_acres) || null }))]
+    .map(r => ({ ...r, nf: +r.p.n_fail || 0, ll: pt(r.f) }))
+    .sort((a, b) => (a.nf - b.nf) || (b.p.score ?? 0) - (a.p.score ?? 0));
+  ROWS.forEach((r, i) => r.rank = i + 1);
+  document.querySelector('#ranked thead').innerHTML = '<tr>' + COLS.map(([k, l, , , n]) => `<th data-k="${k}" class="${n ? 'num' : ''}">${l}</th>`).join('') + '<th></th></tr>';
+  document.querySelectorAll('#ranked th[data-k]').forEach(th => th.onclick = () => {
+    sortDir = sortKey === th.dataset.k ? -sortDir : (COLS.find(c => c[0] === th.dataset.k)[4] && th.dataset.k !== 'rank' ? -1 : 1);
+    sortKey = th.dataset.k; renderTable();
+  });
+  renderTable();
+}
+function visibleRows() {
+  const q = document.getElementById('tq').value.trim().toLowerCase(), show = document.getElementById('tshow').value, type = document.getElementById('ttype').value;
+  const val = COLS.find(c => c[0] === sortKey)[2];
+  return ROWS.filter(r => (show === 'all' || r.nf <= (show === 'near' ? 1 : 0)) && (!type || r.type === type) &&
+                          (!q || [r.addr, r.p.owner, r.p.listing_city, r.p.pid].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => { const x = val(a), y = val(b); return x == null ? (y == null ? 0 : 1) : y == null ? -1 : (x > y ? 1 : x < y ? -1 : 0) * sortDir; });
+}
+function renderTable() {
+  const rows = visibleRows();
+  document.querySelectorAll('#ranked th[data-k]').forEach(th => th.setAttribute('aria-sort', th.dataset.k === sortKey ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'));
+  document.getElementById('tcount').textContent = `${rows.length} of ${ROWS.length} sites · click a header to sort`;
+  document.querySelector('#ranked tbody').innerHTML = rows.slice(0, 1500).map((r, i) =>
+    `<tr class="${r.nf ? 'fail' : ''}">` + COLS.map(([k, , , cell, n]) => `<td class="${n ? 'num' : ''}${k === 'why' ? ' why' : ''}">${cell(r)}</td>`).join('') +
+    `<td><a data-i="${ROWS.indexOf(r)}">Map</a><a href="site.html?lat=${r.ll[1].toFixed(6)}&lng=${r.ll[0].toFixed(6)}" target="_blank" rel="noopener">Report</a></td></tr>`).join('');
+  document.querySelectorAll('#ranked a[data-i]').forEach(a => a.onclick = () => {
+    const r = ROWS[a.dataset.i];
+    setView('map');
+    const go = () => r.type === 'listing' ? selectListing(r.f, true) : selectParcel(r.p.pid, true);
+    map.loaded() ? go() : map.once('idle', go);
+  });
+}
+function setView(v) {
+  document.body.classList.toggle('table', v === 'table');
+  document.querySelectorAll('#viewtoggle button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  const u = new URL(location.href);  // the map owns the #hash (position), so the view lives in ?view=
+  v === 'table' ? u.searchParams.set('view', 'table') : u.searchParams.delete('view');
+  history.replaceState(null, '', u);
+  if (v === 'map') map.resize();
+}
+document.querySelectorAll('#viewtoggle button').forEach(b => b.onclick = () => setView(b.dataset.v));
+['tq', 'tshow', 'ttype'].forEach(id => document.getElementById(id).addEventListener('input', renderTable));
+document.getElementById('tcsv').onclick = () => {
+  const q = v => /[",\n]/.test(String(v ?? '')) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v ?? '');
+  const rows = visibleRows();
+  const csv = [[...COLS.map(c => c[1]), 'lat', 'lng', 'report'].map(q).join(','),
+    ...rows.map(r => [...COLS.map(c => c[2](r)), r.ll[1].toFixed(6), r.ll[0].toFixed(6),
+      new URL(`site.html?lat=${r.ll[1].toFixed(6)}&lng=${r.ll[0].toFixed(6)}`, location.href).href].map(q).join(','))].join('\n');
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: `sites-${META.metro}.csv` });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+if (params.get('view') === 'table') setView('table');
+
+// ---------- listings for sale (sidebar) ----------
+const LISTINGS = [];
+const price = v => v == null || v === '' ? 'price n/a' : isNaN(+v) ? esc(v) : '$' + fmt(v);
+function renderListings(feats) {
+  LISTINGS.splice(0, LISTINGS.length, ...feats.filter(f => f.properties.sale));
+  if (!LISTINGS.length) return;
+  const nf = f => +f.properties.n_fail || 0;
+  LISTINGS.sort((a, b) => (nf(a) - nf(b)) || (b.properties.score ?? 0) - (a.properties.score ?? 0));
+  document.getElementById('lstwrap').style.display = '';
+  const el = document.getElementById('lst');
+  el.className = '';
+  el.innerHTML = `<div class="muted">${LISTINGS.filter(f => !nf(f)).length} of ${LISTINGS.length} pass every gate</div><ol id="lstol">` + LISTINGS.map((f, i) => {
+    const p = f.properties;
+    return `<li data-i="${i}" class="${nf(f) ? 'fail' : ''}" title="${esc(p.hard_fail)}"><span class="score">${fmt(p.score)}</span> ${esc(p.listing_address)} · ${price(p.listing_asking_price)}</li>`;
+  }).join('') + '</ol>';
+  el.querySelectorAll('li').forEach(li => li.onclick = () => selectListing(LISTINGS[li.dataset.i], true));
+}
+function selectListing(f, fly) {
+  const p = f.properties, [lng, lat] = f.geometry.coordinates;
+  if (fly) map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16) });
+  showCard(p, { title: `For ${p.listing_offer_type || 'sale'}`, lat, lng, noParcel: !p.on_parcel });
+  const L = k => p['listing_' + k];
+  document.getElementById('card').querySelector('.btn, .muted + .muted')?.insertAdjacentHTML('beforebegin', `<h2>Listing</h2><table>
+    <tr><td>Address</td><td>${esc([L('address'), L('city'), L('state')].filter(Boolean).join(', '))}</td></tr>
+    <tr><td>Asking price</td><td>${price(L('asking_price'))}</td></tr>
+    <tr><td>Listed acres / bldg sf</td><td>${esc(L('acres') || '–')} / ${esc(L('building_sf') || '–')}</td></tr>
+    <tr><td>Prior use · zoning</td><td>${esc(L('prior_use') || '–')} · ${esc(L('zoning') || '–')}</td></tr>
+    <tr><td>Source</td><td>${L('url') ? `<a href="${esc(L('url'))}" target="_blank" rel="noopener">${esc(L('source') || 'listing')}</a>` : esc(L('source'))}</td></tr>
+    <tr><td>Confidence</td><td>${esc(L('confidence') || '–')} <span class="muted">(${esc(L('evidence') || '')})</span></td></tr></table>`);
+}
+
+// ---------- geometry helpers ----------
+function bounds(geom) {
+  const b = new maplibregl.LngLatBounds();
+  JSON.stringify(geom.coordinates).match(/-?\d+\.?\d*,-?\d+\.?\d*/g).forEach(p => b.extend(p.split(',').map(Number)));
+  return b;
+}
+const list = v => Array.isArray(v) ? v.filter(Boolean) : String(v ?? '').split(/;\s*/).filter(Boolean);
+
+// ---------- top-N list ----------
+function renderTop(feats) {
+  const el = document.getElementById('top');
+  if (!feats.length) { el.textContent = 'No candidates loaded.'; return; }
+  const nf = f => +f.properties.n_fail || 0;
+  const rows = [...feats].sort((a, b) => (nf(a) - nf(b)) || (b.properties.score ?? 0) - (a.properties.score ?? 0)).slice(0, TOP_N);
+  const pass = feats.filter(f => !nf(f)).length;
+  el.className = '';
+  const one = feats.filter(f => nf(f) === 1).length;
+  el.innerHTML = `<div class="muted">${pass} pass every gate · ${one} fail one · ${feats.length - pass - one} fail more (shown for context)</div><ol>` + rows.map(f => {
+    const p = f.properties;
+    return `<li data-pid="${esc(p.pid)}" class="${nf(f) ? 'fail' : ''}" title="${esc(p.hard_fail)}"><span class="score">${fmt(p.score)}</span> TAQ ${fmt(p.taq)} · ${fmt(p.acres, 2)} ac · ${fmt(p.aadt_near)} AADT</li>`;
+  }).join('') + '</ol>';
+  el.querySelectorAll('li').forEach(li => li.onclick = () => selectParcel(li.dataset.pid, true));
+}
+
+// every non-empty property, for "all fields" and element popups
+const RAW = /(^id$|_id$|pid|year|fips|h3|^route$)/;  // show unformatted (no thousands separator)
+const propsTable = p => '<div class="all"><table>' + Object.entries(p).filter(([k, v]) => v != null && v !== '' && k !== 'geom')
+  .map(([k, v]) => `<tr><td>${esc(k.replace(/_/g, ' '))}</td><td>${typeof v === 'number' && !RAW.test(k) ? fmt(v, Math.abs(v) < 10 ? 2 : 0)
+    : esc(typeof v === 'object' ? JSON.stringify(v) : v)}</td></tr>`).join('') + '</table></div>';
+
+// ---------- summary card (shared by candidate clicks and /api/score) ----------
+// p: flat properties. noParcel: point scored outside any parcel -> parcel-only rows say n/a.
+function showCard(p, { title, lat, lng, noParcel }) {
+  const NA = '<span class="muted">n/a – no parcel here</span>';
+  const pv = html => noParcel ? NA : html;
+  const fails = list(p.hard_fail), unlock = list(p.unlock), flags = list(p.flag ?? p.flags), sw = sumW();
+  const bars = FACTORS.map(([k, wk, label]) => {
+    const v = Math.max(0, Math.min(1, +p[k] || 0)), w = +W[wk] || 0;
+    return `<div class="bar"><span>${label}${ti(k)} <span class="muted">(${fmt(w)})</span></span><i><b style="width:${v * 100}%"></b></i><span>${fmt(100 * v * w / sw, 1)}</span></div>`;
+  }).join('');
+  const row = (label, tip, val) => `<tr><td>${label}${ti(tip)}</td><td>${val}</td></tr>`;
+  const mut = t => t ? ` <span class="muted">${esc(t)}</span>` : '';
+  const gate = (v, min) => !min || v == null ? '' : +v >= min ? ' <span class="ok">✓</span>' : ` <span class="fail">✗ min ${fmt(min)}</span>`;
+  const flood = p.in_flood == null ? '–' : p.in_flood ? '<span class="fail">in SFHA</span>' : 'no';
+  const report = `site.html?lat=${(+lat).toFixed(6)}&lng=${(+lng).toFixed(6)}`;
+  const card = document.getElementById('card');
+  card.innerHTML = `<button class="x" title="Close">×</button>
+    <div class="muted">${esc(title)}${p.address ? ' · ' + esc(p.address) : ''}</div>
+    <div class="big">${fmt(p.score)}<span class="muted" style="font-size:13px"> / 100</span>${ti('score')}
+      <span class="taq">TAQ ${fmt(p.taq)}${ti('taq')}</span>
+      ${fails.length ? `<span class="tag">${fails.length} fail${fails.length > 1 ? 's' : ''}</span>` : '<span class="tag ok">passes all gates</span>'}</div>
+    ${p.sale_prob != null ? `<div class="sale" title="${esc(saleTip(p))}">Chance the owner sells in 24 months: <b class="${p.sale_prob >= 40 ? 'ok' : ''}">${fmt(p.sale_prob)}%</b> <span class="muted">${esc(String(p.sale_note || '').replace(/^\w+ \(\d+%\):? ?/, ''))}</span> ⓘ</div>` : ''}
+    ${API ? `<a class="btn" href="${report}" target="_blank" rel="noopener">Open detailed report →</a>` : '<div class="muted">Start the server for the detailed report.</div>'}
+    ${fails.length ? `<h2 class="fail">Hard fails${ti('fails')}</h2><ul class="fail">${fails.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
+    ${unlock.length ? `<div class="muted"><b>To unlock:</b> ${unlock.map(esc).join('; ')}</div>` : ''}
+    ${flags.length ? `<h2>Flags${ti('flags')}</h2><ul class="flag">${flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
+    <h2>Client gates</h2><table>
+      ${row(`Households (${fmt(C.trade_radius_mi, 1)} mi)`, 'households', fmt(p.hh_ring) + gate(p.hh_ring, C.hh_3mi_min))}
+      ${row('Households / sq mi', 'households', fmt(p.density) + gate(p.density, C.density_min))}
+      ${row('10-min drive pop.', 'drive10', fmt(p.drive10_pop) + gate(p.drive10_pop, C.drive10_pop_min) + mut(p.drive_method))}
+      ${row('TAQ', 'taq', fmt(p.taq) + gate(p.taq, C.taq_min))}
+      ${row('Site traffic', 'aadt', fmt(p.aadt_near) + gate(p.aadt_near, C.aadt_min) + mut([p.aadt_route, p.aadt_year && `(${p.aadt_year})`].filter(Boolean).join(' ')) +
+        (p.aadt_near == null && p.aadt_next != null ? mut(`none in radius; nearest counted: ${fmt(p.aadt_next)} on ${p.aadt_next_route}, ${fmt(p.aadt_next_ft)} ft`) : ''))}
+      ${row(C.intersection_method === 'all' ? 'All nearby roads' : 'Primary intersection', 'intersection', fmt(p.int_aadt) + gate(p.int_aadt, C.intersection_min) + mut(Array.isArray(p.int_roads) ? p.int_roads.join(' × ') : p.int_roads))}
+    </table>
+    <h2>Factors (points)</h2>${bars}
+    <h2>Site</h2><table>
+      ${row('Acres', 'acres', pv(fmt(p.acres, 2)))}
+      ${row('Lot', 'depth', pv(`${fmt(p.depth_ft)} deep × ${fmt(p.frontage_ft)} ft frontage · length ${fmt(p.long_side_ft)} ft` + mut(p.frontage_route && 'faces ' + p.frontage_route)))}
+      ${row('Zoning', 'zoning', pv(`${esc(p.zoning) || '–'} · ${esc(p.carwash_status) || '–'}`))}
+      ${row('Land use', 'land_use', pv(esc(p.land_use) || '–'))}
+      ${row('Nearest anchor', 'anchor', fmt(p.anchor_ft) + ' ft' + mut(p.anchor_name))}
+      ${row(`Washes within ${fmt(C.comp_radius_mi, 1)} mi`, 'washes', `${fmt(p.washes_near, 2)} weighted` + mut(p.washes_near_n != null && `${p.washes_near_n} washes`) + (p.express_mi != null ? mut(`nearest express ${fmt(p.express_mi, 2)} mi`) : ''))}
+      ${row('Median income', 'income', p.hh_income == null ? '–' : '$' + fmt(p.hh_income))}
+      ${row('Gap score', 'gap', fmt(p.gap_score))}
+      ${row('Flood zone', 'flood', flood)}
+    </table>
+    ${!noParcel && p.pid && API ? '<div id="owner-contact" class="muted">Loading owner contact…</div>' : ''}
+    <details><summary>All fields</summary>${propsTable(p)}</details>
+    <h2>Links</h2><div class="links">
+      <a target="_blank" rel="noopener" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}">Street View</a>
+      <a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}">Google Maps</a>
+    </div>`;
+  card.style.display = 'block';
+  card.querySelector('.x').onclick = clearSelection;
+  if (!noParcel && p.pid && API) ownerContact(p);
+}
+function saleTip(p) {
+  return `${p.sale_note || ''}\n\nHeuristic model (not yet fitted to sales): starts at 12% for an average commercial parcel; ` +
+    `each factor moves the odds.\n${String(p.sale_factors || 'no factors fired').split('; ').join('\n')}`;
+}
+// owner contacts from Parallel research (report page: Look up owner), with registry links to verify
+async function ownerContact(p) {
+  const el = document.getElementById('owner-contact');
+  try {
+    const d = await (await fetch(`/api/owner_intel?pid=${encodeURIComponent(p.pid)}&owner=${encodeURIComponent(p.owner || '')}`)).json();
+    if (document.getElementById('owner-contact') !== el) return;  // card changed meanwhile
+    const i = d.intel, src = Object.fromEntries((i?.sources || []).map(b => [b.field, b.urls || []]));
+    const f = (k, label) => i?.[k] ? `<tr><td>${label}</td><td>${esc(i[k])} ${(src[k] || []).slice(0, 2).map((u, n) =>
+      `<a target="_blank" rel="noopener" href="${esc(u)}">[${n + 1}]</a>`).join(' ')}</td></tr>` : '';
+    el.className = '';
+    el.innerHTML = `<h2>Owner contact</h2>` + (i ? `<table>${f('decision_maker', 'Decision maker')}${f('phone', 'Phone')}${f('email', 'Email')}
+        ${f('mailing_address', 'Mailing address')}${f('website', 'Website')}${f('listed_for_sale', 'Listed for sale')}${f('last_sale', 'Last sale')}
+        ${f('current_use', 'Current use')}</table><div class="muted">Researched ${esc(i.checked)} via Parallel; public business contacts only.</div>`
+      : '<div class="muted">Not researched yet: use “Look up owner” on the detailed report.</div>') +
+      `<div class="links">${(d.links || []).map(l => `<a target="_blank" rel="noopener" href="${esc(l.url)}">${esc(l.label)}</a>`).join(' ')}</div>`;
+  } catch (e) { el.textContent = 'Owner contact unavailable: ' + e.message; }
+}
+function clearSelection() {
+  document.getElementById('card').style.display = 'none';
+  map.setFilter('cand-sel', ['==', ['get', 'pid'], '']);
+  map.getSource('pick').setData(empty);
+  marker?.remove();
+}
+
+function selectParcel(pid, fly) {
+  const f = byPid.get(String(pid));
+  if (!f) return;
+  clearSelection();
+  const b = bounds(f.geometry), p = f.properties;
+  const c = p.in_lat != null ? { lat: p.in_lat, lng: p.in_lng } : b.getCenter();  // in_*: point inside the parcel (export.py)
+  map.setFilter('cand-sel', ['==', ['to-string', ['get', 'pid']], String(pid)]);
+  if (fly) map.fitBounds(b, { padding: 120, maxZoom: 18 });
+  showCard(p, { title: 'Parcel ' + pid, lat: (+c.lat).toFixed(6), lng: (+c.lng).toFixed(6) });
+}
+
+// ---------- point scoring (API only) ----------
+let marker, pinMode = false;
+async function scorePoint(lng, lat, fly) {
+  if (!API) return;
+  setPin(false);
+  clearSelection();
+  marker = new maplibregl.Marker({ color: '#00a3bf' }).setLngLat([lng, lat]).addTo(map);
+  if (fly) map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 17) });
+  const card = document.getElementById('card');
+  card.innerHTML = '<div class="muted">Scoring this point…</div>'; card.style.display = 'block';
+  try {
+    const r = await fetch(`/api/score?lat=${lat.toFixed(6)}&lng=${lng.toFixed(6)}`);
+    const d = await r.json();
+    if (!r.ok || d.ok === false) throw new Error(d.error || r.status);
+    if (d.geom) map.getSource('pick').setData({ type: 'Feature', properties: {}, geometry: d.geom });
+    const pt = d.point || { lat, lng };
+    showCard({ ...(d.parcel || {}), ...d.facts, ...d.factors, score: d.score, taq: d.taq?.total, hard_fail: d.hard_fail, unlock: d.unlock, flags: d.flags },
+      { title: d.parcel ? 'Parcel ' + d.parcel.pid : `Point ${(+pt.lat).toFixed(5)}, ${(+pt.lng).toFixed(5)}`, lat: pt.lat, lng: pt.lng, noParcel: !d.parcel });
+  } catch (err) {
+    card.innerHTML = `<button class="x" title="Close">×</button><div class="fail">Couldn't score this point (${esc(err.message)}).</div>`;
+    card.querySelector('.x').onclick = clearSelection;
+  }
+}
+function setPin(on) {
+  pinMode = on;
+  document.body.classList.toggle('pin', on);
+  document.getElementById('pinbtn').classList.toggle('on', on);
+}
+document.getElementById('pinbtn').onclick = () => setPin(!pinMode);
+document.getElementById('pinbtn').insertAdjacentHTML('afterend', ti('pin'));
+document.getElementById('q').insertAdjacentHTML('afterend', ti('search'));
+
+document.getElementById('sform').onsubmit = async e => {
+  e.preventDefault();
+  const q = document.getElementById('q').value.trim(), ul = document.getElementById('results');
+  if (!q) return;
+  ul.innerHTML = '<li class="muted">Searching…</li>';
+  try {
+    const r = await fetch('/api/geocode?q=' + encodeURIComponent(q));
+    const res = await r.json();
+    if (!r.ok || !Array.isArray(res)) throw new Error(res.error || r.status);
+    if (!res.length) { ul.innerHTML = '<li class="muted">No matches in the metro area.</li>'; return; }
+    ul.innerHTML = res.map((x, i) => `<li data-i="${i}">${esc(x.label)} <span class="muted">${esc(x.source)}</span></li>`).join('');
+    ul.querySelectorAll('li').forEach(li => li.onclick = () => { const x = res[li.dataset.i]; ul.innerHTML = ''; scorePoint(+x.lng, +x.lat, true); });
+  } catch (err) { ul.innerHTML = `<li class="fail">Search failed (${esc(err.message)})</li>`; }
+};
+
+// right-click, or long-press on touch, scores the point
+map.on('contextmenu', e => scorePoint(e.lngLat.lng, e.lngLat.lat));
+let pressTimer;
+map.on('touchstart', e => { clearTimeout(pressTimer); if (e.originalEvent.touches.length === 1) pressTimer = setTimeout(() => scorePoint(e.lngLat.lng, e.lngLat.lat), 600); });
+['touchend', 'touchmove', 'touchcancel'].forEach(t => map.on(t, () => clearTimeout(pressTimer)));
+
+// ---------- clicks: parcels open the summary card; everything else shows every field ----------
+const popup = (e, html) => new maplibregl.Popup({ maxWidth: '340px' }).setLngLat(e.lngLat).setHTML(html).addTo(map);
+const POP = { // layer -> [title, extra html]
+  washes: p => [`${esc(p.name) || 'Car wash'} <span class="muted">${esc(String(p.wash_type || 'unknown').replace('_', ' '))}${p.own ? ' · own store' : ''}${p.planned ? ' · planned' : ''}</span>`,
+    API ? '<div class="links"><a href="settings.html#washSec" target="_blank">Edit type / tags</a></div>' : ''],
+  anchors: p => [`${esc(p.name || p.brand)} <span class="muted">${esc(String(p.anchor_type).replace('_', ' '))}</span>`, ''],
+  aadt: p => [`${fmt(p.aadt)} vehicles/day <span class="muted">${esc(p.route)}${p.speed_mph != null ? ` · ${p.speed_mph} mph${String(p.speed_src || '').startsWith('posted') ? '' : ' (estimated)'}` : ''}${p.counted ? '' : ' · road type excluded from scoring'}</span>`, ''],
+  hex: p => [`Gap score ${fmt(p.gap_score)}`, ''],
+  flood: p => [`Flood zone ${esc(p.zone)}`, ''],
+};
+const LAYER_POP = { washes: 'washes', anchors: 'anchors', hex: 'hex', flood: 'flood', ...Object.fromEntries(AADT_IDS.map(id => [id, 'aadt'])) };
+const CLICKABLE = ['listings', 'washes', 'anchors', 'cand-pt', ...AADT_IDS, 'cand-fill', 'hex', 'flood'];
+map.on('click', e => {
+  if (pinMode) return scorePoint(e.lngLat.lng, e.lngLat.lat);
+  const f = map.queryRenderedFeatures(e.point, { layers: CLICKABLE.filter(id => map.getLayoutProperty(id, 'visibility') !== 'none') })[0];
+  if (!f) return;
+  if (f.layer.id === 'listings') return selectListing(f, false);
+  if (f.layer.id === 'cand-fill' || f.layer.id === 'cand-pt') return selectParcel(f.properties.pid, f.layer.id === 'cand-pt');
+  const [title, extra] = POP[LAYER_POP[f.layer.id]](f.properties);
+  popup(e, `<b>${title}</b>${propsTable(f.properties)}${extra}`);
+});
+CLICKABLE.forEach(id => {
+  map.on('mouseenter', id, () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', id, () => map.getCanvas().style.cursor = '');
+});
+</script>
+</body>
+</html>
